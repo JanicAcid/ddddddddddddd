@@ -17,7 +17,7 @@ import {
   X, Download, Send, Check, CheckCircle
 } from 'lucide-react'
 import {
-  kkmTypes, scannerPrices, firmwareLicensePrices,
+  kkmTypes, scannerPrices, firmwareLicensePrices, sigmaSubscriptions,
   type KkmType
 } from '@/config/services'
 import Image from 'next/image'
@@ -345,7 +345,7 @@ function generateOrderHtml(params: {
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Старая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
-  const sepText = params.kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ, подписки — оплачиваются отдельно напрямую у поставщиков.'
+  const sepText = params.kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — оплачиваются отдельно напрямую у поставщиков.' : params.kkmType === 'atol' ? 'ТС ПИоТ, подписки Сигма — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ, подписки — оплачиваются отдельно напрямую у поставщиков.'
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Заказ-наряд</title><style>
 body{font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:800px;margin:0 auto;color:#1e293b}
 h1{text-align:center;margin:0 0 5px}h2{color:#334155;border-bottom:2px solid #1e3a5f;padding-bottom:6px;font-size:15px}
@@ -523,7 +523,7 @@ function DoneScreen({
           )}
           <div className="p-3 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
             <p className="text-xs text-[#1e3a5f]">
-              <strong>ТС ПИоТ</strong> — лицензия оплачивается отдельно напрямую на сайте <strong>ao-esp.ru</strong>.{kkmType === 'evotor' ? ' Приложения Эвотор — через личный кабинет Эвотор.' : ''}
+              <strong>ТС ПИоТ</strong> — лицензия оплачивается отдельно напрямую на сайте <strong>ao-esp.ru</strong>.{kkmType === 'evotor' ? ' Приложения Эвотор — через личный кабинет Эвотор.' : kkmType === 'atol' ? ' Подписки Сигма — напрямую у Атол.' : ''}
             </p>
           </div>
         </CardContent>
@@ -589,6 +589,8 @@ export default function TellurServiceCalculator() {
   const [fnChecked, setFnChecked] = useState(false)
   const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
   const [fnActivityType, setFnActivityType] = useState('general')
+  const [sigmaSubSelections, setSigmaSubSelections] = useState<string[]>(['sigma_marking'])
+  const [sigmaSubPeriod, setSigmaSubPeriod] = useState<'month' | 'year'>('month')
 
   const [clientData, setClientData] = useState({
     name: '', inn: '', phone: '', email: '', address: '',
@@ -613,6 +615,10 @@ export default function TellurServiceCalculator() {
 
   const needsFirmwareOrLicense = kkmCondition !== 'new' && kkmType !== 'evotor'
   const fwPrices = firmwareLicensePrices[effectiveKkm]
+
+  // Сигма подписки: обязательна для новых касс, опциональна для старых/БУ
+  const sigmaSubsLocked = effectiveKkm === 'sigma' && kkmCondition === 'new'
+  const showSigmaSubs = effectiveKkm === 'sigma'
 
   // Новая касса: ОФД обязательно, б/у и старые: по умолчанию включено, можно снять
   const ofdLocked = kkmCondition === 'new'
@@ -670,8 +676,20 @@ export default function TellurServiceCalculator() {
       items.push({ name: `Создание карточек товаров (${productCardCount} шт.)`, price: p * productCardCount })
     }
 
+    // Сигма подписки — информационная строка (не в цену, т.к. оплачивается отдельно)
+    if (effectiveKkm === 'sigma' && sigmaSubSelections.length > 0) {
+      const subPeriodLabel = sigmaSubPeriod === 'year' ? '/год' : '/мес'
+      sigmaSubSelections.forEach(subId => {
+        const sub = sigmaSubscriptions.find(s => s.id === subId)
+        if (sub) {
+          const price = sigmaSubPeriod === 'year' ? sub.pricePerYear : sub.pricePerMonth
+          items.push({ name: `${sub.name} — ${price.toLocaleString('ru-RU')} ₽${subPeriodLabel} (оплачивается у Атол)`, price: 0 })
+        }
+      })
+    }
+
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, sigmaSubSelections, sigmaSubPeriod])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -828,8 +846,79 @@ export default function TellurServiceCalculator() {
                       </ul>
                     </div>
 
-                    {/* Эвотор — приложения */}
-                    {currentKkmInfo.specialNote?.apps && (
+                    {/* Сигма — подписки Атол */}
+                    {showSigmaSubs && (
+                      <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                        <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote?.title}</p>
+                        <p className="text-sm text-slate-600">{currentKkmInfo.specialNote?.content}</p>
+                        {sigmaSubscriptions.map((sub, idx) => {
+                          const isSelected = sigmaSubSelections.includes(sub.id)
+                          const isLocked = sigmaSubsLocked && sub.required
+                          const isDisabled = isLocked ? false : (sigmaSubsLocked ? false : false)
+                          const price = sigmaSubPeriod === 'year' ? sub.pricePerYear : sub.pricePerMonth
+                          const periodLabel = sigmaSubPeriod === 'year' ? '/год' : '/мес'
+                          return (
+                            <div key={idx} className="p-3 bg-white rounded border border-[#1e3a5f]/10">
+                              <div className="flex items-start gap-2">
+                                <div className="pt-0.5 shrink-0">
+                                  <Checkbox
+                                    id={`sigma_sub_${sub.id}`}
+                                    checked={isSelected}
+                                    disabled={isLocked}
+                                    onCheckedChange={(c) => setSigmaSubSelections(prev =>
+                                      c ? [...prev, sub.id] : prev.filter(x => x !== sub.id)
+                                    )}
+                                    className="w-4 h-4 mt-0.5"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <Label htmlFor={`sigma_sub_${sub.id}`} className="font-medium text-[#1e3a5f] text-sm cursor-pointer">{sub.name}</Label>
+                                    {sub.required
+                                      ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
+                                      : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
+                                    }
+                                  </div>
+                                  <p className="text-sm text-slate-600 mt-0.5">{sub.purpose}</p>
+                                  {sub.condition && <p className="text-xs text-slate-500 mt-0.5">({sub.condition})</p>}
+                                  <a href={sub.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline">
+                                    <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница подписки на сайте Атол</span>
+                                  </a>
+                                  {isSelected && (
+                                    <p className="text-sm font-semibold text-[#1e3a5f] mt-1">{price.toLocaleString('ru-RU')} ₽{periodLabel} — оплачивается напрямую у Атол</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                        {/* Период подписки */}
+                        <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-[#1e3a5f]/10">
+                          <Label className="text-sm font-medium text-slate-600 shrink-0">Период оплаты:</Label>
+                          <RadioGroup value={sigmaSubPeriod} onValueChange={(v) => setSigmaSubPeriod(v as 'month' | 'year')} className="flex gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <RadioGroupItem value="month" id="sigma_month" />
+                              <Label htmlFor="sigma_month" className="text-sm cursor-pointer">Ежемесячно</Label>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <RadioGroupItem value="year" id="sigma_year" />
+                              <Label htmlFor="sigma_year" className="text-sm cursor-pointer">Раз в год <span className="text-xs text-green-600 font-medium">выгоднее</span></Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        {/* Предупреждение о доп. подписках */}
+                        <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                            <p className="text-xs text-amber-700">
+                              <strong>Внимание:</strong> помимо указанных подписок, для работы кассы Сигма могут потребоваться: подписка «Облачная касса» (для удалённого управления) и другие сервисы Атол. Точный набор зависит от ваших задач — уточните у менеджера.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {currentKkmInfo.specialNote?.apps && effectiveKkm !== 'sigma' && (
                       <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
                         <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote.title}</p>
                         <p className="text-sm text-slate-600">{currentKkmInfo.specialNote.content}</p>
@@ -1381,9 +1470,9 @@ export default function TellurServiceCalculator() {
                             <span className="font-bold text-base sm:text-lg">Итого:</span>
                             <span className="font-bold text-xl sm:text-2xl text-[#1e3a5f]">{totalCalc.total.toLocaleString('ru-RU')} ₽</span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
+          <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
                           <p className="text-xs text-slate-400">
-                            {kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — отдельно' : 'ТС ПИоТ — оплачивается отдельно'}
+                            {kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — отдельно' : effectiveKkm === 'sigma' ? 'ТС ПИоТ, подписки Сигма — отдельно' : 'ТС ПИоТ — оплачивается отдельно'}
                           </p>
                         </CardContent>
                       </Card>

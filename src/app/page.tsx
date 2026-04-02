@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -12,8 +12,9 @@ import { Badge } from '@/components/ui/badge'
 import {
   Calculator, Printer, Info, CheckCircle2, AlertCircle,
   ShoppingCart, CreditCard, AlertTriangle,
-  ScanLine, ArrowRight, ArrowLeft, CircleDot,
-  HelpCircle, Phone, Mail, ExternalLink, MessageCircle, CheckCheck, ShieldCheck
+  ScanLine, ArrowRight, ArrowLeft,
+  HelpCircle, Phone, Mail, ExternalLink, MessageCircle, CheckCheck, ShieldCheck,
+  X, Download
 } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices,
@@ -27,6 +28,7 @@ import Image from 'next/image'
 
 type Step = 1 | 2 | 3 | 4
 type KkmCondition = 'new' | 'used' | 'old'
+type OfdPeriod = '15' | '36'
 
 // ============================================================================
 // КОНТАКТЫ
@@ -90,10 +92,10 @@ const hints: Record<string, HintData> = {
     example: 'Вам пришло письмо от ОФД: «ФН заканчивается через 25 дней». Меняем чип на новый, перерегистрируем кассу в ФНС. Касса снова работает.'
   },
   product_cards: {
-    what: 'Создание карточек товаров в системе: присваиваем название, привязываем код маркировки (Data Matrix), заполняем необходимые поля по согласованию с вами.',
-    why: 'Без карточек товаров касса не знает что она продаёт — она не поймёт что за «Winston Blue», не найдёт нужный код маркировки. Каждая позиция должна быть заведена.',
-    when: 'При первом подключении маркировки или при поступлении новых товаров в ассортимент.',
-    example: 'Вы дали нам прайс-лист из 200 наименований сигарет. Мы создаём 200 карточек: название бренда, артикул, привязка к коду маркировки, цена. Через пару часов всё готово к работе.'
+    what: 'Карточки товаров создаются непосредственно на кассовом аппарате — каждая позиция заносится в память кассы: название, артикул, привязка к коду маркировки (Data Matrix), цена и другие поля. Обратите внимание: при массовой заливке карточек средствами ПК (через 1С, Excel или другие программы) могут потребоваться дополнительные приложения от производителя вашей кассы для корректного импорта данных.',
+    why: 'Без карточек товаров касса не знает что она продаёт — она не поймёт что за «Winston Blue», не найдёт нужный код маркировки. Каждая позиция должна быть заведена в кассу, чтобы кассир мог выбрать товар и пробить чек.',
+    when: 'При первом подключении маркировки или при поступлении новых товаров в ассортимент. Карточки нужны для всех касс, кроме фискальных регистраторов ФР Атол и ФР Штрих-М — они работают от внешней программы (1С и др.), и карточки создаются в ней, а не на самом кассовом аппарате.',
+    example: 'Вы дали нам прайс-лист из 200 наименований сигарет. Мы создаём 200 карточек непосредственно на вашей кассе: название бренда, артикул, привязка к коду маркировки, цена. Для массовой заливки через ПК — используем утилиту производителя кассы. Через пару часов всё готово к работе.'
   },
   firmware_update: {
     what: 'Обновление внутренней программы кассы (прошивки) до версии, которая поддерживает работу с маркировкой и формат ФФД 1.2.',
@@ -112,6 +114,24 @@ const hints: Record<string, HintData> = {
     why: 'Без доступа к ЛК Эвотор невозможно управлять кассой, устанавливать и оплачивать приложения. Касса без ЛК — просто планшет.',
     when: 'Если вы не помните данные от ЛК Эвотор или касса досталась от предыдущего владельца без данных.',
     example: 'Вы не помните пароль от ЛК Эвотор. Обращаетесь к нам — мы связываемся с поддержкой Эвотор, восстанавливаем доступ. Вы получаете новые данные для входа.'
+  },
+  tspiot: {
+    what: 'ТС ПИоТ (товароучётная система) — обязательный модуль для работы с маркированными товарами. Без него касса не сможет пробивать чеки по сигаретам, обуви, воде и другим маркированным группам. Лицензия приобретается на официальном портале ao-esp.ru.',
+    why: 'С 1 июля 2026 года продажа маркированных товаров без ТС ПИоТ запрещена статьёй 15.12 КоАП РФ — это штрафы. Без лицензии касса просто перестанет пробивать маркированные чеки.',
+    when: 'Обязательно для всех, кто продаёт маркированные товары. Чем раньше приобретёте — тем лучше, чтобы мы успели всё настроить.',
+    example: 'Вы выбираете лицензию ТС ПИоТ на ao-esp.ru (стоимость зависит от вида товаров), оплачиваете напрямую. Мы помогаем зарегистрироваться, подключить и настроить ТС ПИоТ под ваш бизнес — от регистрации до первой накладной.'
+  },
+  fns_registration: {
+    what: 'Регистрация контрольно-кассовой техники (ККТ) на сайте ФНС — это обязательная процедура, без которой касса не имеет права работать. Мы подаём заявление о регистрации кассы, подписываем его вашей ЭЦП и сопровождаем до получения подтверждения от налоговой.',
+    why: 'Без регистрации в ФНС касса юридически не существует для налоговой — ни один чек не будет принят. Это как открыть магазин без лицензии: всё оборудование есть, но работать нельзя. Без этой процедуры новая касса — просто «кирпич».',
+    when: 'Обязательно для всех новых касс. Без регистрации касса не начнёт работу — ни один чек не пройдёт.',
+    example: 'Вы купили новую кассу Меркурий-185Ф. Привозите к нам (или мы выезжаем): подготавливаем заявление на сайте ФНС, подписываем ЭЦП, подаём и отслеживаем статус. Через 1-2 дня ФНС подтверждает регистрацию — касса готова к работе.'
+  },
+  ofd_takskom: {
+    what: 'ОФД (оператор фискальных данных) — это организация, которая принимает, хранит и передаёт в налоговую все фискальные данные с вашей кассы. Без ОФД касса не работает. Мы — официальные партнёры ОФД ТАКСКОМ, поэтому предлагаем выгодные условия с партнёрской скидкой.',
+    why: 'Закон требует, чтобы каждая касса была подключена к ОФД. Без договора с ОФД касса не сможет передавать чеки в ФНС — фактически она будет неработоспособна. Договор заключается на 15 или 36 месяцев.',
+    when: 'Обязательно при регистрации новой кассы. Для б/у и действующих касс — при необходимости сменить или продлить договор с ОФД.',
+    example: 'Вы регистрируете новую кассу. Вместо того чтобы самостоятельно искать ОФД и сравнивать тарифы, мы подключаем вас к ОФД ТАКСКОМ по партнёрской цене — на 500–1000₽ дешевле, чем на сайте напрямую. Договор на 15 месяцев стоит 6 400₽ (вместо 6 900₽ без скидки).'
   }
 }
 
@@ -132,7 +152,7 @@ const step2Services: StepService[] = [
     id: 'fns_reregistration',
     name: 'Перерегистрация кассы в ФНС для маркировки и подакцизных товаров',
     description: 'Подготовка, подача и сопровождение заявления в ФНС — добавляем признаки маркировки и подакцизных товаров, переводим кассу на формат ФФД 1.2. Ошибка в заявлении = отказ налоговой = касса не работает',
-    price: 2000,
+    price: 1500,
     hintKey: 'fns_reregistration'
   },
   {
@@ -156,24 +176,22 @@ const step3Services: StepService[] = [
     id: 'training',
     name: 'Обучение работе с маркировкой',
     description: 'Практическое занятие — сканирование, приём товара, возвраты',
-    price: 1500,
+    price: 1300,
     hintKey: 'training'
   },
   {
     id: 'fn_replacement',
     name: 'Замена фискального накопителя (ФН)',
     description: 'Замена чипа памяти кассы с перерегистрацией в налоговой',
-    price: 2500,
+    price: 2700,
     hintKey: 'fn_replacement'
   }
 ]
 
-// Эвотор — доп. услуга (показывается только при выборе Эвотора)
-const evotorAppInstallService: StepService = {
-  id: 'evotor_app_install',
-  name: 'Помощь с установкой приложений Эвотор',
-  description: 'Установка и настройка приложений «Маркировка», «УТМ+», «Управление ассортиментом» и других на кассе Эвотор',
-  price: 1500
+// ОФД ТАКСКОМ — цены
+const OFD_PRICES: Record<OfdPeriod, { price: number; originalPrice: number; label: string }> = {
+  '15': { price: 6400, originalPrice: 6900, label: '15 месяцев' },
+  '36': { price: 11000, originalPrice: 12000, label: '36 месяцев' }
 }
 
 // ============================================================================
@@ -193,7 +211,7 @@ function getProductCardPriceLabel(count: number): string {
 }
 
 // ============================================================================
-// КОМПОНЕНТ ПОДСКАЗКИ (click-to-toggle для мобильных)
+// КОМПОНЕНТ ПОДСКАЗКИ (полноэкранный модал для мобильных)
 // ============================================================================
 
 function HintButton({ hintKey }: { hintKey: string }) {
@@ -201,70 +219,104 @@ function HintButton({ hintKey }: { hintKey: string }) {
   const [open, setOpen] = useState(false)
   if (!hint) return null
   return (
-    <div className="relative inline-flex">
+    <>
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
+        onClick={(e) => { e.stopPropagation(); setOpen(true) }}
         className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-700 hover:text-amber-800 transition-colors shrink-0"
         aria-label="Подсказка"
       >
         <span className="text-xs sm:text-sm font-bold">?</span>
       </button>
       {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpen(false) }} />
-          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] sm:w-80 p-3 bg-white border-2 border-amber-200 rounded-lg shadow-xl text-sm">
-            <div className="flex items-center justify-between mb-2">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setOpen(false) }} />
+          <div className="relative z-10 w-full max-w-md max-h-[85vh] flex flex-col bg-white border-2 border-amber-200 rounded-xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200 shrink-0">
               <span className="font-bold text-amber-700 text-xs uppercase tracking-wide">Подсказка</span>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 text-lg leading-none ml-2">×</button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-200/60 hover:bg-amber-300 active:bg-amber-400 text-amber-800 hover:text-amber-900 transition-colors"
+                aria-label="Закрыть"
+              >
+                <X className="w-5 h-5" strokeWidth={3} />
+              </button>
             </div>
-            <div className="space-y-1.5">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
               <p><strong className="text-amber-700">Что это:</strong> {hint.what}</p>
               <p><strong className="text-amber-700">Зачем:</strong> {hint.why}</p>
               <p><strong className="text-amber-700">Когда:</strong> {hint.when}</p>
-              <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-200"><em>Пример: {hint.example}</em></p>
+              <p className="text-slate-500 text-xs pt-3 border-t border-slate-200"><em>Пример: {hint.example}</em></p>
             </div>
-            <div className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r-2 border-b-2 border-amber-200 rotate-45" />
+            <div className="px-4 py-3 border-t border-amber-200 bg-amber-50/50 shrink-0">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="w-full py-2 rounded-lg bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 font-medium text-sm transition-colors"
+              >
+                Понятно
+              </button>
+            </div>
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   )
 }
 
 // ============================================================================
-// ШАГ-ИНДИКАТОР
+// ГЕНЕРАЦИЯ HTML ЗАКАЗ-НАРЯДА
 // ============================================================================
 
-function StepIndicator({ current, onClick, isDone }: { current: Step; onClick: (s: Step) => void; isDone: boolean }) {
-  if (isDone) return null
-  const steps = [
-    { num: 1 as Step, label: 'Касса' },
-    { num: 2 as Step, label: 'Услуги' },
-    { num: 3 as Step, label: 'Дополнительно' }
-  ]
-  return (
-    <div className="flex items-center justify-center gap-1.5 sm:gap-4 py-2">
-      {steps.map((s, i) => (
-        <div key={s.num} className="flex items-center gap-1.5 sm:gap-2">
-          <button
-            onClick={() => onClick(s.num)}
-            disabled={s.num > current + 1}
-            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-3 rounded-lg transition-colors text-xs sm:text-sm font-medium ${
-              s.num === current ? 'bg-[#1e3a5f] text-white shadow-md'
-                : s.num < current ? 'bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f]/20 cursor-pointer'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            {s.num < current ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <CircleDot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-            <span className="hidden sm:inline">{s.label}</span>
-            <span className="sm:hidden">{s.num}</span>
-          </button>
-          {i < steps.length - 1 && <div className={`w-4 sm:w-6 h-0.5 ${s.num < current ? 'bg-[#1e3a5f]/30' : 'bg-slate-200'}`} />}
-        </div>
-      ))}
-    </div>
-  )
+function generateOrderHtml(params: {
+  effectiveKkmInfo: { name: string }
+  kkmCondition: string
+  kkmType: string
+  clientData: { name: string; inn: string; phone: string; email: string; address: string; kkmModel: string; kkmNumber: string; comment: string; evotorLogin: string }
+  totalCalc: { items: { name: string; price: number }[]; total: number }
+}): string {
+  const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Старая (работающая)'
+  const orderNum = Date.now().toString().slice(-6)
+  const sepText = params.kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ, подписки — оплачиваются отдельно напрямую у поставщиков.'
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Заказ-наряд</title><style>
+body{font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:800px;margin:0 auto;color:#1e293b}
+h1{text-align:center;margin:0 0 5px}h2{color:#334155;border-bottom:2px solid #1e3a5f;padding-bottom:6px;font-size:15px}
+table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;font-size:13px}th{background:#f1f5f9}
+.total{font-size:17px;font-weight:bold;text-align:right;margin:16px 0}
+.footer{margin-top:30px;display:flex;justify-content:space-between}
+.signature{width:180px;border-top:1px solid #000;padding-top:4px;text-align:center;font-size:13px}
+.notice{background:#fef2f2;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
+.info{background:#fffbeb;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
+@media print{body{padding:15px}}
+</style></head><body>
+<div style="text-align:center;margin-bottom:20px"><h1>ЗАКАЗ-НАРЯД</h1>
+<p style="color:#64748b;font-size:12px;margin:2px 0">ООО &quot;Теллур-Интех&quot; | Сервисный центр кассового оборудования</p>
+<p style="font-size:16px;font-weight:bold;margin:6px 0">№ ${orderNum} от ${new Date().toLocaleDateString('ru-RU')}</p></div>
+<div class="notice"><strong>Внимание:</strong> Статья 15.12 КоАП РФ — продажа маркированных товаров без модуля ТС ПИоТ влечёт административную ответственность (штраф). Лицензия ТС ПИоТ оплачивается клиентом напрямую в ЕСП (ao-esp.ru).</div>
+<div style="margin:16px 0"><h2>Клиент</h2>
+<p><strong>Наименование:</strong> ${params.clientData.name || 'Не указано'}</p>
+<p><strong>ИНН:</strong> ${params.clientData.inn || 'Не указано'}</p>
+<p><strong>Телефон:</strong> ${params.clientData.phone || 'Не указано'}</p>
+<p><strong>Email:</strong> ${params.clientData.email || 'Не указано'}</p>
+<p><strong>Адрес:</strong> ${params.clientData.address || 'Не указано'}</p></div>
+<div style="margin:16px 0"><h2>Касса</h2>
+<p><strong>Тип:</strong> ${params.effectiveKkmInfo.name}</p>
+<p><strong>Состояние:</strong> ${condLabel}</p>
+<p><strong>Модель:</strong> ${params.clientData.kkmModel || 'Не указано'}</p>
+<p><strong>Заводской номер:</strong> ${params.clientData.kkmNumber || 'Не указано'}</p>
+${params.kkmType === 'evotor' ? `<p><strong>Логин ЛК Эвотор:</strong> ${params.clientData.evotorLogin || 'Не указано'}</p>` : ''}</div>
+<h2>Услуги</h2>
+<table><thead><tr><th>№</th><th>Наименование</th><th style="text-align:right">Сумма, руб.</th></tr></thead><tbody>
+${params.totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#94a3b8">Услуги не выбраны</td></tr>' : params.totalCalc.items.map((item, idx) => `<tr><td>${idx + 1}</td><td>${item.name}</td><td style="text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}
+</tbody></table>
+<p class="total">ИТОГО: ${params.totalCalc.total.toLocaleString('ru-RU')} руб.</p>
+<div class="info"><strong>ТС ПИоТ:</strong> Лицензия ТС ПИоТ оплачивается клиентом напрямую на сайте ao-esp.ru. Стоимость зависит от вида товаров.</div>
+<p style="font-size:11px;color:#94a3b8;margin-top:12px">* ${sepText}</p>
+${params.clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2><p>${params.clientData.comment}</p></div>` : ''}
+<div class="footer"><div><p><strong>Исполнитель:</strong></p><div class="signature">М.П. Подпись</div></div>
+<div><p><strong>Заказчик:</strong></p><div class="signature">Подпись</div></div></div>
+</body></html>`
 }
 
 // ============================================================================
@@ -286,6 +338,50 @@ function DoneScreen({
   const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Старая (рабочая)'
   const orderNum = Date.now().toString().slice(-6)
   const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+  const orderHtml = useMemo(() => generateOrderHtml({
+    effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc
+  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc])
+
+  const handleSaveFile = useCallback(() => {
+    const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `заказ-наряд-${orderNum}.html`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [orderHtml, orderNum])
+
+  const handleSendEmail = useCallback(() => {
+    handleSaveFile()
+    const subject = encodeURIComponent(`Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`)
+    const body = encodeURIComponent(
+      `Добрый день!\n\nФормирую заказ-наряд №${orderNum} от ${orderDate}.\n\nКлиент: ${clientData.name || 'Не указано'}\nКасса: ${effectiveKkmInfo.name} (${condLabel})\nСумма: ${totalCalc.total.toLocaleString('ru-RU')} руб.\n\nФайл заказ-наряда прикреплю отдельным сообщением.\n\nС уважением,\n${clientData.name || ''}${clientData.phone ? ', ' + clientData.phone : ''}`
+    )
+    window.open(`mailto:push@tellur.spb.ru?subject=${subject}&body=${body}`, '_self')
+  }, [orderNum, orderDate, clientData, effectiveKkmInfo, condLabel, totalCalc, handleSaveFile])
+
+  const handleWebShare = useCallback(async () => {
+    try {
+      const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
+      const file = new File([blob], `заказ-наряд-${orderNum}.html`, { type: 'text/html' })
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          title: `Заказ-наряд №${orderNum}`,
+          text: `Заказ-наряд от ${orderDate}. Сумма: ${totalCalc.total.toLocaleString('ru-RU')} руб.`,
+          files: [file]
+        })
+      } else {
+        handleSaveFile()
+      }
+    } catch {
+      // User cancelled or not supported
+      handleSaveFile()
+    }
+  }, [orderHtml, orderNum, orderDate, totalCalc, handleSaveFile])
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
@@ -359,13 +455,58 @@ function DoneScreen({
           )}
           <div className="p-3 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
             <p className="text-xs text-[#1e3a5f]">
-              <strong>ТС ПИоТ</strong> — лицензия оплачивается отдельно напрямую на сайте <strong>ao-esp.ru</strong>. Приложения Эвотор — через личный кабинет Эвотор.
+              <strong>ТС ПИоТ</strong> — лицензия оплачивается отдельно напрямую на сайте <strong>ao-esp.ru</strong>.{kkmType === 'evotor' ? ' Приложения Эвотор — через личный кабинет Эвотор.' : ''}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Кнопки связи */}
+      {/* Кнопки отправки заказа-наряда */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Download className="w-5 h-5 text-[#1e3a5f]" />
+            Отправить заказ-наряд
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 text-sm sm:text-base font-semibold" size="lg" onClick={handleWebShare}>
+            <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            Сохранить и отправить
+          </Button>
+          <p className="text-xs text-slate-400 text-center">Сохранит файл и откроет выбор приложения (почта, мессенджер и др.)</p>
+
+          <Button className="w-full bg-[#e8a817] hover:bg-[#d49a12] py-3.5 text-sm font-semibold" onClick={handleSendEmail}>
+            <Mail className="w-4 h-4 mr-2" />
+            Отправить по электронной почте
+          </Button>
+          <p className="text-xs text-slate-400 text-center">Файл сохранится, откроется почтовый клиент с адресом push@tellur.spb.ru</p>
+
+          <Separator />
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 justify-center px-4 py-3 rounded-lg bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10 active:bg-[#1e3a5f]/15 text-[#1e3a5f] font-medium text-sm transition-colors">
+              <MessageCircle className="w-4 h-4 shrink-0" />
+              <span>Написать в Макс</span>
+            </a>
+            <Button variant="outline" className="flex-1 py-3 text-sm" onClick={handleSaveFile}>
+              <Download className="w-4 h-4 mr-2" />
+              Только сохранить файл
+            </Button>
+          </div>
+          <p className="text-xs text-slate-400 text-center">Номер Макс: {MAX_PHONE_DISPLAY}</p>
+
+          <Separator />
+
+          <Button variant="ghost" className="w-full text-sm text-slate-500 py-2" onClick={onPrint}>
+            <Printer className="w-3.5 h-3.5 mr-2" />
+            Распечатать
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Контакты */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -387,16 +528,6 @@ function DoneScreen({
             </div>
           </div>
           <Separator />
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Написать в Макс</p>
-            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 justify-center px-4 py-3 rounded-lg bg-[#e8a817] hover:bg-[#d49a12] active:bg-[#c08e0e] text-white font-medium text-sm transition-colors shadow-sm">
-              <MessageCircle className="w-4 h-4 shrink-0" />
-              <span>Написать в Макс</span>
-            </a>
-            <p className="text-xs text-slate-400 text-center">Номер: {MAX_PHONE_DISPLAY}</p>
-          </div>
-          <Separator />
           <a href="mailto:push@tellur.spb.ru"
             className="flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-medium text-sm transition-colors">
             <Mail className="w-4 h-4 shrink-0" />
@@ -405,16 +536,10 @@ function DoneScreen({
         </CardContent>
       </Card>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 text-sm sm:text-base" size="lg" onClick={onPrint}>
-          <Printer className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-          Распечатать заказ-наряд
-        </Button>
-        <Button variant="outline" className="flex-1 py-4 text-sm sm:text-base" size="lg" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-          Вернуться к редактированию
-        </Button>
-      </div>
+      <Button variant="outline" className="w-full py-4 text-sm sm:text-base" size="lg" onClick={onBack}>
+        <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+        Вернуться к редактированию
+      </Button>
     </div>
   )
 }
@@ -437,6 +562,8 @@ export default function TellurServiceCalculator() {
   const [firmwareChecked, setFirmwareChecked] = useState(false)
   const [licenseChecked, setLicenseChecked] = useState(false)
   const [evotorRestore, setEvotorRestore] = useState(false)
+  const [ofdChecked, setOfdChecked] = useState(false)
+  const [ofdPeriod, setOfdPeriod] = useState<OfdPeriod>('15')
 
   const [clientData, setClientData] = useState({
     name: '', inn: '', phone: '', email: '', address: '',
@@ -454,6 +581,10 @@ export default function TellurServiceCalculator() {
   const needsFirmwareOrLicense = kkmCondition !== 'new' && kkmType !== 'evotor'
   const fwPrices = firmwareLicensePrices[effectiveKkm]
 
+  // Новая касса: ОФД обязательно, б/у и старые: по умолчанию включено, можно снять
+  const ofdLocked = kkmCondition === 'new'
+  const ofdEffective = ofdLocked || ofdChecked
+
   // Валидация
   const contactValid = clientData.name.trim() !== '' && clientData.phone.trim() !== ''
   const ecpChecked = clientData.hasEcp
@@ -468,6 +599,11 @@ export default function TellurServiceCalculator() {
   const totalCalc = useMemo(() => {
     const items: { name: string; price: number }[] = []
 
+    // Услуга регистрации ККТ в ФНС для новых касс
+    if (kkmCondition === 'new') {
+      items.push({ name: 'Регистрация ККТ в ФНС', price: 1500 })
+    }
+
     step2Services.forEach(s => {
       if (step2Selections.includes(s.id)) items.push({ name: s.name, price: s.price })
     })
@@ -478,6 +614,12 @@ export default function TellurServiceCalculator() {
         else items.push({ name: s.name, price: s.price })
       }
     })
+
+    // ОФД ТАКСКОМ
+    if (ofdEffective) {
+      const ofdInfo = OFD_PRICES[ofdPeriod]
+      items.push({ name: `ОФД ТАКСКОМ — договор на ${ofdInfo.label}`, price: ofdInfo.price })
+    }
 
     if (scannerChecked) items.push({ name: 'Сканер 2D для считывания кодов маркировки', price: scannerPrices[effectiveKkm] })
     if (firmwareChecked) items.push({ name: 'Обновление программного обеспечения кассы', price: fwPrices.firmware })
@@ -490,7 +632,7 @@ export default function TellurServiceCalculator() {
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -501,49 +643,12 @@ export default function TellurServiceCalculator() {
 
   // ---- Печать ----
   const handlePrint = () => {
-    const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Старая (работающая)'
-    const orderNum = Date.now().toString().slice(-6)
-    const printContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Заказ-наряд</title><style>
-body{font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:800px;margin:0 auto;color:#1e293b}
-h1{text-align:center;margin:0 0 5px}h2{color:#334155;border-bottom:2px solid #1e3a5f;padding-bottom:6px;font-size:15px}
-table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;font-size:13px}th{background:#f1f5f9}
-.total{font-size:17px;font-weight:bold;text-align:right;margin:16px 0}
-.footer{margin-top:30px;display:flex;justify-content:space-between}
-.signature{width:180px;border-top:1px solid #000;padding-top:4px;text-align:center;font-size:13px}
-.notice{background:#fef2f2;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
-.info{background:#fffbeb;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
-@media print{body{padding:15px}}
-</style></head><body>
-<div style="text-align:center;margin-bottom:20px"><h1>ЗАКАЗ-НАРЯД</h1>
-<p style="color:#64748b;font-size:12px;margin:2px 0">ООО &quot;Теллур-Интех&quot; | Сервисный центр кассового оборудования</p>
-<p style="font-size:16px;font-weight:bold;margin:6px 0">№ ${orderNum} от ${new Date().toLocaleDateString('ru-RU')}</p></div>
-<div class="notice"><strong>Внимание:</strong> Статья 15.12 КоАП РФ — продажа маркированных товаров без модуля ТС ПИоТ влечёт административную ответственность (штраф). Лицензия ТС ПИоТ оплачивается клиентом напрямую в ЕСП (ao-esp.ru).</div>
-<div style="margin:16px 0"><h2>Клиент</h2>
-<p><strong>Наименование:</strong> ${clientData.name || 'Не указано'}</p>
-<p><strong>ИНН:</strong> ${clientData.inn || 'Не указано'}</p>
-<p><strong>Телефон:</strong> ${clientData.phone || 'Не указано'}</p>
-<p><strong>Email:</strong> ${clientData.email || 'Не указано'}</p>
-<p><strong>Адрес:</strong> ${clientData.address || 'Не указано'}</p></div>
-<div style="margin:16px 0"><h2>Касса</h2>
-<p><strong>Тип:</strong> ${effectiveKkmInfo.name}</p>
-<p><strong>Состояние:</strong> ${condLabel}</p>
-<p><strong>Модель:</strong> ${clientData.kkmModel || 'Не указано'}</p>
-<p><strong>Заводской номер:</strong> ${clientData.kkmNumber || 'Не указано'}</p>
-${kkmType === 'evotor' ? `<p><strong>Логин ЛК Эвотор:</strong> ${clientData.evotorLogin || 'Не указано'}</p>` : ''}</div>
-<h2>Услуги</h2>
-<table><thead><tr><th>№</th><th>Наименование</th><th style="text-align:right">Сумма, руб.</th></tr></thead><tbody>
-${totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#94a3b8">Услуги не выбраны</td></tr>' : totalCalc.items.map((item, idx) => `<tr><td>${idx + 1}</td><td>${item.name}</td><td style="text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}
-</tbody></table>
-<p class="total">ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} руб.</p>
-<div class="info"><strong>ТС ПИоТ:</strong> Лицензия ТС ПИоТ оплачивается клиентом напрямую на сайте ao-esp.ru. Стоимость зависит от вида товаров.</div>
-<p style="font-size:11px;color:#94a3b8;margin-top:12px">* Лицензия ТС ПИоТ, приложения Эвотор, подписки — оплачиваются отдельно напрямую у поставщиков.</p>
-${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2><p>${clientData.comment}</p></div>` : ''}
-<div class="footer"><div><p><strong>Исполнитель:</strong></p><div class="signature">М.П. Подпись</div></div>
-<div><p><strong>Заказчик:</strong></p><div class="signature">Подпись</div></div></div>
-<script>window.print();</script></body></html>`
-
+    const printContent = generateOrderHtml({
+      effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc
+    })
+    const printWithScript = printContent.replace('</body>', '<script>window.print();</script></body>')
     const w = window.open('', '_blank')
-    if (w) { w.document.write(printContent); w.document.close() }
+    if (w) { w.document.write(printWithScript); w.document.close() }
   }
 
   // ===================================================================
@@ -587,11 +692,10 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
         )}
 
         <main className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full">
-          <StepIndicator current={currentStep} onClick={goToStep} isDone={isDone} />
 
-          <div className="mt-4 sm:mt-6">
+          <div className="mt-2 sm:mt-4">
             {/* ============================================================ */}
-            {/* ШАГ 1 */}
+            {/* ВЫБОР КАССЫ */}
             {/* ============================================================ */}
             {currentStep === 1 && !isDone && (
               <div className="max-w-2xl mx-auto space-y-4 sm:space-y-5">
@@ -599,7 +703,7 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                       <ShoppingCart className="w-5 h-5 text-[#1e3a5f] shrink-0" />
-                      Шаг 1. Выберите вашу кассу
+                      Выберите вашу кассу
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -720,6 +824,16 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                         </div>
                       </div>
                     )}
+
+                    {/* Напоминание о регистрационных услугах для новой кассы */}
+                    {kkmCondition === 'new' && (
+                      <div className="mt-4 p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-[#1e3a5f]">
+                          <Info className="w-4 h-4 shrink-0" />
+                          <span className="font-medium">Для новой кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -759,7 +873,7 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                         <Label htmlFor="ecp_check" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
                           <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 shrink-0" /> У меня есть ЭЦП или доступ к ПК, на котором установлена ЭЦП</span>
                         </Label>
-                        <p className="text-xs text-slate-500 mt-1">Для настройки маркировки потребуется электронная подпись. Если её нет — мы поможем оформить.</p>
+                        <p className="text-xs text-slate-500 mt-1">Для настройки маркировки потребуется электронная подпись. Без неё настройка невозможна — оформите заранее через удостоверяющий центр.</p>
                       </div>
                     </div>
                   </CardContent>
@@ -772,7 +886,7 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
             )}
 
             {/* ============================================================ */}
-            {/* ШАГ 2 */}
+            {/* УСЛУГИ */}
             {/* ============================================================ */}
             {currentStep === 2 && !isDone && (
               <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
@@ -806,15 +920,69 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                   )
                 })}
 
+                {/* ОФД ТАКСКОМ */}
+                <Card className={ofdEffective ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
+                  <CardContent className="pt-4 sm:pt-5">
+                    <div className="flex items-start gap-3">
+                      <Checkbox id="ofd_check"
+                        checked={ofdEffective}
+                        disabled={ofdLocked}
+                        onCheckedChange={(c) => setOfdChecked(c as boolean)}
+                        className="w-5 h-5 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Label htmlFor="ofd_check" className={`font-semibold text-sm cursor-pointer leading-snug ${ofdLocked ? 'text-[#1e3a5f]' : ''}`}>
+                              ОФД ТАКСКОМ
+                            </Label>
+                            <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs shrink-0">Партнёр</Badge>
+                            <HintButton hintKey="ofd_takskom" />
+                          </div>
+                        </div>
+                        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                          Оператор фискальных данных — обязательное подключение для работы кассы. Мы — официальные партнёры ТАКСКОМ, предоставляем скидку.
+                          {ofdLocked && <span className="font-medium text-[#1e3a5f]"> Для новой кассы подключение ОФД обязательно.</span>}
+                        </p>
+                        {ofdEffective && (
+                          <div className="mt-3 space-y-2">
+                            <RadioGroup value={ofdPeriod} onValueChange={(v) => setOfdPeriod(v as OfdPeriod)} className="space-y-2">
+                              {(['15', '36'] as const).map(period => {
+                                const info = OFD_PRICES[period]
+                                return (
+                                  <div key={period} className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                    <RadioGroupItem value={period} id={`ofd_${period}`} />
+                                    <Label htmlFor={`ofd_${period}`} className="flex-1 cursor-pointer text-sm">
+                                      <span className="font-medium text-[#1e3a5f]">Договор на {info.label}</span>
+                                      <span className="ml-2 inline-flex items-center gap-1.5">
+                                        <span className="font-bold text-[#1e3a5f] text-base">{info.price.toLocaleString('ru-RU')} ₽</span>
+                                        <span className="text-slate-400 line-through text-xs">{info.originalPrice.toLocaleString('ru-RU')} ₽</span>
+                                      </span>
+                                      <span className="ml-1.5 text-xs text-green-600 font-medium">скидка</span>
+                                    </Label>
+                                  </div>
+                                )
+                              })}
+                            </RadioGroup>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* ТС ПИоТ — инфо */}
                 <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
                   <CardContent className="pt-4 sm:pt-5">
                     <div className="flex items-start gap-3">
                       <Info className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8a817] shrink-0 mt-0.5" />
-                      <div>
-                        <h3 className="font-bold text-[#1e3a5f] text-sm">Лицензия ТС ПИоТ — оплачивается вами напрямую</h3>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-bold text-[#1e3a5f] text-sm">Лицензия ТС ПИоТ — оплачивается вами напрямую</h3>
+                          <HintButton hintKey="tspiot" />
+                        </div>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
                           Лицензия на товароучётную систему продаётся через официальный портал <strong>ao-esp.ru</strong>.
-                          Стоимость зависит от вида ваших товаров. Мы не продаём эту лицензию — помогаем подключить и настроить.
+                          Стоимость зависит от вида ваших товаров.
                         </p>
                       </div>
                     </div>
@@ -829,7 +997,7 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
             )}
 
             {/* ============================================================ */}
-            {/* ШАГ 3 */}
+            {/* ДОПОЛНИТЕЛЬНО */}
             {/* ============================================================ */}
             {currentStep === 3 && !isDone && (
               <div className="max-w-3xl mx-auto">
@@ -858,6 +1026,27 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                       </CardContent>
                     </Card>
 
+                    {/* Регистрация ККТ в ФНС — только для новых касс, заблокировано */}
+                    {kkmCondition === 'new' && (
+                      <Card className="border-[#1e3a5f]/30 bg-[#1e3a5f]/5">
+                        <CardContent className="pt-4 sm:pt-5">
+                          <div className="flex items-start gap-3">
+                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-5 h-5 mt-0.5 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Label htmlFor="fns_reg" className="font-semibold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
+                                  <HintButton hintKey="fns_registration" />
+                                </div>
+                                <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">1 500 руб.</span>
+                              </div>
+                              <p className="text-xs sm:text-sm text-slate-500 mt-1">Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение до подтверждения — обязательно для новой кассы</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
                     {/* Карточки товаров */}
                     <Card className={productCardCount > 0 ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
                       <CardContent className="pt-4 sm:pt-5">
@@ -873,7 +1062,7 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                                 {productCardCount > 0 ? `${(getProductCardPrice(productCardCount) * productCardCount).toLocaleString('ru-RU')} руб.` : ''}
                               </span>
                             </div>
-                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Название, привязка кода маркировки (DM), заполнение полей</p>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Карточки создаются на кассовом аппарате. При массовой заливке через ПК могут потребоваться доп. приложения от производителя. Не применяется для ФР Атол и ФР Штрих-М.</p>
                             {productCardCount > 0 && (
                               <div className="mt-3 space-y-2">
                                 <div className="flex items-center gap-2">
@@ -927,30 +1116,6 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                         </Card>
                       )
                     })}
-
-                    {/* Помощь с установкой приложений Эвотор */}
-                    {kkmType === 'evotor' && (() => {
-                      const service = evotorAppInstallService
-                      const selected = step3Selections.includes(service.id)
-                      return (
-                        <Card key={service.id} className={selected ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                          <CardContent className="pt-4 sm:pt-5">
-                            <div className="flex items-start gap-3">
-                              <Checkbox id={service.id} checked={selected}
-                                onCheckedChange={() => setStep3Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
-                                className="w-5 h-5 mt-0.5 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                  <Label htmlFor={service.id} className="font-semibold text-sm cursor-pointer leading-snug">{service.name}</Label>
-                                  <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
-                                </div>
-                                <p className="text-xs sm:text-sm text-slate-500 mt-1">{service.description}</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })()}
 
                     {/* Данные кассы */}
                     <Card>
@@ -1031,7 +1196,9 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                             <span className="font-bold text-xl sm:text-2xl text-[#1e3a5f]">{totalCalc.total.toLocaleString('ru-RU')} ₽</span>
                           </div>
                           <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
-                          <p className="text-xs text-slate-400">ТС ПИоТ, приложения Эвотор — отдельно</p>
+                          <p className="text-xs text-slate-400">
+                            {kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — отдельно' : 'ТС ПИоТ — оплачивается отдельно'}
+                          </p>
                         </CardContent>
                       </Card>
 
@@ -1040,7 +1207,7 @@ ${clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2>
                         Готово
                       </Button>
                       <Button variant="outline" className="w-full text-sm" onClick={() => {
-                        setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false)
+                        setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false)
                       }}>Сбросить всё</Button>
 
                       <Card className="bg-[#1e3a5f]/5">

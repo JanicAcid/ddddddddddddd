@@ -116,12 +116,12 @@ export type KkmType = keyof typeof kkmTypes
 
 export const scannerPrices: Record<KkmType, number> = {
   mercury: 4000,
-  atol: 4200,
-  sigma: 4300,
+  atol: 4000,
+  sigma: 4000,
   shuttle: 4000,
-  pioneer: 3800,
+  pioneer: 4000,
   aqsi: 4000,
-  evotor: 4500
+  evotor: 4000
 }
 
 // ============================================================================

@@ -50,7 +50,44 @@ export const kkmTypes: Record<string, KkmTypeConfig> = {
     shortName: 'Сигма',
     description: 'Смарт-терминалы Сигма (производство компании Атол)',
     hidden: true,
-    features: ['Сенсорный экран', 'Облачная касса', 'Приложения из магазина']
+    features: ['Сенсорный экран', 'Облачная касса', 'Приложения и подписки из магазина'],
+    specialNote: {
+      title: 'Для работы Сигмы с маркировкой нужны подписки Атол',
+      content: 'Сигма — это касса-планшет от Атол. Для работы с маркировкой, алкоголем и учётом товаров необходимо оформить подписки в магазине Атол. Они оплачиваются отдельно напрямую у Атол.',
+      apps: [
+        {
+          name: 'Подписка «Маркировка»',
+          purpose: 'Обязательная подписка для работы с кодами маркировки (сигареты, обувь, молоко, вода, пиво и др.). Без неё касса Сигма не пробьёт чек по маркированному товару.',
+          required: true,
+          link: 'https://sigma.online/atol/subscription/marking',
+          price: 299
+        },
+        {
+          name: 'Подписка «УТМ+» (ЕГАИС)',
+          purpose: 'Для продажи алкоголя. Обеспечивает связь с системой ЕГАИС — автоматическое списание алкоголя при продаже.',
+          required: true,
+          condition: 'Только при продаже алкоголя',
+          link: 'https://sigma.online/atol/subscription/utm',
+          price: 199
+        },
+        {
+          name: 'Подписка «Управление ассортиментом»',
+          purpose: 'Полноценный учёт товаров: создание и редактирование номенклатуры, загрузка из Excel, массовая переоценка, печать ценников, контроль продаж и остатков, работа с маркировкой, списание пива в ЕГАИС.',
+          required: false,
+          condition: 'Для удобного ведения учёта товаров',
+          link: 'https://sigma.online/atol/subscription/inventory',
+          price: 399
+        },
+        {
+          name: 'Подписка «Облачная касса»',
+          purpose: 'Облачная касса для удалённого управления: мониторинг продаж, настройки, обновления.',
+          required: false,
+          condition: 'Для удалённого управления кассой',
+          link: 'https://sigma.online/atol/subscription/cloud',
+          price: 199
+        }
+      ]
+    }
   },
   shuttle: {
     id: 'shuttle',
@@ -132,6 +169,63 @@ export interface FirmwareLicensePrices {
   firmware: number   // обновление ПО (прошивка)
   license: number    // лицензия
 }
+
+// ============================================================================
+// ПОДПИСКИ СИГМА (РРЦ Атол)
+// ============================================================================
+
+export interface SigmaSubscription {
+  id: string
+  name: string
+  purpose: string
+  required: boolean
+  condition?: string
+  pricePerMonth: number
+  pricePerYear: number
+  link: string
+}
+
+export const sigmaSubscriptions: SigmaSubscription[] = [
+  {
+    id: 'sigma_marking',
+    name: 'Подписка «Маркировка»',
+    purpose: 'Обязательная подписка для работы с кодами маркировки — сигареты, обувь, молоко, вода, пиво и др. Без неё касса Сигма не пробьёт чек по маркированному товару.',
+    required: true,
+    pricePerMonth: 299,
+    pricePerYear: 2990,
+    link: 'https://sigma.online/atol/subscription/marking'
+  },
+  {
+    id: 'sigma_utm',
+    name: 'Подписка «УТМ+» (ЕГАИС)',
+    purpose: 'Для продажи алкоголя. Обеспечивает связь с ЕГАИС — автоматическое списание алкоголя при продаже. Без неё касса не сможет пробивать чеки по алкогольной продукции.',
+    required: true,
+    condition: 'Только при продаже алкоголя',
+    pricePerMonth: 199,
+    pricePerYear: 1990,
+    link: 'https://sigma.online/atol/subscription/utm'
+  },
+  {
+    id: 'sigma_inventory',
+    name: 'Подписка «Управление ассортиментом»',
+    purpose: 'Полноценный учёт товаров: создание и редактирование номенклатуры, загрузка из Excel, массовая переоценка, печать ценников, контроль продаж и остатков, работа с маркировкой, списание пива в ЕГАИС.',
+    required: false,
+    condition: 'Для удобного ведения учёта товаров',
+    pricePerMonth: 399,
+    pricePerYear: 3990,
+    link: 'https://sigma.online/atol/subscription/inventory'
+  },
+  {
+    id: 'sigma_cloud',
+    name: 'Подписка «Облачная касса»',
+    purpose: 'Облачная касса для удалённого управления: мониторинг продаж, настройки, обновления.',
+    required: false,
+    condition: 'Для удалённого управления кассой',
+    pricePerMonth: 199,
+    pricePerYear: 1990,
+    link: 'https://sigma.online/atol/subscription/cloud'
+  }
+]
 
 export const firmwareLicensePrices: Record<KkmType, FirmwareLicensePrices> = {
   mercury: { firmware: 3000, license: 2900 },

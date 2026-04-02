@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -599,6 +599,13 @@ export default function TellurServiceCalculator() {
 
   const [showBanner, setShowBanner] = useState(true)
 
+  // Авто-скрытие баннера ТС ПИоТ через 1 минуту
+  useEffect(() => {
+    if (!showBanner) return
+    const timer = setTimeout(() => setShowBanner(false), 60000)
+    return () => clearTimeout(timer)
+  }, [showBanner])
+
   const effectiveKkm: KkmType = (kkmType === 'atol' && sigmaSelected) ? 'sigma' : kkmType
   const currentKkmInfo = kkmTypes[kkmType]
   const effectiveKkmInfo = kkmTypes[effectiveKkm]
@@ -750,19 +757,7 @@ export default function TellurServiceCalculator() {
                 </CardContent>
               </Card>
             )}
-            {ecpChecked && (
-              <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
-                <span className="text-sm text-green-700 font-medium">ЭЦП имеется — можно продолжить</span>
-                <button
-                  type="button"
-                  onClick={() => setClientData(prev => ({ ...prev, hasEcp: false }))}
-                  className="ml-auto text-xs text-slate-400 hover:text-slate-600 underline"
-                >
-                  Изменить
-                </button>
-              </div>
-            )}
+
 
             {/* ============================================================ */}
             {/* ВЫБОР КАССЫ */}
@@ -798,6 +793,27 @@ export default function TellurServiceCalculator() {
                           <div className="min-w-0">
                             <Label htmlFor="sigmaCheck" className="cursor-pointer font-medium text-[#1e3a5f] text-sm">У меня касса Сигма (производство Атол)</Label>
                             <p className="text-xs text-slate-500 mt-0.5">Смарт-терминалы под брендом Сигма выпускаются компанией Атол</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Атол — согласие для действующих касс */}
+                    {kkmType === 'atol' && kkmCondition === 'old' && (
+                      <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
+                        <div className="flex items-start gap-2">
+                          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
+                            <p className="text-xs text-blue-600 mt-1">Для обслуживания вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется ваше согласие — скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
+                            <a
+                              href="/soglasiye-atol.pdf"
+                              download
+                              className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
+                            >
+                              <Download className="w-4 h-4" />
+                              Скачать согласие (PDF)
+                            </a>
                           </div>
                         </div>
                       </div>
@@ -1421,6 +1437,23 @@ export default function TellurServiceCalculator() {
             )}
           </div>
         </main>
+
+        {/* Напоминалка об ЭЦП — после подтверждения */}
+        {ecpChecked && !isDone && (
+          <div className="border-t border-[#1e3a5f]/10 bg-[#f0fdf4]">
+            <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+              <span className="text-xs text-green-700">ЭЦП подтверждена — настройка возможна при наличии ЭЦП или доступе к ПК с установленной подписью</span>
+              <button
+                type="button"
+                onClick={() => setClientData(prev => ({ ...prev, hasEcp: false }))}
+                className="ml-auto text-xs text-slate-400 hover:text-slate-600 shrink-0"
+              >
+                изменить
+              </button>
+            </div>
+          </div>
+        )}
 
         <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex items-center justify-center gap-3">

@@ -897,22 +897,26 @@ export default function TellurServiceCalculator() {
                 {step2Services.map(service => {
                   const desc = service.id === 'marking_setup' ? markingDesc : service.description
                   const selected = step2Selections.includes(service.id)
+                  // Для новых касс перерегистрация недоступна (регистрация — автоматически на шаге 3)
+                  const isLocked = kkmCondition === 'new' && service.id === 'fns_reregistration'
                   return (
                     <Card key={service.id} className={selected ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
                       <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <Checkbox id={service.id} checked={selected}
+                            disabled={isLocked}
                             onCheckedChange={() => setStep2Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
                             className="w-5 h-5 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Label htmlFor={service.id} className="font-semibold text-sm cursor-pointer leading-snug">{service.name}</Label>
+                                <Label htmlFor={service.id} className={`font-semibold text-sm leading-snug ${isLocked ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
                                 {service.hintKey && <HintButton hintKey={service.hintKey} />}
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">{desc}</p>
+                            {isLocked && <p className="text-xs text-[#1e3a5f] font-medium mt-1">Для новой кассы недоступно — регистрация ККТ включена автоматически на следующем шаге</p>}
                           </div>
                         </div>
                       </CardContent>

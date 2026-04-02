@@ -14,7 +14,7 @@ import {
   ShoppingCart, CreditCard, AlertTriangle,
   ScanLine, ArrowRight, ArrowLeft,
   HelpCircle, Phone, Mail, ExternalLink, MessageCircle, CheckCheck, ShieldCheck,
-  X, Download
+  X, Download, Send, Check, CheckCircle
 } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices,
@@ -41,6 +41,7 @@ const PHONES = [
 ]
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
+const MAX_PHONE_LINK = '+79219324163'
 const MAX_LINK = 'https://max.ru/+79219324163'
 
 // ============================================================================
@@ -132,6 +133,12 @@ const hints: Record<string, HintData> = {
     why: 'Без регистрации в ФНС касса юридически не существует для налоговой — ни один чек не будет принят. Это как открыть магазин без лицензии: всё оборудование есть, но работать нельзя. Без этой процедуры новая касса — просто «кирпич».',
     when: 'Обязательно для всех новых касс. Без регистрации касса не начнёт работу — ни один чек не пройдёт.',
     example: 'Вы купили новую кассу Меркурий-185Ф. Привозите к нам (или мы выезжаем): подготавливаем заявление на сайте ФНС, подписываем ЭЦП, подаём и отслеживаем статус. Через 1-2 дня ФНС подтверждает регистрацию — касса готова к работе.'
+  },
+  fn_product: {
+    what: 'Фискальный накопитель (ФН) — это чип памяти внутри кассы, который хранит все фискальные данные о проведённых платежах. Каждый ФН имеет ограниченный срок службы и подлежит обязательной замене по истечении этого срока или при переполнении памяти.',
+    why: 'Без работающего ФН касса не может пробивать чеки и передавать данные в ФНС. Замена ФН — обязательная процедура при перерегистрации или истечении срока действия текущего накопителя.',
+    when: 'При регистрации новой кассы, перерегистрации, истечении срока ФН (15 или 36 месяцев), или переполнении памяти накопителя.',
+    example: 'ФН на 15 месяцев требуется для магазинов смешанных товаров (общая торговля). ФН на 36 месяцев — для предприятий, продающих подакцизные товары (алкоголь, табачная продукция). Выбор срока зависит от вида вашей деятельности по закону.'
   },
   ofd_takskom: {
     what: 'ОФД (оператор фискальных данных) — это организация, которая принимает, хранит и передаёт в налоговую все фискальные данные с вашей кассы. Без ОФД касса не работает. Мы — официальные партнёры ОФД ТАКСКОМ, поэтому предлагаем выгодные условия с партнёрской скидкой.',
@@ -333,7 +340,7 @@ function generateOrderHtml(params: {
   effectiveKkmInfo: { name: string }
   kkmCondition: string
   kkmType: string
-  clientData: { name: string; inn: string; phone: string; email: string; address: string; kkmModel: string; kkmNumber: string; comment: string; evotorLogin: string }
+  clientData: { name: string; inn: string; phone: string; email: string; address: string; kkmModel: string; kkmNumber: string; comment: string; evotorLogin: string; sellsExcise: boolean }
   totalCalc: { items: { name: string; price: number }[]; total: number }
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Старая (работающая)'
@@ -365,7 +372,8 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 <p><strong>Состояние:</strong> ${condLabel}</p>
 <p><strong>Модель:</strong> ${params.clientData.kkmModel || 'Не указано'}</p>
 <p><strong>Заводской номер:</strong> ${params.clientData.kkmNumber || 'Не указано'}</p>
-${params.kkmType === 'evotor' ? `<p><strong>Логин ЛК Эвотор:</strong> ${params.clientData.evotorLogin || 'Не указано'}</p>` : ''}</div>
+${params.kkmType === 'evotor' ? `<p><strong>Логин ЛК Эвотор:</strong> ${params.clientData.evotorLogin || 'Не указано'}</p>` : ''}
+<p><strong>Подакцизные товары:</strong> ${params.clientData.sellsExcise ? 'Да' : 'Нет'}</p></div>
 <h2>Услуги</h2>
 <table><thead><tr><th>№</th><th>Наименование</th><th style="text-align:right">Сумма, руб.</th></tr></thead><tbody>
 ${params.totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#94a3b8">Услуги не выбраны</td></tr>' : params.totalCalc.items.map((item, idx) => `<tr><td>${idx + 1}</td><td>${item.name}</td><td style="text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}
@@ -389,7 +397,7 @@ function DoneScreen({
 }: {
   effectiveKkmInfo: { name: string }
   kkmCondition: string
-  clientData: { name: string; inn: string; phone: string; email: string; address: string; kkmModel: string; kkmNumber: string; comment: string; evotorLogin: string }
+  clientData: { name: string; inn: string; phone: string; email: string; address: string; kkmModel: string; kkmNumber: string; comment: string; evotorLogin: string; sellsExcise: boolean }
   totalCalc: { items: { name: string; price: number }[]; total: number }
   onBack: () => void
   onPrint: () => void
@@ -521,78 +529,31 @@ function DoneScreen({
         </CardContent>
       </Card>
 
-      {/* Кнопки отправки заказа-наряда */}
+      {/* Отправка */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Download className="w-5 h-5 text-[#1e3a5f]" />
-            Отправить заказ-наряд
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 text-sm sm:text-base font-semibold" size="lg" onClick={handleWebShare}>
-            <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Сохранить и отправить
-          </Button>
-          <p className="text-xs text-slate-400 text-center">Сохранит файл и откроет выбор приложения (почта, мессенджер и др.)</p>
-
-          <Button className="w-full bg-[#e8a817] hover:bg-[#d49a12] py-3.5 text-sm font-semibold" onClick={handleSendEmail}>
-            <Mail className="w-4 h-4 mr-2" />
-            Отправить по электронной почте
-          </Button>
-          <p className="text-xs text-slate-400 text-center">Файл сохранится, откроется почтовый клиент с адресом push@tellur.spb.ru</p>
-
-          <Separator />
-
+        <CardContent className="pt-5 space-y-3">
           <div className="flex flex-col sm:flex-row gap-2">
-            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 justify-center px-4 py-3 rounded-lg bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10 active:bg-[#1e3a5f]/15 text-[#1e3a5f] font-medium text-sm transition-colors">
-              <MessageCircle className="w-4 h-4 shrink-0" />
-              <span>Написать в Макс</span>
-            </a>
-            <Button variant="outline" className="flex-1 py-3 text-sm" onClick={handleSaveFile}>
-              <Download className="w-4 h-4 mr-2" />
-              Только сохранить файл
+            <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-3.5 text-sm font-semibold" size="lg" onClick={handleWebShare}>
+              <Send className="w-4 h-4 mr-2" />
+              Отправить
+            </Button>
+            <Button variant="outline" className="flex-1 py-3.5 text-sm" onClick={onPrint}>
+              <Printer className="w-4 h-4 mr-2" />
+              Распечатать
             </Button>
           </div>
-          <p className="text-xs text-slate-400 text-center">Номер Макс: {MAX_PHONE_DISPLAY}</p>
-
           <Separator />
-
-          <Button variant="ghost" className="w-full text-sm text-slate-500 py-2" onClick={onPrint}>
-            <Printer className="w-3.5 h-3.5 mr-2" />
-            Распечатать
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Контакты */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Phone className="w-5 h-5 text-[#1e3a5f]" />
-            Свяжитесь с нами
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Позвонить</p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              {PHONES.map((ph) => (
-                <a key={ph.href} href={ph.href}
-                  className="flex items-center gap-2 justify-center px-4 py-3 rounded-lg bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 active:bg-[#1e3a5f]/80 text-white font-medium text-sm transition-colors shadow-sm">
-                  <Phone className="w-4 h-4 shrink-0" />
-                  <span>{ph.label}</span>
-                </a>
-              ))}
-            </div>
+          <div className="flex flex-col sm:flex-row gap-2 text-sm">
+            <a href={`tel:${MAX_PHONE_LINK}`} className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
+              <Phone className="w-4 h-4" />
+              {MAX_PHONE_DISPLAY}
+            </a>
+            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
+              <MessageCircle className="w-4 h-4" />
+              Написать в Макс
+            </a>
           </div>
-          <Separator />
-          <a href="mailto:push@tellur.spb.ru"
-            className="flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-medium text-sm transition-colors">
-            <Mail className="w-4 h-4 shrink-0" />
-            <span>push@tellur.spb.ru</span>
-          </a>
         </CardContent>
       </Card>
 
@@ -625,11 +586,15 @@ export default function TellurServiceCalculator() {
   const [ofdChecked, setOfdChecked] = useState(false)
   const [ofdPeriod, setOfdPeriod] = useState<OfdPeriod>('15')
   const [ofdProvider, setOfdProvider] = useState('takskom')
+  const [fnChecked, setFnChecked] = useState(false)
+  const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
+  const [fnActivityType, setFnActivityType] = useState('general')
 
   const [clientData, setClientData] = useState({
     name: '', inn: '', phone: '', email: '', address: '',
     kkmModel: '', kkmNumber: '', fnNumber: '', comment: '',
-    evotorLogin: '', evotorPassword: '', hasEcp: false
+    evotorLogin: '', evotorPassword: '', hasEcp: false,
+    fnActivityType: '', sellsExcise: false
   })
 
   const [showBanner, setShowBanner] = useState(true)
@@ -647,7 +612,7 @@ export default function TellurServiceCalculator() {
   const ofdEffective = ofdLocked || ofdChecked
 
   // Валидация
-  const contactValid = clientData.name.trim() !== '' && clientData.phone.trim() !== ''
+  const contactValid = clientData.phone.trim() !== ''
   const ecpChecked = clientData.hasEcp
   const canGoStep2 = kkmType !== '' && kkmCondition !== '' && contactValid && ecpChecked
   const canGoStep3 = step2Selections.length > 0
@@ -676,6 +641,11 @@ export default function TellurServiceCalculator() {
       }
     })
 
+    // ФН — фискальный накопитель
+    if (fnChecked) {
+      items.push({ name: `Фискальный накопитель (ФН) — ${fnPeriod === '15' ? '15' : '36'} мес. (вид: ${fnActivityType === 'general' ? 'общая торговля' : 'подакцизная продукция'}) — цена уточняется менеджером`, price: 0 })
+    }
+
     // ОФД
     if (ofdEffective) {
       const provider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
@@ -694,7 +664,7 @@ export default function TellurServiceCalculator() {
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -756,10 +726,49 @@ export default function TellurServiceCalculator() {
         <main className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full">
 
           <div className="mt-2 sm:mt-4">
+            {/* Уведомление об ЭЦП */}
+            {!ecpChecked && (
+              <Card className="border-amber-300 bg-amber-50">
+                <CardContent className="pt-4 sm:pt-5">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-amber-800 text-sm sm:text-base">Наличие электронной подписи (ЭЦП)</h3>
+                      <p className="text-xs sm:text-sm text-amber-700 mt-1">Для работы с маркировкой требуется ЭЦП. Если у вас нет ЭЦП — оформите её заранее через удостоверяющий центр.</p>
+                      <div className="mt-3">
+                        <Button
+                          type="button"
+                          className="bg-amber-600 hover:bg-amber-700 text-white"
+                          onClick={() => setClientData(prev => ({ ...prev, hasEcp: true }))}
+                        >
+                          <Check className="w-4 h-4 mr-2" />
+                          У меня есть ЭЦП
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {ecpChecked && (
+              <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
+                <span className="text-sm text-green-700 font-medium">ЭЦП имеется — можно продолжить</span>
+                <button
+                  type="button"
+                  onClick={() => setClientData(prev => ({ ...prev, hasEcp: false }))}
+                  className="ml-auto text-xs text-slate-400 hover:text-slate-600 underline"
+                >
+                  Изменить
+                </button>
+              </div>
+            )}
+
             {/* ============================================================ */}
             {/* ВЫБОР КАССЫ */}
             {/* ============================================================ */}
             {currentStep === 1 && !isDone && (
+              <div className={ecpChecked ? '' : 'opacity-50 pointer-events-none relative'}>
               <div className="max-w-2xl mx-auto space-y-4 sm:space-y-5">
                 <Card>
                   <CardHeader>
@@ -910,40 +919,25 @@ export default function TellurServiceCalculator() {
                   <CardContent className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <Label className="text-sm">Наименование / ФИО <span className="text-red-500">*</span></Label>
+                        <Label className="text-sm">Наименование / ФИО</Label>
                         <Input value={clientData.name} onChange={(e) => setClientData({...clientData, name: e.target.value})} placeholder="ООО Ромашка" className="mt-1" />
-                        {clientData.name.trim() === '' && <p className="text-xs text-red-500 mt-0.5">Обязательное поле</p>}
                       </div>
                       <div>
                         <Label className="text-sm">Телефон <span className="text-red-500">*</span></Label>
                         <Input value={clientData.phone} onChange={(e) => setClientData({...clientData, phone: e.target.value})} placeholder="+7 (999) 123-45-67" className="mt-1" />
                         {clientData.phone.trim() === '' && <p className="text-xs text-red-500 mt-0.5">Обязательное поле</p>}
                       </div>
-                      <div><Label className="text-sm">Электронная почта <span className="text-red-500">*</span></Label><Input type="email" value={clientData.email} onChange={(e) => setClientData({...clientData, email: e.target.value})} placeholder="info@company.ru" className="mt-1" /></div>
+                      <div><Label className="text-sm">Электронная почта</Label><Input type="email" value={clientData.email} onChange={(e) => setClientData({...clientData, email: e.target.value})} placeholder="info@company.ru" className="mt-1" /></div>
                       <div><Label className="text-sm">ИНН</Label><Input value={clientData.inn} onChange={(e) => setClientData({...clientData, inn: e.target.value})} placeholder="1234567890" className="mt-1" /></div>
                     </div>
                     <div><Label className="text-sm">Адрес</Label><Input value={clientData.address} onChange={(e) => setClientData({...clientData, address: e.target.value})} placeholder="г. Москва, ул. Примерная, д. 1" className="mt-1" /></div>
                   </CardContent>
                 </Card>
 
-                {/* ЭЦП */}
-                <Card>
-                  <CardContent className="pt-5">
-                    <div className="flex items-start gap-3 p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
-                      <Checkbox id="ecp_check" checked={clientData.hasEcp} onCheckedChange={(c) => setClientData({...clientData, hasEcp: c as boolean})} className="w-5 h-5 mt-0.5 shrink-0" />
-                      <div className="min-w-0">
-                        <Label htmlFor="ecp_check" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
-                          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 shrink-0" /> У меня есть ЭЦП или доступ к ПК, на котором установлена ЭЦП</span>
-                        </Label>
-                        <p className="text-xs text-slate-500 mt-1">Для настройки маркировки потребуется электронная подпись. Без неё настройка невозможна — оформите заранее через удостоверяющий центр.</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 sm:py-5 text-sm sm:text-base" size="lg" onClick={() => goToStep(2)} disabled={!canGoStep2}>
                   Далее — выбор услуг <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                 </Button>
+              </div>
               </div>
             )}
 
@@ -961,30 +955,64 @@ export default function TellurServiceCalculator() {
                   const selected = step2Selections.includes(service.id)
                   // Для новых касс перерегистрация недоступна (регистрация — автоматически на шаге 3)
                   const isLocked = kkmCondition === 'new' && service.id === 'fns_reregistration'
+                  // Взаимоисключающие услуги: Полная vs Частичная настройка маркировки
+                  const isMutuallyDisabled = (
+                    (service.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
+                    (service.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
+                  )
+                  const mutuallyExclusiveId = service.id === 'partial_marketing_setup' ? 'Полная настройка маркировки' : 'Частичная настройка маркировки'
+                  const disabled = isLocked || isMutuallyDisabled
                   return (
                     <Card key={service.id} className={selected ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
                       <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <Checkbox id={service.id} checked={selected}
-                            disabled={isLocked}
-                            onCheckedChange={() => setStep2Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
+                            disabled={disabled}
+                            onCheckedChange={() => {
+                              const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
+                              setStep2Selections(prev => {
+                                const without = mutuallyExclusive ? prev.filter(x => x !== mutuallyExclusive) : prev
+                                return without.includes(service.id) ? without.filter(x => x !== service.id) : [...without, service.id]
+                              })
+                            }}
                             className="w-5 h-5 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Label htmlFor={service.id} className={`font-semibold text-sm leading-snug ${isLocked ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
+                                <Label htmlFor={service.id} className={`font-semibold text-sm leading-snug ${disabled ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
                                 {service.hintKey && <HintButton hintKey={service.hintKey} />}
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">{desc}</p>
                             {isLocked && <p className="text-xs text-[#1e3a5f] font-medium mt-1">Для новой кассы недоступно — регистрация ККТ включена автоматически на следующем шаге</p>}
+                            {isMutuallyDisabled && <p className="text-xs text-amber-600 font-medium mt-1">Невозможно выбрать одновременно с «{mutuallyExclusiveId}»</p>}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   )
                 })}
+
+                {/* Подакцизные товары */}
+                {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new') && (
+                  <Card className="border-orange-200 bg-orange-50/50">
+                    <CardContent className="pt-4 sm:pt-5">
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="excise_check"
+                          checked={clientData.sellsExcise}
+                          onCheckedChange={(c) => setClientData(prev => ({ ...prev, sellsExcise: !!c }))}
+                          className="w-5 h-5 mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">
+                            Планируете продавать подакцизные товары?
+                          </Label>
+                          <p className="text-xs sm:text-sm text-orange-600 mt-1">Алкоголь, табачная продукция, пиво — если да, это повлияет на выбор ФН и настройки</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* ОФД */}
                 {(() => {
@@ -1095,6 +1123,59 @@ export default function TellurServiceCalculator() {
                     <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg text-xs sm:text-sm">
                       <p className="text-[#1e3a5f]"><strong>Касса:</strong> {effectiveKkmInfo.name} | <strong>Основные услуги:</strong> {step2Selections.length} шт.</p>
                     </div>
+
+                    {/* ФН — фискальный накопитель */}
+                    <Card className={fnChecked ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
+                      <CardContent className="pt-4 sm:pt-5">
+                        <div className="flex items-start gap-3">
+                          <Checkbox id="fn_product" checked={fnChecked}
+                            onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') } }}
+                            className="w-5 h-5 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Label htmlFor="fn_product" className="font-semibold text-sm cursor-pointer leading-snug">Фискальный накопитель (ФН)</Label>
+                                <HintButton hintKey="fn_product" />
+                              </div>
+                              <span className="text-xs text-slate-400 shrink-0">цена уточняется</span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Обязательный чип памяти кассы. Срок зависит от вида деятельности</p>
+                            {fnChecked && (
+                              <div className="mt-3 space-y-3">
+                                {/* Вид деятельности */}
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Вид деятельности</Label>
+                                  <RadioGroup value={fnActivityType} onValueChange={(v) => {
+                                    setFnActivityType(v as string)
+                                    setFnPeriod(v === 'excise' ? '36' : '15')
+                                  }} className="space-y-2">
+                                    <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                      <RadioGroupItem value="general" id="fn_general" />
+                                      <Label htmlFor="fn_general" className="flex-1 cursor-pointer text-sm">
+                                        <span className="font-medium">Общая торговля</span>
+                                        <span className="ml-2 text-xs text-slate-400">— ФН на 15 месяцев</span>
+                                      </Label>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                      <RadioGroupItem value="excise" id="fn_excise" />
+                                      <Label htmlFor="fn_excise" className="flex-1 cursor-pointer text-sm">
+                                        <span className="font-medium">Подакцизная продукция</span>
+                                        <span className="ml-2 text-xs text-slate-400">— ФН на 36 месяцев (алкоголь, табак)</span>
+                                      </Label>
+                                    </div>
+                                  </RadioGroup>
+                                </div>
+                                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                                  <p className="text-xs text-amber-700">
+                                    <strong>ФН на {fnPeriod} мес.</strong> — стоимость уточняется у менеджера по телефону, так как цена на ФН регулярно меняется
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
                     {/* Сканер */}
                     <Card className={scannerChecked ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>

@@ -62,10 +62,16 @@ const hints: Record<string, HintData> = {
     example: 'У вас работает касса Атол. Вы решили продавать сигареты (маркировка). Мы заходим на сайт ФНС, аккуратно заполняем заявление: добавляем признак маркировки, обновляем формат ФФД до версии 1.2, подписываем ЭЦП и подаём. Через 1-2 дня после одобрения ФНС касса получает право работать с маркировкой.'
   },
   marking_setup: {
-    what: 'Это самая сложная и ответственная часть подключения маркировки. Мы последовательно настраиваем и связываем между собой 6 различных систем: ЭДО (электронный документооборот для приёмки накладных), Честный ЗНАК (государственный реестр маркировки), вашу кассу, ТС ПИоТ (товароучётная система), а также проводим подачу заявления в ФНС со сменой формата ФФД. Для касс Эвотор дополнительно настраиваем личный кабинет. Каждая система имеет свои настройки, ключи доступа и особенности — ошибиться в связывании означает, что касса просто не будет пробивать маркированные чеки.',
+    what: 'Это самая сложная и ответственная часть подключения маркировки. Мы последовательно настраиваем и связываем между собой 6 различных систем: ЭДО (электронный документооборот для приёмки накладных), Честный ЗНАК (государственный реестр маркировки), вашу кассу, ТС ПИоТ (Единый Сервисный Модуль), а также проводим подачу заявления в ФНС со сменой формата ФФД. Для касс Эвотор дополнительно настраиваем личный кабинет. Каждая система имеет свои настройки, ключи доступа и особенности — ошибиться в связывании означает, что касса просто не будет пробивать маркированные чеки.',
     why: 'Ни одна из этих систем по отдельности не обеспечит работу с маркировкой. Все они должны быть связаны в единую цепочку: от поставщика через ЭДО → в Честный ЗНАК → в ТС ПИоТ → на кассу → чек в налоговую. Если хотя бы одно звено настроено неверно — вся цепочка рвётся, и касса не пробьёт чек по маркированному товару.',
     when: 'Обязательно после завершения перерегистрации в ФНС. Без этой настройки ни одна из систем не сможет работать с маркировкой, даже если они установлены.',
     example: 'Поставщик отправляет накладную через ЭДО → вы принимаете её в Честном ЗНАКе (проверка кодов маркировки) → данные синхронизируются в ТС ПИоТ → касса видит весь ассортимент → кассир сканирует код Data Matrix → касса проверяет код через Честный ЗНАК → чек с признаком маркировки уходит в ФНС. Мы настраиваем каждый этап этой цепочки.'
+  },
+  partial_marketing_setup: {
+    what: 'Частичная настройка маркировки — это донастройка отдельных модулей и связей, которые требуются для корректной работы кассы с маркированными товарами. Включает в себя проверку и настройку дополнительных компонентов интеграции между кассой, Честным ЗНАКом и сопутствующими системами.',
+    why: 'Если касса уже работала, но часть модулей или связей не была настроена, маркированные чеки могут не пробиваться. Устраняем проблемы в интеграции пошагово.',
+    when: 'Когда касса уже зарегистрирована в ФНС и работает, но есть проблемы с пробитием маркированных чеков, или нужно добавить работу с новыми категориями маркированных товаров.',
+    example: 'У вас касса работает, но при попытке пробить чек по сигаретам выдаётся ошибка. Мы проверяем все связи — ЭДО, Честный ЗНАК, настройки кассы — и настраиваем недостающие компоненты.'
   },
   scanner_2d: {
     what: 'Специальный сканер, который читает маленькие квадратные коды (Data Matrix, QR) на маркированных товарах. Обычный плоский сканер штрих-кодов (те, что рисуются палочками) такие коды не прочитает — у них другой формат.',
@@ -116,7 +122,7 @@ const hints: Record<string, HintData> = {
     example: 'Вы не помните пароль от ЛК Эвотор. Обращаетесь к нам — мы связываемся с поддержкой Эвотор, восстанавливаем доступ. Вы получаете новые данные для входа.'
   },
   tspiot: {
-    what: 'ТС ПИоТ (товароучётная система) — обязательный модуль для работы с маркированными товарами. Без него касса не сможет пробивать чеки по сигаретам, обуви, воде и другим маркированным группам. Лицензия приобретается на официальном портале ao-esp.ru.',
+    what: 'ТС ПИоТ (Единый Сервисный Модуль) — обязательный программный модуль, обеспечивающий защищённое взаимодействие кассы с системой «Честный ЗНАК». Без него касса не сможет пробивать чеки по сигаретам, обуви, воде и другим маркированным группам. Лицензия приобретается на официальном портале ao-esp.ru.',
     why: 'С 1 июля 2026 года продажа маркированных товаров без ТС ПИоТ запрещена статьёй 15.12 КоАП РФ — это штрафы. Без лицензии касса просто перестанет пробивать маркированные чеки.',
     when: 'Обязательно для всех, кто продаёт маркированные товары. Чем раньше приобретёте — тем лучше, чтобы мы успели всё настроить.',
     example: 'Вы выбираете лицензию ТС ПИоТ на ao-esp.ru (стоимость зависит от вида товаров), оплачиваете напрямую. Мы помогаем зарегистрироваться, подключить и настроить ТС ПИоТ под ваш бизнес — от регистрации до первой накладной.'
@@ -161,6 +167,13 @@ const step2Services: StepService[] = [
     description: 'Многоэтапная интеграция 6 разных систем: подача заявления в ФНС, смена формата ФФД, настройка ЭДО, Честного ЗНАКа, кассы и ТС ПИоТ в единую цепочку. Для Эвотора — дополнительно личный кабинет. Малейшая ошибка в настройке — касса не пробьёт чек.',
     price: 3500,
     hintKey: 'marking_setup'
+  },
+  {
+    id: 'partial_marketing_setup',
+    name: 'Частичная настройка маркировки (настройка дополнительных модулей)',
+    description: 'Настройка отдельных компонентов для работы с маркировкой — дополнительные модули, связи между системами, которые не были настроены ранее',
+    price: 1500,
+    hintKey: 'partial_marketing_setup'
   }
 ]
 
@@ -188,11 +201,58 @@ const step3Services: StepService[] = [
   }
 ]
 
-// ОФД ТАКСКОМ — цены
-const OFD_PRICES: Record<OfdPeriod, { price: number; originalPrice: number; label: string }> = {
-  '15': { price: 6400, originalPrice: 6900, label: '15 месяцев' },
-  '36': { price: 11000, originalPrice: 12000, label: '36 месяцев' }
+// ОФД — провайдеры
+interface OfdProvider {
+  id: string
+  name: string
+  shortName: string
+  periods: Record<OfdPeriod, { price: number; originalPrice: number }>
+  partner?: boolean
+  lockedForNew?: boolean  // only show for non-new registers
 }
+
+const OFD_PROVIDERS: OfdProvider[] = [
+  {
+    id: 'takskom',
+    name: 'ОФД ТАКСКОМ',
+    shortName: 'ТАКСКОМ',
+    partner: true,
+    periods: {
+      '15': { price: 6400, originalPrice: 6900 },
+      '36': { price: 11000, originalPrice: 12000 }
+    }
+  },
+  {
+    id: 'platform_ofd',
+    name: 'Платформа ОФД',
+    shortName: 'Платформа ОФД',
+    periods: {
+      '15': { price: 4000, originalPrice: 4500 },
+      '36': { price: 8500, originalPrice: 9500 }
+    },
+    lockedForNew: true
+  },
+  {
+    id: 'first_ofd',
+    name: 'ПЕРВЫЙ ОФД',
+    shortName: 'ПЕРВЫЙ ОФД',
+    periods: {
+      '15': { price: 3100, originalPrice: 3600 },
+      '36': { price: 6600, originalPrice: 7600 }
+    },
+    lockedForNew: true
+  },
+  {
+    id: 'sbis_tensor',
+    name: 'СБИС ТЕНЗОР',
+    shortName: 'СБИС ТЕНЗОР',
+    periods: {
+      '15': { price: 4000, originalPrice: 4500 },
+      '36': { price: 9000, originalPrice: 10000 }
+    },
+    lockedForNew: true
+  }
+]
 
 // ============================================================================
 // ЦЕНЫ КАРТОЧЕК ТОВАРОВ
@@ -564,6 +624,7 @@ export default function TellurServiceCalculator() {
   const [evotorRestore, setEvotorRestore] = useState(false)
   const [ofdChecked, setOfdChecked] = useState(false)
   const [ofdPeriod, setOfdPeriod] = useState<OfdPeriod>('15')
+  const [ofdProvider, setOfdProvider] = useState('takskom')
 
   const [clientData, setClientData] = useState({
     name: '', inn: '', phone: '', email: '', address: '',
@@ -615,10 +676,11 @@ export default function TellurServiceCalculator() {
       }
     })
 
-    // ОФД ТАКСКОМ
+    // ОФД
     if (ofdEffective) {
-      const ofdInfo = OFD_PRICES[ofdPeriod]
-      items.push({ name: `ОФД ТАКСКОМ — договор на ${ofdInfo.label}`, price: ofdInfo.price })
+      const provider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
+      const periodInfo = provider.periods[ofdPeriod]
+      items.push({ name: `${provider.name} — договор на ${ofdPeriod === '15' ? '15' : '36'} мес.`, price: periodInfo.price })
     }
 
     if (scannerChecked) items.push({ name: 'Сканер 2D для считывания кодов маркировки', price: scannerPrices[effectiveKkm] })
@@ -632,7 +694,7 @@ export default function TellurServiceCalculator() {
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -894,7 +956,7 @@ export default function TellurServiceCalculator() {
                   <p className="text-[#1e3a5f]"><strong>Касса:</strong> {effectiveKkmInfo.name} ({kkmCondition === 'new' ? 'новая' : kkmCondition === 'used' ? 'б/у' : 'рабочая'})</p>
                 </div>
 
-                {step2Services.map(service => {
+                {step2Services.filter(s => !(s.id === 'partial_marketing_setup' && kkmCondition !== 'old')).map(service => {
                   const desc = service.id === 'marking_setup' ? markingDesc : service.description
                   const selected = step2Selections.includes(service.id)
                   // Для новых касс перерегистрация недоступна (регистрация — автоматически на шаге 3)
@@ -924,55 +986,78 @@ export default function TellurServiceCalculator() {
                   )
                 })}
 
-                {/* ОФД ТАКСКОМ */}
-                <Card className={ofdEffective ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                  <CardContent className="pt-4 sm:pt-5">
-                    <div className="flex items-start gap-3">
-                      <Checkbox id="ofd_check"
-                        checked={ofdEffective}
-                        disabled={ofdLocked}
-                        onCheckedChange={(c) => setOfdChecked(c as boolean)}
-                        className="w-5 h-5 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Label htmlFor="ofd_check" className={`font-semibold text-sm cursor-pointer leading-snug ${ofdLocked ? 'text-[#1e3a5f]' : ''}`}>
-                              ОФД ТАКСКОМ
-                            </Label>
-                            <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs shrink-0">Партнёр</Badge>
-                            <HintButton hintKey="ofd_takskom" />
+                {/* ОФД */}
+                {(() => {
+                  const visibleProviders = OFD_PROVIDERS.filter(p => !p.lockedForNew || kkmCondition !== 'new')
+                  const selectedProvider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
+                  return (
+                    <Card className={ofdEffective ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
+                      <CardContent className="pt-4 sm:pt-5">
+                        <div className="flex items-start gap-3">
+                          <Checkbox id="ofd_check"
+                            checked={ofdEffective}
+                            disabled={ofdLocked}
+                            onCheckedChange={(c) => setOfdChecked(c as boolean)}
+                            className="w-5 h-5 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Label htmlFor="ofd_check" className={`font-semibold text-sm cursor-pointer leading-snug ${ofdLocked ? 'text-[#1e3a5f]' : ''}`}>
+                                  ОФД (оператор фискальных данных)
+                                </Label>
+                                {selectedProvider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs shrink-0">Партнёр</Badge>}
+                                <HintButton hintKey="ofd_takskom" />
+                              </div>
+                            </div>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                              Оператор фискальных данных — обязательное подключение для работы кассы.
+                              {ofdLocked && <span className="font-medium text-[#1e3a5f]"> Для новой кассы подключение ОФД обязательно.</span>}
+                            </p>
+                            {ofdEffective && (
+                              <div className="mt-3 space-y-3">
+                                {/* Provider selection (only for non-new registers with multiple providers) */}
+                                {visibleProviders.length > 1 && (
+                                  <div className="space-y-2">
+                                    <RadioGroup value={ofdProvider} onValueChange={setOfdProvider} className="space-y-2">
+                                      {visibleProviders.map(provider => (
+                                        <div key={provider.id} className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                          <RadioGroupItem value={provider.id} id={`ofd_${provider.id}`} />
+                                          <Label htmlFor={`ofd_${provider.id}`} className="flex-1 cursor-pointer text-sm">
+                                            <span className="font-medium text-[#1e3a5f]">{provider.name}</span>
+                                            {provider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs ml-2">Партнёр</Badge>}
+                                          </Label>
+                                        </div>
+                                      ))}
+                                    </RadioGroup>
+                                  </div>
+                                )}
+                                {/* Period selection */}
+                                <RadioGroup value={ofdPeriod} onValueChange={(v) => setOfdPeriod(v as OfdPeriod)} className="space-y-2">
+                                  {(['15', '36'] as const).map(period => {
+                                    const info = selectedProvider.periods[period]
+                                    return (
+                                      <div key={period} className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                        <RadioGroupItem value={period} id={`ofd_period_${period}`} />
+                                        <Label htmlFor={`ofd_period_${period}`} className="flex-1 cursor-pointer text-sm">
+                                          <span className="font-medium text-[#1e3a5f]">Договор на {period === '15' ? '15' : '36'} месяцев</span>
+                                          <span className="ml-2 inline-flex items-center gap-1.5">
+                                            <span className="font-bold text-[#1e3a5f] text-base">{info.price.toLocaleString('ru-RU')} ₽</span>
+                                            <span className="text-slate-400 line-through text-xs">{info.originalPrice.toLocaleString('ru-RU')} ₽</span>
+                                          </span>
+                                          <span className="ml-1.5 text-xs text-green-600 font-medium">скидка</span>
+                                        </Label>
+                                      </div>
+                                    )
+                                  })}
+                                </RadioGroup>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                          Оператор фискальных данных — обязательное подключение для работы кассы. Мы — официальные партнёры ТАКСКОМ, предоставляем скидку.
-                          {ofdLocked && <span className="font-medium text-[#1e3a5f]"> Для новой кассы подключение ОФД обязательно.</span>}
-                        </p>
-                        {ofdEffective && (
-                          <div className="mt-3 space-y-2">
-                            <RadioGroup value={ofdPeriod} onValueChange={(v) => setOfdPeriod(v as OfdPeriod)} className="space-y-2">
-                              {(['15', '36'] as const).map(period => {
-                                const info = OFD_PRICES[period]
-                                return (
-                                  <div key={period} className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
-                                    <RadioGroupItem value={period} id={`ofd_${period}`} />
-                                    <Label htmlFor={`ofd_${period}`} className="flex-1 cursor-pointer text-sm">
-                                      <span className="font-medium text-[#1e3a5f]">Договор на {info.label}</span>
-                                      <span className="ml-2 inline-flex items-center gap-1.5">
-                                        <span className="font-bold text-[#1e3a5f] text-base">{info.price.toLocaleString('ru-RU')} ₽</span>
-                                        <span className="text-slate-400 line-through text-xs">{info.originalPrice.toLocaleString('ru-RU')} ₽</span>
-                                      </span>
-                                      <span className="ml-1.5 text-xs text-green-600 font-medium">скидка</span>
-                                    </Label>
-                                  </div>
-                                )
-                              })}
-                            </RadioGroup>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  )
+                })()}
 
                 {/* ТС ПИоТ — инфо */}
                 <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
@@ -985,7 +1070,7 @@ export default function TellurServiceCalculator() {
                           <HintButton hintKey="tspiot" />
                         </div>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                          Лицензия на товароучётную систему продаётся через официальный портал <strong>ao-esp.ru</strong>.
+                          Единый Сервисный Модуль (ТС ПИоТ) — обязательный программный модуль для защищённого взаимодействия кассы с системой «Честный ЗНАК». Лицензия продаётся через официальный портал <strong>ao-esp.ru</strong>.
                           Стоимость зависит от вида ваших товаров.
                         </p>
                       </div>

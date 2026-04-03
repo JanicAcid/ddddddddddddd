@@ -956,7 +956,15 @@ export default function TellurServiceCalculator() {
                     <CardTitle className="text-base">Состояние кассы</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <RadioGroup value={kkmCondition} onValueChange={(v) => setKkmCondition(v as KkmCondition)} className="space-y-2.5">
+                    <RadioGroup value={kkmCondition} onValueChange={(v) => {
+                      setKkmCondition(v as KkmCondition)
+                      // При новой или б/у кассе — автопоставить галочку 2D-сканера, при действующей — снять
+                      if (v === 'new' || v === 'used') {
+                        setScannerChecked(true)
+                      } else if (v === 'old') {
+                        setScannerChecked(false)
+                      }
+                    }} className="space-y-2.5">
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="new" id="cond_new" />
                         <Label htmlFor="cond_new" className="cursor-pointer text-sm">Новая (только что купленная)</Label>

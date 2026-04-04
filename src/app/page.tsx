@@ -1797,7 +1797,7 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                           </div>                          <Checkbox id="fn_product" checked={fnChecked}
-                            onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') } }}
+                            onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general'); setStep3Selections(prev => prev.includes('fn_replacement') ? prev : [...prev, 'fn_replacement']) } else { setStep3Selections(prev => prev.filter(x => x !== 'fn_replacement')) } }}
                             className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">

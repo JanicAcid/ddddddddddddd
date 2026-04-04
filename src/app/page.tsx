@@ -1014,7 +1014,7 @@ export default function TellurServiceCalculator() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col">
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
-[data-slot=checkbox]{width:26px;height:26px;min-width:26px;min-height:26px;border:2px solid #475569;border-radius:6px;cursor:pointer;transition:all .15s ease}
+[data-slot=checkbox]{width:30px;height:30px;min-width:30px;min-height:30px;border:2px solid #475569;border-radius:7px;cursor:pointer;transition:all .15s ease}
 [data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.12)}
 [data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
 [data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}
@@ -1192,7 +1192,7 @@ export default function TellurServiceCalculator() {
                             className={`flex items-center justify-center p-0.5 sm:p-1.5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
-                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain" quality={100} unoptimized />
+                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain opacity-50" quality={100} unoptimized />
                           </button>
                         )
                       })}
@@ -1899,7 +1899,7 @@ export default function TellurServiceCalculator() {
                           </div>                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-                              <Label htmlFor="product_cards" className="font-bold text-base cursor-pointer leading-snug">Создание карточек товаров</Label>
+                              <Label htmlFor="product_cards" className="font-bold text-sm sm:text-base cursor-pointer leading-snug">Создание карточек товаров</Label>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">
                                 {productCardCount > 0 ? `${(getProductCardPrice(productCardCount) * productCardCount).toLocaleString('ru-RU')} руб.` : ''}
                               </span>

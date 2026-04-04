@@ -15,7 +15,10 @@ import {
   CreditCard, AlertTriangle,
   ScanLine, ArrowRight, ArrowLeft,
   HelpCircle, Phone, Mail, ExternalLink, MessageCircle, CheckCheck, ShieldCheck,
-  X, Download, Send, Check, CheckCircle
+  X, Download, Send, Check, CheckCircle,
+  FileCheck, Link2, Settings2, KeyRound, GraduationCap, Cpu, FilePlus2, LayoutList,
+  Server, Lock, RotateCcw, ClipboardCheck,
+  Package, Wine, PackageOpen, Monitor, Sparkles, Repeat
 } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaSubscriptions,
@@ -28,7 +31,7 @@ import Image from 'next/image'
 // ============================================================================
 
 type Step = 1 | 2 | 3 | 4
-type KkmCondition = 'new' | 'used' | 'old'
+type KkmCondition = 'new' | 'used' | 'old' | ''
 type OfdPeriod = '15' | '36'
 
 const KKM_BRANDS: Record<string, { color: string; bg: string }> = {
@@ -73,37 +76,37 @@ const hints: Record<string, HintData> = {
     what: 'Перерегистрация — это официальная процедура внесения изменений в карточку кассы на сайте ФНС. Мы подготавливаем и подаём заявление на добавление признаков «маркировка» и/или «подакцизные товары», а также переводим кассу на формат фискальных документов ФФД 1.2 — без этого формата касса не сможет передавать данные о маркированных товарах в налоговую.',
     why: 'Без перерегистрации в ФНС касса юридически не имеет права пробивать чеки по маркированным товарам — каждый такой чек будет отклонён. Это обязательная процедура, и ошибка в заполнении заявления приведёт к отказу, а значит — к простою кассы.',
     when: 'Обязательно при первом подключении маркировки или алкоголя на кассе, которая уже работает. Если касса новая — регистрация проходит иначе.',
-    example: 'У вас работает касса Атол. Вы решили продавать сигареты (маркировка). Мы заходим на сайт ФНС, аккуратно заполняем заявление: добавляем признак маркировки, обновляем формат ФФД до версии 1.2, подписываем ЭЦП и подаём. Через 1-2 дня после одобрения ФНС касса получает право работать с маркировкой.'
+    example: 'У Вас работает касса Атол. Вы решили продавать сигареты (маркировка). Мы заходим на сайт ФНС, аккуратно заполняем заявление: добавляем признак маркировки, обновляем формат ФФД до версии 1.2, подписываем ЭЦП и подаём. Через 1-2 дня после одобрения ФНС касса получает право работать с маркировкой.'
   },
   marking_setup: {
-    what: 'Это самая сложная и ответственная часть подключения маркировки. Мы последовательно настраиваем и связываем между собой 6 различных систем: ЭДО (электронный документооборот для приёмки накладных), Честный ЗНАК (государственный реестр маркировки), вашу кассу, ТС ПИоТ (Единый Сервисный Модуль), а также проводим подачу заявления в ФНС со сменой формата ФФД. Для касс Эвотор дополнительно настраиваем личный кабинет. Каждая система имеет свои настройки, ключи доступа и особенности — ошибиться в связывании означает, что касса просто не будет пробивать маркированные чеки.',
+    what: 'Это самая сложная и ответственная часть подключения маркировки. Мы последовательно настраиваем и связываем между собой 6 различных систем: ЭДО (электронный документооборот для приёмки накладных), Честный ЗНАК (государственный реестр маркировки), Вашу кассу, ТС ПИоТ (Единый Сервисный Модуль), а также проводим подачу заявления в ФНС со сменой формата ФФД. Для касс Эвотор дополнительно настраиваем личный кабинет. Каждая система имеет свои настройки, ключи доступа и особенности — ошибиться в связывании означает, что касса просто не будет пробивать маркированные чеки.',
     why: 'Ни одна из этих систем по отдельности не обеспечит работу с маркировкой. Все они должны быть связаны в единую цепочку: от поставщика через ЭДО → в Честный ЗНАК → в ТС ПИоТ → на кассу → чек в налоговую. Если хотя бы одно звено настроено неверно — вся цепочка рвётся, и касса не пробьёт чек по маркированному товару.',
     when: 'Обязательно после завершения перерегистрации в ФНС. Без этой настройки ни одна из систем не сможет работать с маркировкой, даже если они установлены.',
-    example: 'Поставщик отправляет накладную через ЭДО → вы принимаете её в Честном ЗНАКе (проверка кодов маркировки) → данные синхронизируются в ТС ПИоТ → касса видит весь ассортимент → кассир сканирует код Data Matrix → касса проверяет код через Честный ЗНАК → чек с признаком маркировки уходит в ФНС. Мы настраиваем каждый этап этой цепочки.'
+    example: 'Поставщик отправляет накладную через ЭДО → Вы принимаете её в Честном ЗНАКе (проверка кодов маркировки) → данные синхронизируются в ТС ПИоТ → касса видит весь ассортимент → кассир сканирует код Data Matrix → касса проверяет код через Честный ЗНАК → чек с признаком маркировки уходит в ФНС. Мы настраиваем каждый этап этой цепочки.'
   },
   partial_marketing_setup: {
     what: 'Частичная настройка маркировки — это донастройка отдельных модулей и связей, которые требуются для корректной работы кассы с маркированными товарами. Включает в себя проверку и настройку дополнительных компонентов интеграции между кассой, Честным ЗНАКом и сопутствующими системами.',
     why: 'Если касса уже работала, но часть модулей или связей не была настроена, маркированные чеки могут не пробиваться. Устраняем проблемы в интеграции пошагово.',
     when: 'Когда касса уже зарегистрирована в ФНС и работает, но есть проблемы с пробитием маркированных чеков, или нужно добавить работу с новыми категориями маркированных товаров.',
-    example: 'У вас касса работает, но при попытке пробить чек по сигаретам выдаётся ошибка. Мы проверяем все связи — ЭДО, Честный ЗНАК, настройки кассы — и настраиваем недостающие компоненты.'
+    example: 'У Вас касса работает, но при попытке пробить чек по сигаретам выдаётся ошибка. Мы проверяем все связи — ЭДО, Честный ЗНАК, настройки кассы — и настраиваем недостающие компоненты.'
   },
   scanner_2d: {
     what: 'Специальный сканер, который читает маленькие квадратные коды (Data Matrix, QR) на маркированных товарах. Обычный плоский сканер штрих-кодов (те, что рисуются палочками) такие коды не прочитает — у них другой формат.',
     why: 'Без 2D-сканера кассир не сможет считать код маркировки на пачке сигарет, коробке обуви или бутылке воды. Касса выдаст ошибку и не пробьёт чек.',
-    when: 'Обязательно при продаже маркированных товаров. Если у вас уже есть 2D-сканер (имидж-сканер) — можно не покупать.',
+    when: 'Обязательно при продаже маркированных товаров. Если у Вас уже есть 2D-сканер (имидж-сканер) — можно не покупать.',
     example: 'Кассир берёт пачку сигарет, подносит к сканеру — сканер за долю секунды читает квадратик, касса проверяет через Честный ЗНАК и пробивает чек. Скорость — как обычный товар.'
   },
   ecp_renewal: {
-    what: 'Продление квалифицированного сертификата электронной подписи (ЭЦП) на вашем защищённом носителе (Рутокен, JaCarta и др.). ЭЦП — это ваша электронная подпись, которая ставится на документы вместо ручной подписи и печати. У неё есть срок действия, обычно 1 год.',
-    why: 'С истёкшей ЭЦП вы не сможете войти в личные кабинеты (Честный ЗНАК, ФНС, ЕСП), подписать документы, принять накладные от поставщиков. Система просто не пустит.',
+    what: 'Продление квалифицированного сертификата электронной подписи (ЭЦП) на Вашем защищённом носителе (Рутокен, JaCarta и др.). ЭЦП — это Ваша электронная подпись, которая ставится на документы вместо ручной подписи и печати. У неё есть срок действия, обычно 1 год.',
+    why: 'С истёкшей ЭЦП Вы не сможете войти в личные кабинеты (Честный ЗНАК, ФНС, ЕСП), подписать документы, принять накладные от поставщиков. Система просто не пустит.',
     when: 'Когда до окончания ЭЦП осталось хотя бы 1 день. Если ЭЦП уже истёк полностью — придётся оформлять новую (это другая процедура, мы не занимаемся).',
     example: 'Ваш Рутокен показывает что срок ЭЦП заканчивается через 3 дня. Приезжаете к нам — за 15 минут продлеваем сертификат. Или скидываете Рутокен через службу доставки.'
   },
   training: {
-    what: 'Практическое обучение вас или ваших сотрудников: как правильно сканировать коды маркировки, принимать товар от поставщика, пробивать чек, делать возврат, что делать если код не считывается.',
+    what: 'Практическое обучение Вас или Ваших сотрудников: как правильно сканировать коды маркировки, принимать товар от поставщика, пробивать чек, делать возврат, что делать если код не считывается.',
     why: 'Маркировка — это не просто «отсканируй и продай». Есть множество нюансов: код повреждён, нужен возврат, товар пришёл без кодов, накладная не совпадает. Лучше один раз научиться, чем на каждой проблеме терять время.',
     when: 'Рекомендуем всем, кто впервые сталкивается с маркировкой. Особенно полезно для кассиров.',
-    example: 'Приезжаем к вам. За 1 час обучаем: 1) Принимаем тестовую накладную от поставщика, 2) Сканируем код на товаре и пробиваем чек, 3) Имитируем возврат, 4) Показываем что делать если код не читается.'
+    example: 'Приезжаем к Вам. За 1 час обучаем: 1) Принимаем тестовую накладную от поставщика, 2) Сканируем код на товаре и пробиваем чек, 3) Имитируем возврат, 4) Показываем что делать если код не читается.'
   },
   fn_replacement: {
     what: 'ФН (фискальный накопитель) — это чип внутри кассы, который хранит все пробитые чеки и передаёт данные в налоговую. У него есть срок службы: 15 или 36 месяцев. Когда срок заканчивается — чип нужно заменить на новый и перерегистрировать кассу.',
@@ -112,10 +115,10 @@ const hints: Record<string, HintData> = {
     example: 'Вам пришло письмо от ОФД: «ФН заканчивается через 25 дней». Меняем чип на новый, перерегистрируем кассу в ФНС. Касса снова работает.'
   },
   product_cards: {
-    what: 'Карточки товаров создаются непосредственно на кассовом аппарате — каждая позиция заносится в память кассы: название, артикул, привязка к коду маркировки (Data Matrix), цена и другие поля. Обратите внимание: при массовой заливке карточек средствами ПК (через 1С, Excel или другие программы) могут потребоваться дополнительные приложения от производителя вашей кассы для корректного импорта данных.',
+    what: 'Карточки товаров создаются непосредственно на кассовом аппарате — каждая позиция заносится в память кассы: название, артикул, привязка к коду маркировки (Data Matrix), цена и другие поля. Обратите внимание: при массовой заливке карточек средствами ПК (через 1С, Excel или другие программы) могут потребоваться дополнительные приложения от производителя Вашей кассы для корректного импорта данных.',
     why: 'Без карточек товаров касса не знает что она продаёт — она не поймёт что за «Winston Blue», не найдёт нужный код маркировки. Каждая позиция должна быть заведена в кассу, чтобы кассир мог выбрать товар и пробить чек.',
     when: 'При первом подключении маркировки или при поступлении новых товаров в ассортимент. Карточки нужны для всех касс, кроме фискальных регистраторов ФР Атол и ФР Штрих-М — они работают от внешней программы (1С и др.), и карточки создаются в ней, а не на самом кассовом аппарате.',
-    example: 'Вы дали нам прайс-лист из 200 наименований сигарет. Мы создаём 200 карточек непосредственно на вашей кассе: название бренда, артикул, привязка к коду маркировки, цена. Для массовой заливки через ПК — используем утилиту производителя кассы. Через пару часов всё готово к работе.'
+    example: 'Вы дали нам прайс-лист из 200 наименований сигарет. Мы создаём 200 карточек непосредственно на Вашей кассе: название бренда, артикул, привязка к коду маркировки, цена. Для массовой заливки через ПК — используем утилиту производителя кассы. Через пару часов всё готово к работе.'
   },
   firmware_update: {
     what: 'Обновление внутренней программы кассы (прошивки) до версии, которая поддерживает работу с маркировкой и формат ФФД 1.2.',
@@ -126,23 +129,23 @@ const hints: Record<string, HintData> = {
   kkm_license: {
     what: 'Лицензия на кассовое программное обеспечение. Производители касс (Меркурий, Атол и др.) берут плату за использование своей программы на кассе.',
     why: 'Без лицензии касса может перестать работать или лишиться части функций. Лицензия обычно привязывается к серийному номеру кассы.',
-    when: 'Для б/у касс — нужно убедиться что лицензия есть и активна. Если касса перешла к вам от другого владельца — скорее всего нужна новая лицензия.',
-    example: 'Вы купили б/у кассу Атол. Предыдущий владелец не передал лицензию. Покупаем новую лицензию, привязываем к серийному номеру вашей кассы — и она работает.'
+    when: 'Для б/у касс — нужно убедиться что лицензия есть и активна. Если касса перешла к Вам от другого владельца — скорее всего нужна новая лицензия.',
+    example: 'Вы купили б/у кассу Атол. Предыдущий владелец не передал лицензию. Покупаем новую лицензию, привязываем к серийному номеру Вашей кассы — и она работает.'
   },
   evotor_restore: {
-    what: 'Восстановление доступа к личному кабинету Эвотор, если вы не помните логин (телефон) или пароль. Мы помогаем через службу поддержки Эвотор.',
+    what: 'Восстановление доступа к личному кабинету Эвотор, если Вы не помните логин (телефон) или пароль. Мы помогаем через службу поддержки Эвотор.',
     why: 'Без доступа к ЛК Эвотор невозможно управлять кассой, устанавливать и оплачивать приложения. Касса без ЛК — просто планшет.',
-    when: 'Если вы не помните данные от ЛК Эвотор или касса досталась от предыдущего владельца без данных.',
+    when: 'Если Вы не помните данные от ЛК Эвотор или касса досталась от предыдущего владельца без данных.',
     example: 'Вы не помните пароль от ЛК Эвотор. Обращаетесь к нам — мы связываемся с поддержкой Эвотор, восстанавливаем доступ. Вы получаете новые данные для входа.'
   },
   tspiot: {
     what: 'ТС ПИоТ (Единый Сервисный Модуль) — обязательный программный модуль, обеспечивающий защищённое взаимодействие кассы с системой «Честный ЗНАК». Без него касса не сможет пробивать чеки по сигаретам, обуви, воде и другим маркированным группам. Лицензия приобретается на официальном портале ao-esp.ru.',
     why: 'С 1 июля 2026 года продажа маркированных товаров без ТС ПИоТ запрещена статьёй 15.12 КоАП РФ — это штрафы. Без лицензии касса просто перестанет пробивать маркированные чеки.',
     when: 'Обязательно для всех, кто продаёт маркированные товары. Чем раньше приобретёте — тем лучше, чтобы мы успели всё настроить.',
-    example: 'Вы выбираете лицензию ТС ПИоТ на ao-esp.ru (стоимость зависит от вида товаров), оплачиваете напрямую. Мы помогаем зарегистрироваться, подключить и настроить ТС ПИоТ под ваш бизнес — от регистрации до первой накладной.'
+    example: 'Вы выбираете лицензию ТС ПИоТ на ao-esp.ru (стоимость зависит от вида товаров), оплачиваете напрямую. Мы помогаем зарегистрироваться, подключить и настроить ТС ПИоТ под Ваш бизнес — от регистрации до первой накладной.'
   },
   fns_registration: {
-    what: 'Регистрация контрольно-кассовой техники (ККТ) на сайте ФНС — это обязательная процедура, без которой касса не имеет права работать. Мы подаём заявление о регистрации кассы, подписываем его вашей ЭЦП и сопровождаем до получения подтверждения от налоговой.',
+    what: 'Регистрация контрольно-кассовой техники (ККТ) на сайте ФНС — это обязательная процедура, без которой касса не имеет права работать. Мы подаём заявление о регистрации кассы, подписываем его Вашей ЭЦП и сопровождаем до получения подтверждения от налоговой.',
     why: 'Без регистрации в ФНС касса юридически не существует для налоговой — ни один чек не будет принят. Это как открыть магазин без лицензии: всё оборудование есть, но работать нельзя. Без этой процедуры новая касса — просто «кирпич».',
     when: 'Обязательно для всех новых касс. Без регистрации касса не начнёт работу — ни один чек не пройдёт.',
     example: 'Вы купили новую кассу Меркурий-185Ф. Привозите к нам (или мы выезжаем): подготавливаем заявление на сайте ФНС, подписываем ЭЦП, подаём и отслеживаем статус. Через 1-2 дня ФНС подтверждает регистрацию — касса готова к работе.'
@@ -151,13 +154,19 @@ const hints: Record<string, HintData> = {
     what: 'Фискальный накопитель (ФН) — это чип памяти внутри кассы, который хранит все фискальные данные о проведённых платежах. Каждый ФН имеет ограниченный срок службы и подлежит обязательной замене по истечении этого срока или при переполнении памяти.',
     why: 'Без работающего ФН касса не может пробивать чеки и передавать данные в ФНС. Замена ФН — обязательная процедура при перерегистрации или истечении срока действия текущего накопителя.',
     when: 'При регистрации новой кассы, перерегистрации, истечении срока ФН (15 или 36 месяцев), или переполнении памяти накопителя.',
-    example: 'ФН на 15 месяцев требуется для магазинов смешанных товаров (общая торговля). ФН на 36 месяцев — для предприятий, продающих подакцизные товары (алкоголь, табачная продукция). Выбор срока зависит от вида вашей деятельности по закону.'
+    example: 'ФН на 15 месяцев требуется для магазинов смешанных товаров (общая торговля). ФН на 36 месяцев — для предприятий, продающих подакцизные товары (алкоголь, табачная продукция). Выбор срока зависит от вида Вашей деятельности по закону.'
   },
   ofd_takskom: {
-    what: 'ОФД (оператор фискальных данных) — это организация, которая принимает, хранит и передаёт в налоговую все фискальные данные с вашей кассы. Без ОФД касса не работает. Мы — официальные партнёры ОФД ТАКСКОМ, поэтому предлагаем выгодные условия с партнёрской скидкой.',
+    what: 'ОФД (оператор фискальных данных) — это организация, которая принимает, хранит и передаёт в налоговую все фискальные данные с Вашей кассы. Без ОФД касса не работает. Мы — официальные партнёры ОФД ТАКСКОМ, поэтому предлагаем выгодные условия с партнёрской скидкой.',
     why: 'Закон требует, чтобы каждая касса была подключена к ОФД. Без договора с ОФД касса не сможет передавать чеки в ФНС — фактически она будет неработоспособна. Договор заключается на 15 или 36 месяцев.',
     when: 'Обязательно при регистрации новой кассы. Для б/у и действующих касс — при необходимости сменить или продлить договор с ОФД.',
-    example: 'Вы регистрируете новую кассу. Вместо того чтобы самостоятельно искать ОФД и сравнивать тарифы, мы подключаем вас к ОФД ТАКСКОМ по партнёрской цене — на 500–1000₽ дешевле, чем на сайте напрямую. Договор на 15 месяцев стоит 6 400₽ (вместо 6 900₽ без скидки).'
+    example: 'Вы регистрируете новую кассу. Вместо того чтобы самостоятельно искать ОФД и сравнивать тарифы, мы подключаем Вас к ОФД ТАКСКОМ по партнёрской цене — на 500–1000₽ дешевле, чем на сайте напрямую. Договор на 15 месяцев стоит 6 400₽ (вместо 6 900₽ без скидки).'
+  },
+  service_contract: {
+    what: 'Договор обслуживания — это абонентское соглашение на регулярное техническое обслуживание Вашей кассы. Наш инженер будет регулярно приезжать к Вам, проводить ревизию и профилактику оборудования, а также обеспечивать приоритетную поддержку по телефону и на выезде.',
+    why: 'Кассовое оборудование требует регулярного обслуживания: чистка-optic, проверка связей, обновление ПО, диагностика. Без обслуживания мелкие проблемы могут привести к простою кассы и потере выручки. С договором Вы получаете приоритет — без очереди и без дополнительной платы за визит.',
+    when: 'Рекомендуем заключать договор обслуживания с первого дня работы кассы. Особенно важен для магазинов с высокой проходимостью, где простой кассы означает прямые убытки.',
+    example: 'У Вас перестала печатать касса. Без договора — вызываете мастера, ждёте в очереди, платите за выезд и ремонт. С договором — звоните, мастер приезжает в тот же день, бесплатно. Также раз в месяц мастер приезжает сам для профилактики — чистит, проверяет, обновляет.'
   }
 }
 
@@ -733,8 +742,8 @@ export default function TellurServiceCalculator() {
   const mainRef = useRef<HTMLDivElement>(null)
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [isDone, setIsDone] = useState(false)
-  const [kkmType, setKkmType] = useState<KkmType>('mercury')
-  const [kkmCondition, setKkmCondition] = useState<KkmCondition>('new')
+  const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
+  const [kkmCondition, setKkmCondition] = useState<KkmCondition>('' as KkmCondition)
   const [sigmaSelected, setSigmaSelected] = useState(false)
   const [evotorTradeType, setEvotorTradeType] = useState<'none' | 'marking' | 'alcohol' | 'both'>('none')
   const [evotorAppsSelected, setEvotorAppsSelected] = useState<Set<string>>(new Set())
@@ -753,7 +762,7 @@ export default function TellurServiceCalculator() {
   const [fnChecked, setFnChecked] = useState(false)
   const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
   const [fnActivityType, setFnActivityType] = useState('general')
-  const [sigmaSubSelections, setSigmaSubSelections] = useState<string[]>(['sigma_marking'])
+  const [sigmaSubSelections, setSigmaSubSelections] = useState<string[]>([])
   // sigmaSubPeriod removed — prices not shown, client checks tariffs via links
   const [serviceContractChecked, setServiceContractChecked] = useState(false)
   const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
@@ -852,7 +861,7 @@ export default function TellurServiceCalculator() {
 
   const markingDesc = useMemo(() => {
     if (kkmType === 'evotor') return 'Связываем ЭДО, Честный ЗНАК, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека'
-    return 'Связываем ЭДО, Честный ЗНАК, вашу кассу и ТС ПИоТ в единую цепочку — от приёмки товара до пробития чека'
+    return 'Связываем ЭДО, Честный ЗНАК, Вашу кассу и ТС ПИоТ в единую цепочку — от приёмки товара до пробития чека'
   }, [kkmType])
 
   const totalCalc = useMemo(() => {
@@ -957,7 +966,11 @@ export default function TellurServiceCalculator() {
   // ===================================================================
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col">
-        <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }`}</style>
+        <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
+[data-slot=checkbox]{width:22px;height:22px;min-width:22px;min-height:22px;border:2px solid #475569;border-radius:5px;cursor:pointer;transition:all .15s ease}
+[data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.12)}
+[data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
+[data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}`}</style>
         {/* HEADER */}
         <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -976,7 +989,10 @@ export default function TellurServiceCalculator() {
                   <p className="text-sm sm:text-base text-slate-500 truncate">Рассчитайте стоимость подключения маркировки</p>
                 </div>
               </div>
-              <Badge variant="outline" className="text-[#1e3a5f] border-[#1e3a5f]/30 hidden sm:inline-flex shrink-0">ООО &quot;Теллур-Интех&quot;</Badge>
+              <a href="tel:+79219324163" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
+                <Phone className="w-4 h-4" />
+                Позвонить менеджеру
+              </a>
             </div>
           </div>
         </header>
@@ -988,16 +1004,26 @@ export default function TellurServiceCalculator() {
           <div className="mt-2 sm:mt-4">
             {/* Уведомление об ЭЦП */}
             {!ecpChecked && (
-              <div className="animate-fade-in-up flex items-center gap-3 p-3 sm:p-4 rounded-xl border border-amber-300 bg-amber-50">
-                <Checkbox
-                  id="ecp_check_top"
-                  checked={false}
-                  onCheckedChange={() => setClientData(prev => ({ ...prev, hasEcp: true }))}
-                  className="w-7 h-7 shrink-0"
-                />
-                <Label htmlFor="ecp_check_top" className="cursor-pointer text-base sm:text-lg font-medium text-amber-800">
-                  У меня есть ЭЦП
-                </Label>
+              <div className="animate-fade-in-up p-3 sm:p-4 rounded-xl border border-amber-300 bg-amber-50">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#1e3a5f]/10 flex items-center justify-center shrink-0">
+                    <KeyRound className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="ecp_check_top"
+                        checked={false}
+                        onCheckedChange={() => setClientData(prev => ({ ...prev, hasEcp: true }))}
+                        className="shrink-0"
+                      />
+                      <Label htmlFor="ecp_check_top" className="cursor-pointer text-base sm:text-lg font-medium text-amber-800">
+                        У меня есть ЭЦП
+                      </Label>
+                    </div>
+                    <p className="text-xs sm:text-sm text-amber-700 mt-1 ml-[22px]">ЭЦП — это флэшка (Рутокен / JaCarta) с электронной подписью. Нужна для входа в ФНС, Честный ЗНАК и подписи документов.</p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1014,7 +1040,7 @@ export default function TellurServiceCalculator() {
               <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-bold">
                       Состояние кассы
                     </CardTitle>
                   </CardHeader>
@@ -1026,8 +1052,8 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                                      <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg">
-                            <Image src="/brands/cond_old.webp" alt="Текущая" width={200} height={80} className="max-w-full max-h-full object-contain" quality={100} unoptimized />
+                                      <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg bg-[#1e3a5f]/10">
+                            <Monitor className="w-10 h-10 sm:w-12 sm:h-12 text-[#1e3a5f]" />
                           </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Работаю на ней</span>
@@ -1036,8 +1062,8 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg">
-                            <Image src="/brands/cond_new.webp" alt="Новая" width={200} height={80} className="max-w-full max-h-full object-contain" quality={100} unoptimized />
+                          <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg bg-[#1e3a5f]/10">
+                            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-[#1e3a5f]" />
                           </div>
                           <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Только что купленная</span>
@@ -1046,8 +1072,8 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg">
-                            <Image src="/brands/cond_used.webp" alt="Б/у" width={200} height={80} className="max-w-full max-h-full object-contain" quality={100} unoptimized />
+                          <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg bg-[#1e3a5f]/10">
+                            <Repeat className="w-10 h-10 sm:w-12 sm:h-12 text-[#1e3a5f]" />
                           </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Купил с рук</span>
@@ -1064,7 +1090,9 @@ export default function TellurServiceCalculator() {
                             <div className="mt-2 space-y-1.5 text-sm text-slate-700">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                                 <div className="flex items-center gap-2">
-                                  <Image src="/services/firmware_update.webp" alt="Прошивка" width={40} height={40} className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg shrink-0" quality={100} unoptimized />
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                                    <Download className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                                  </div>
                                   <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-6 h-6 shrink-0" />
                                   <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
                                   <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
@@ -1073,7 +1101,9 @@ export default function TellurServiceCalculator() {
                               </div>
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                                 <div className="flex items-center gap-2">
-                                  <Image src="/services/kkm_license.webp" alt="Лицензия" width={40} height={40} className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg shrink-0" quality={100} unoptimized />
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                                  </div>
                                   <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-6 h-6 shrink-0" />
                                   <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
                                   <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
@@ -1100,7 +1130,7 @@ export default function TellurServiceCalculator() {
                     <Separator />
 
                     {/* Заголовок перед брендами */}
-                    <h3 className="text-base font-bold text-[#1e3a5f]">Выберите вашу кассу</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Выберите Вашу кассу</h3>
 
                     {/* Сетка касс */}
                     <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
@@ -1145,23 +1175,23 @@ export default function TellurServiceCalculator() {
                           <div className="p-3 sm:p-4 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
                             <div className="flex items-center gap-2">
                               <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
-                              <p className="font-semibold text-[#1e3a5f] text-sm">Чем вы планируете торговать?</p>
+                              <p className="font-semibold text-[#1e3a5f] text-sm">Чем Вы планируете торговать?</p>
                             </div>
                             <p className="text-xs text-slate-500">Выберите категорию — нужные подписки Атол подставятся автоматически. Или выберите подписки вручную ниже.</p>
                             <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="marking" id="sigma_trade_marking" />
-                                <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                 <Label htmlFor="sigma_trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="alcohol" id="sigma_trade_alcohol" />
-                                <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                 <Label htmlFor="sigma_trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="both" id="sigma_trade_both" />
-                                <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                 <Label htmlFor="sigma_trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                               </div>
                             </RadioGroup>
@@ -1202,20 +1232,27 @@ export default function TellurServiceCalculator() {
                                 <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="marking" id="sigma_trade_marking_old" />
-                                    <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                    <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                     <Label htmlFor="sigma_trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="alcohol" id="sigma_trade_alcohol_old" />
-                                    <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                    <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                     <Label htmlFor="sigma_trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="both" id="sigma_trade_both_old" />
-                                    <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                    <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                     <Label htmlFor="sigma_trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                                   </div>
                                 </RadioGroup>
+                              </div>
+                            )}
+                            {evotorHasSubscription && (
+                              <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                                <button type="button" onClick={(e) => { e.stopPropagation(); handleHintOpen('tspiot') }}
+                                  className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
+                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера</span>
                               </div>
                             )}
                           </div>
@@ -1261,7 +1298,7 @@ export default function TellurServiceCalculator() {
                             <div className="flex items-start gap-2">
                               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                               <p className="text-xs text-amber-700">
-                                <strong>Внимание:</strong> помимо указанных подписок, для работы кассы Сигма могут потребоваться: подписка «Облачная касса» (для удалённого управления) и другие сервисы Атол. Точный набор зависит от ваших задач — уточните у менеджера.
+                                <strong>Внимание:</strong> помимо указанных подписок, для работы кассы Сигма могут потребоваться: подписка «Облачная касса» (для удалённого управления) и другие сервисы Атол. Точный набор зависит от Ваших задач — уточните у менеджера.
                               </p>
                             </div>
                           </div>
@@ -1279,23 +1316,23 @@ export default function TellurServiceCalculator() {
                           <div className="p-3 sm:p-4 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
                             <div className="flex items-center gap-2">
                               <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
-                              <p className="font-semibold text-[#1e3a5f] text-sm">Чем вы планируете торговать?</p>
+                              <p className="font-semibold text-[#1e3a5f] text-sm">Чем Вы планируете торговать?</p>
                             </div>
                             <p className="text-xs text-slate-500">Выберите категорию — нужные приложения Эвотор подставятся автоматически. Или выберите приложения вручную ниже.</p>
                             <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="marking" id="trade_marking" />
-                                <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                 <Label htmlFor="trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="alcohol" id="trade_alcohol" />
-                                <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                 <Label htmlFor="trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="both" id="trade_both" />
-                                <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                 <Label htmlFor="trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                               </div>
                             </RadioGroup>
@@ -1336,20 +1373,27 @@ export default function TellurServiceCalculator() {
                                 <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="marking" id="trade_marking_old" />
-                                    <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                    <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                     <Label htmlFor="trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="alcohol" id="trade_alcohol_old" />
-                                    <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                    <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                     <Label htmlFor="trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="both" id="trade_both_old" />
-                                    <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
+                                    <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
                                     <Label htmlFor="trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                                   </div>
                                 </RadioGroup>
+                              </div>
+                            )}
+                            {evotorHasSubscription && (
+                              <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                                <button type="button" onClick={(e) => { e.stopPropagation(); handleHintOpen('tspiot') }}
+                                  className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
+                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера</span>
                               </div>
                             )}
                           </div>
@@ -1404,7 +1448,7 @@ export default function TellurServiceCalculator() {
                           <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
-                            <p className="text-xs text-blue-600 mt-1">Для обслуживания вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется ваше согласие — скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
+                            <p className="text-xs text-blue-600 mt-1">Для обслуживания Вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется Ваше согласие — скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
                             <a
                               href="/soglasiye-atol.pdf"
                               download
@@ -1449,9 +1493,9 @@ export default function TellurServiceCalculator() {
                     <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                         <div className="flex items-start gap-3">
-                          {service.icon && (
-                            <Image src={service.icon} alt={service.name} width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
-                          )}
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <FileCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                          </div>
                           <Checkbox id={service.id} checked={selected}
                             onCheckedChange={() => {
                               const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
@@ -1533,7 +1577,9 @@ export default function TellurServiceCalculator() {
                     <Card className={ofdEffective ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
-                          <Image src="/services/ofd_takskom.webp" alt="ОФД" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <Server className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                          </div>
                           <Checkbox id="ofd_check"
                             checked={ofdEffective}
                             disabled={ofdLocked}
@@ -1603,10 +1649,12 @@ export default function TellurServiceCalculator() {
                 <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
                   <CardContent className="pt-5 sm:pt-6">
                     <div className="flex items-start gap-3">
-                      <Image src="/services/tspiot.webp" alt="ТС ПИоТ" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                        <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-bold text-[#1e3a5f] text-sm">Лицензия ТС ПИоТ — оплачивается вами напрямую</h3>
+                          <h3 className="font-bold text-[#1e3a5f] text-sm">Лицензия ТС ПИоТ — оплачивается Вами напрямую</h3>
                           <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                         </div>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
@@ -1636,7 +1684,9 @@ export default function TellurServiceCalculator() {
                     <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
                         <div className="flex items-start gap-3">
-                          <Image src="/services/fn_product.webp" alt="ФН" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                          </div>
                           <Checkbox id="fn_product" checked={fnChecked}
                             onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') } }}
                             className="w-6 h-6 mt-0.5 shrink-0" />
@@ -1690,7 +1740,9 @@ export default function TellurServiceCalculator() {
                     <Card className={scannerChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
                         <div className="flex items-start gap-3">
-                          <Image src="/services/scanner_2d.webp" alt="Сканер" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                          </div>
                           <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -1711,7 +1763,9 @@ export default function TellurServiceCalculator() {
                       <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
                         <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                           <div className="flex items-start gap-3">
-                            <Image src="/services/fns_registration.webp" alt="Регистрация ККТ" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                              <FilePlus2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                            </div>
                             <Checkbox id="fns_reg" checked={true} disabled={true} className="w-6 h-6 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
@@ -1732,7 +1786,9 @@ export default function TellurServiceCalculator() {
                     <Card className={productCardCount > 0 ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
                         <div className="flex items-start gap-3">
-                          <Image src="/services/product_cards.webp" alt="Карточки" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <LayoutList className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                          </div>
                           <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -1772,9 +1828,9 @@ export default function TellurServiceCalculator() {
                         <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                           <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${(idx + 3) * 50}ms` }}>
                             <div className="flex items-start gap-3">
-                              {service.icon && (
-                                <Image src={service.icon} alt={service.name} width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
-                              )}
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                                <KeyRound className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                              </div>
                               <Checkbox id={service.id} checked={selected}
                                 onCheckedChange={() => setStep3Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
                                 className="w-6 h-6 mt-0.5 shrink-0" />
@@ -1806,7 +1862,9 @@ export default function TellurServiceCalculator() {
                     <Card className={serviceContractChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
                         <div className="flex items-start gap-3">
-                          <Image src="/services/service_contract.webp" alt="Договор" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                          </div>
                           <Checkbox id="service_contract" checked={serviceContractChecked}
                             onCheckedChange={(c) => setServiceContractChecked(c as boolean)}
                             className="w-6 h-6 mt-0.5 shrink-0" />
@@ -1815,6 +1873,7 @@ export default function TellurServiceCalculator() {
                               <div className="flex items-center gap-2 min-w-0">
                                 <Label htmlFor="service_contract" className="font-bold text-base cursor-pointer leading-snug">Договор обслуживания</Label>
                                 <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                                <HintButton hintKey="service_contract" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">1 000 руб./мес.</span>
                             </div>
@@ -1923,7 +1982,9 @@ export default function TellurServiceCalculator() {
                               </div>
                             </div>
                             <div className="flex items-center gap-3 p-2.5 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
-                              <Image src="/services/evotor_restore.webp" alt="Восстановление ЛК" width={32} height={32} className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg shrink-0" quality={100} unoptimized />
+                              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
+                              </div>
                               <Checkbox id="evotor_restore_r" checked={evotorRestore} onCheckedChange={(c) => setEvotorRestore(c as boolean)} className="w-5 h-5 shrink-0" />
                               <Label htmlFor="evotor_restore_r" className="cursor-pointer text-xs text-[#1e3a5f]">Нет данных ЛК — помощь с восстановлением <span className="font-semibold">500 руб.</span></Label>
                             </div>
@@ -1955,7 +2016,7 @@ export default function TellurServiceCalculator() {
                       Готово
                     </Button>
                     <Button variant="outline" className="w-full text-sm" onClick={() => {
-                      setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month')
+                      setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month'); setFnChecked(false); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}>Сбросить всё</Button>
                   </div>
 

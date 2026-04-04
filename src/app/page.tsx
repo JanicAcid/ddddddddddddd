@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import React, { createPortal } from 'react'
+import React from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -1161,13 +1162,12 @@ export default function TellurServiceCalculator() {
                             key={key}
                             type="button"
                             onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') setSigmaSelected(false) }}
-                            className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                            className={`flex items-center justify-center p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
-                            <div className="relative w-full aspect-[2.5/1] flex items-center justify-center">
-                              <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={160} className="max-w-full max-h-full object-contain rounded" quality={100} unoptimized />
+                            <div className="relative w-full aspect-[5/3] flex items-center justify-center">
+                              <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={240} className="max-w-full max-h-full object-contain rounded" quality={100} unoptimized />
                             </div>
-                            <span className={`font-semibold text-xs sm:text-sm leading-tight text-center ${isSelected ? '' : 'text-slate-700'}`} style={isSelected ? { color: brand.color } : undefined}>{kkm.shortName}</span>
                           </button>
                         )
                       })}
@@ -1658,8 +1658,7 @@ export default function TellurServiceCalculator() {
                               </div>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                              Оператор фискальных данных — обязательное подключение для работы кассы. Мы также продлеваем подписки на ОФД.
-                              {ofdLocked && <span className="font-medium text-[#1e3a5f]"> Для новой кассы подключение ОФД обязательно.</span>}
+                              ОФД — обязательное подключение для работы кассы. Мы также продлеваем подписки на ОФД.{ofdLocked && ' Для новой кассы подключение обязательно.'}
                             </p>
                             {ofdEffective && (
                               <div className="mt-3 space-y-3">

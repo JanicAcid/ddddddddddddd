@@ -60,7 +60,8 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK = 'https://web.max.ru/1456926'
+const MAX_LINK_DESKTOP = 'https://web.max.ru/1456926'
+const MAX_LINK_MOBILE = 'https://max.ru/+79219324163'
 
 // ============================================================================
 // ПОДСКАЗКИ
@@ -731,9 +732,9 @@ function DoneScreen({
               <Phone className="w-4 h-4" />
               {MAX_PHONE_DISPLAY}
             </a>
-            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
+            <a href={typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? MAX_LINK_MOBILE : MAX_LINK_DESKTOP} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
-              <MessageCircle className="w-4 h-4" />
+              <Image src="/max-logo.webp" alt="Макс" width={20} height={20} className="w-5 h-5 rounded" />
               Написать в Макс
             </a>
           </div>

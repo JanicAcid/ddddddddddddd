@@ -58,33 +58,25 @@ export const kkmTypes: Record<string, KkmTypeConfig> = {
         {
           name: 'Подписка «Маркировка»',
           purpose: 'Обязательная подписка для работы с кодами маркировки (сигареты, обувь, молоко, вода, пиво и др.). Без неё касса Сигма не пробьёт чек по маркированному товару.',
-          required: true,
-          link: 'https://sigma.online/atol/subscription/marking',
-          price: 299
+          required: true
         },
         {
           name: 'Подписка «УТМ+» (ЕГАИС)',
           purpose: 'Для продажи алкоголя. Обеспечивает связь с системой ЕГАИС — автоматическое списание алкоголя при продаже.',
           required: true,
-          condition: 'Только при продаже алкоголя',
-          link: 'https://sigma.online/atol/subscription/utm',
-          price: 199
+          condition: 'Только при продаже алкоголя'
         },
         {
           name: 'Подписка «Управление ассортиментом»',
           purpose: 'Полноценный учёт товаров: создание и редактирование номенклатуры, загрузка из Excel, массовая переоценка, печать ценников, контроль продаж и остатков, работа с маркировкой, списание пива в ЕГАИС.',
           required: false,
-          condition: 'Для удобного ведения учёта товаров',
-          link: 'https://sigma.online/atol/subscription/inventory',
-          price: 399
+          condition: 'Для удобного ведения учёта товаров'
         },
         {
           name: 'Подписка «Облачная касса»',
           purpose: 'Облачная касса для удалённого управления: мониторинг продаж, настройки, обновления.',
           required: false,
-          condition: 'Для удалённого управления кассой',
-          link: 'https://sigma.online/atol/subscription/cloud',
-          price: 199
+          condition: 'Для удалённого управления кассой'
         }
       ]
     }

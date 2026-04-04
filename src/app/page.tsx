@@ -60,7 +60,7 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK = 'https://max.ru/+79219324163'
+const MAX_LINK = 'https://web.max.ru/1456926'
 
 // ============================================================================
 // ПОДСКАЗКИ

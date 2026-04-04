@@ -1010,10 +1010,7 @@ export default function TellurServiceCalculator() {
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
               >
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
-                <div className="min-w-0">
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
-                  <p className="text-sm sm:text-base text-slate-500 truncate">Рассчитайте стоимость подключения маркировки</p>
-                </div>
+                <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
               </div>
               <a href="tel:+79219324163" title="+7 921 932 41 63" className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:inline-flex sm:gap-1.5 sm:px-3 sm:py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-full sm:rounded-lg transition-colors shrink-0">
                 <Phone className="w-4 h-4 sm:w-4 sm:h-4" />

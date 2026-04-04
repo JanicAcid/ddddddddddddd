@@ -530,6 +530,8 @@ function DoneScreen({
   productCardCount: number
   serviceContractChecked: boolean
   evotorRestore: boolean
+  sigmaHelpChecked: boolean
+  unsureFnsRegistration: boolean
 }) {
   const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
   const orderNum = Date.now().toString().slice(-6)
@@ -586,7 +588,7 @@ function DoneScreen({
       console.error('Email send error:', err)
       setSendStatus('error')
     }
-  }, [orderNum, orderDate, clientData, effectiveKkmInfo, kkmCondition, totalCalc, kkmType, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked])
+  }, [orderNum, orderDate, clientData, effectiveKkmInfo, kkmCondition, totalCalc, kkmType, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration])
 
   const handleWebShare = useCallback(async () => {
     try {
@@ -2195,6 +2197,8 @@ export default function TellurServiceCalculator() {
                 productCardCount={productCardCount}
                 serviceContractChecked={serviceContractChecked}
                 evotorRestore={evotorRestore}
+                sigmaHelpChecked={sigmaHelpChecked}
+                unsureFnsRegistration={unsureFnsRegistration}
               />
             )}
           </div>

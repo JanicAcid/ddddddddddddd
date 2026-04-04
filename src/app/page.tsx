@@ -850,7 +850,7 @@ export default function TellurServiceCalculator() {
   }, [])
 
   // Автоматическая постановка галочек в step2 на основе состояния
-  useMemo(() => {
+  useEffect(() => {
     const isSmartTerminal = kkmType === 'evotor' || effectiveKkm === 'sigma'
 
     // Определяем наличие маркировки и алкоголя

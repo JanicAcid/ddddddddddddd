@@ -1192,7 +1192,7 @@ export default function TellurServiceCalculator() {
                             className={`flex items-center justify-center p-0.5 sm:p-1.5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
-                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain opacity-40" quality={100} unoptimized />
+                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain opacity-35" quality={100} unoptimized />
                           </button>
                         )
                       })}
@@ -1760,24 +1760,6 @@ export default function TellurServiceCalculator() {
                     </Card>
                   )
                 })()}
-
-                {/* ТС ПИоТ — инфо */}
-                <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
-                  <CardContent className="">
-                    <div className="flex items-start gap-2">
-                      <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-
-                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
-                        <ShieldCheck className="w-5 h-5 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                      </div>                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[#1e3a5f] text-sm">Подробнее о ТС ПИоТ</h3>
-                        <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                          ТС ПИоТ (Единый Сервисный Модуль) — обязательный программный модуль для маркировки. Без него касса не пробьёт чеки по маркированным товарам. Лицензия приобретается на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">ao-esp.ru</a>.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
                 <div className="flex gap-4">
                   <Button variant="outline" className="flex-1 py-4 text-base font-bold" size="lg" onClick={() => { setCurrentStep(1); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 mr-2" /> Назад</Button>

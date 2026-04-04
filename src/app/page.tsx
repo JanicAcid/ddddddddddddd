@@ -573,6 +573,7 @@ function DoneScreen({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: 'push@tellur.spb.ru',
+          cc: 'janicacid@gmail.com',
           subject,
           html: emailHtml,
           replyTo: clientData.email || undefined,
@@ -2093,7 +2094,7 @@ export default function TellurServiceCalculator() {
                         await fetch('/api/send-order', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ to: 'push@tellur.spb.ru', subject: `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`, html: orderHtml, replyTo: clientData.email || undefined })
+                          body: JSON.stringify({ to: 'push@tellur.spb.ru', cc: 'janicacid@gmail.com', subject: `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`, html: orderHtml, replyTo: clientData.email || undefined })
                         })
                       } catch { /* silent */ }
                       setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)

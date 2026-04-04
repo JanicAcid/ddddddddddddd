@@ -2252,13 +2252,6 @@ export default function TellurServiceCalculator() {
             <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
               <span className="text-xs text-green-700">ЭЦП подтверждена — настройка возможна при наличии ЭЦП или доступе к ПК с установленной подписью</span>
-              <button
-                type="button"
-                onClick={() => setClientData(prev => ({ ...prev, hasEcp: false }))}
-                className="ml-auto text-xs text-slate-400 hover:text-slate-600 shrink-0"
-              >
-                изменить
-              </button>
             </div>
           </div>
         )}

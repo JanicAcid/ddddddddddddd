@@ -60,9 +60,7 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
-  ? 'https://max.ru/1456926'
-  : 'https://web.max.ru/1456926'
+const MAX_LINK = 'https://web.max.ru/1456926'
 
 // ============================================================================
 // ПОДСКАЗКИ
@@ -1034,7 +1032,8 @@ export default function TellurServiceCalculator() {
 [data-slot=checkbox]{width:22px;height:22px;min-width:22px;min-height:22px;border:2px solid #475569;border-radius:5px;cursor:pointer;transition:all .15s ease}
 [data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.12)}
 [data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
-[data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}`}</style>
+[data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}
+.space-y-5 .flex.items-start.gap-3,.space-y-7 .flex.items-start.gap-3,.space-y-6 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
         {/* HEADER */}
         <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -1798,9 +1797,7 @@ export default function TellurServiceCalculator() {
             {/* ДОПОЛНИТЕЛЬНО */}
             {/* ============================================================ */}
             {currentStep === 3 && !isDone && (
-              <div className="max-w-3xl mx-auto">
-                <div className="grid lg:grid-cols-3 gap-5 sm:gap-7">
-                  <div className="lg:col-span-2 space-y-5 sm:space-y-7">
+              <div className="max-w-3xl mx-auto space-y-5 sm:space-y-7">
 
                     {/* ФН — фискальный накопитель */}
                     <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
@@ -2167,68 +2164,61 @@ export default function TellurServiceCalculator() {
                     <Button variant="outline" className="w-full text-sm" onClick={() => {
                       setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setSigmaHelpChecked(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month'); setFnChecked(false); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}>Сбросить всё</Button>
-                  </div>
 
-                  {/* ===== ПРАВАЯ КОЛОНКА ===== */}
-                  <div className="lg:col-span-1">
-                    <div className="sticky top-4 sm:top-6 space-y-5 sm:space-y-6">
-                      <Card className="border-[#1e3a5f]/20 bg-white">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="flex items-center gap-2 text-[#1e3a5f] text-sm sm:text-base"><CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />Расчёт стоимости</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2 mb-4">
-                            {totalCalc.items.length === 0 ? <p className="text-sm text-slate-500 italic">Отметьте услуги</p>
-                              : totalCalc.items.map((item, idx) => (
-                                <div key={idx} className="flex justify-between text-xs sm:text-sm gap-2">
-                                  <span className="text-slate-600 leading-snug">{item.name}</span>
-                                  <span className="font-medium whitespace-nowrap shrink-0">{item.price.toLocaleString('ru-RU')} ₽</span>
-                                </div>
-                              ))}
+                  {/* ИТОГО */}
+                  <Card className="border-[#1e3a5f]/20 bg-white">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-[#1e3a5f] text-sm sm:text-base"><CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />Расчёт стоимости</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 mb-4">
+                        {totalCalc.items.length === 0 ? (
+                          <p className="text-sm text-slate-500 italic">Отметьте услуги</p>
+                        ) : totalCalc.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-xs sm:text-sm gap-2">
+                            <span className="text-slate-600 leading-snug">{item.name}</span>
+                            <span className="font-medium whitespace-nowrap shrink-0">{item.price.toLocaleString('ru-RU')} ₽</span>
                           </div>
-                          <Separator className="my-3" />
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-base sm:text-lg">Итого:</span>
-                            <span className="font-bold text-xl sm:text-2xl text-[#1e3a5f]">{totalCalc.total.toLocaleString('ru-RU')} ₽</span>
-                          </div>
-          <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
-                          <p className="text-xs text-slate-400">
-                            {effectiveKkm === 'sigma' || kkmType === 'evotor'
-                              ? 'ТС ПИоТ — отдельно. Подписка на смарт-терминале — у производителя'
-                              : 'ТС ПИоТ — оплачивается отдельно'
-                            }
-                          </p>
-                        </CardContent>
-                      </Card>
+                        ))}
+                      </div>
+                      <Separator className="my-3" />
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-base sm:text-lg">Итого:</span>
+                        <span className="font-bold text-xl sm:text-2xl text-[#1e3a5f]">{totalCalc.total.toLocaleString('ru-RU')} ₽</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
+                      <p className="text-xs text-slate-400">
+                        {effectiveKkm === 'sigma' || kkmType === 'evotor'
+                          ? 'ТС ПИоТ — отдельно. Подписка на смарт-терминале — у производителя'
+                          : 'ТС ПИоТ — оплачивается отдельно'
+                        }
+                      </p>
+                    </CardContent>
+                  </Card>
 
-                      {/* Контактные данные и кнопки перенесены в центральную колонку */}
+                  <Card className="bg-[#1e3a5f]/5">
+                    <CardContent className="pt-4">
+                      <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-[#e8a817] shrink-0" />Важно знать</h4>
+                      <div className="space-y-2 text-xs sm:text-sm text-slate-600">
+                        <p>С <strong>01.07.2026</strong> продажа маркированных товаров без ТС ПИоТ запрещена (<strong>ст. 15.12 КоАП РФ</strong>)</p>
+                        <p>Лицензия ТС ПИоТ — на сайте <strong>ao-esp.ru</strong></p>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                      <Card className="bg-[#1e3a5f]/5">
-                        <CardContent className="pt-4">
-                          <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-[#e8a817] shrink-0" />Важно знать</h4>
-                          <div className="space-y-2 text-xs sm:text-sm text-slate-600">
-                            <p>С <strong>01.07.2026</strong> продажа маркированных товаров без ТС ПИоТ запрещена (<strong>ст. 15.12 КоАП РФ</strong>)</p>
-                            <p>Лицензия ТС ПИоТ — на сайте <strong>ao-esp.ru</strong></p>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardContent className="pt-4">
-                          <h4 className="font-semibold mb-3 text-sm">Контакты</h4>
-                          <div className="space-y-2 text-xs sm:text-sm text-slate-600">
-                            <p className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 shrink-0" />push@tellur.spb.ru</p>
-                            <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />+7 (812) 465-94-57</p>
-                            <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />+7 (812) 451-80-18</p>
-                            <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />+7 (812) 321-06-06</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <h4 className="font-semibold mb-3 text-sm">Контакты</h4>
+                      <div className="space-y-2 text-xs sm:text-sm text-slate-600">
+                        <p className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 shrink-0" />push@tellur.spb.ru</p>
+                        <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />+7 (812) 465-94-57</p>
+                        <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />+7 (812) 451-80-18</p>
+                        <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />+7 (812) 321-06-06</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* ГОТОВО */}
             {isDone && (

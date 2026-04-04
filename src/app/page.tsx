@@ -630,8 +630,9 @@ export default function TellurServiceCalculator() {
   // Валидация
   const contactValid = clientData.phone.trim() !== ''
   const ecpChecked = clientData.hasEcp
-  // Для Эвотор (новый/бу): можно идти дальше если выбрано чем торгует ИЛИ выбрано хотя бы одно приложение
-  const evotorTradeOrAppsReady = kkmType === 'evotor' && (kkmCondition === 'new' || kkmCondition === 'used')
+  // Для Эвотор/Сигма (новый/бу): можно идти дальше если выбрано чем торгует ИЛИ выбрано хотя бы одно приложение/подписка
+  const smartTerminalNeedsTrade = (kkmType === 'evotor' || effectiveKkm === 'sigma') && (kkmCondition === 'new' || kkmCondition === 'used')
+  const evotorTradeOrAppsReady = smartTerminalNeedsTrade
     ? (evotorTradeType !== 'none' || evotorAppsSelected.size > 0)
     : true
   const canGoStep2 = kkmType !== '' && kkmCondition !== '' && contactValid && ecpChecked && evotorTradeOrAppsReady
@@ -662,9 +663,10 @@ export default function TellurServiceCalculator() {
     })
   }, [])
 
-  // Автоматическая постановка галочек в step2 на основе выбора Эвотор
+  // Автоматическая постановка галочек в step2 на основе выбора Эвотор/Сигмы
   useMemo(() => {
-    if (kkmType !== 'evotor') return
+    const isSmartTerminal = kkmType === 'evotor' || effectiveKkm === 'sigma'
+    if (!isSmartTerminal) return
     if (evotorTradeType === 'none' && evotorAppsSelected.size === 0) return
     const hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking')
     const hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || evotorAppsSelected.has('utm')
@@ -680,7 +682,7 @@ export default function TellurServiceCalculator() {
       }
       return [...next]
     })
-  }, [kkmType, evotorTradeType, evotorAppsSelected, kkmCondition])
+  }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition])
 
   const markingDesc = useMemo(() => {
     if (kkmType === 'evotor') return 'Связываем ЭДО, Честный ЗНАК, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека'
@@ -905,76 +907,128 @@ export default function TellurServiceCalculator() {
                       </ul>
                     </div>
 
-                    {/* Сигма — подписки Атол */}
+                    {/* ============================================================================ */}
+                    {/* СИГМА — чем торгуете + подписки Атол */}
+                    {/* ============================================================================ */}
                     {showSigmaSubs && (
-                      <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
-                        <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote?.title}</p>
-                        <p className="text-sm text-slate-600">{currentKkmInfo.specialNote?.content}</p>
-                        {sigmaSubscriptions.map((sub, idx) => {
-                          const isSelected = sigmaSubSelections.includes(sub.id)
-                          const isLocked = sigmaSubsLocked && sub.required
-                          const isDisabled = isLocked ? false : (sigmaSubsLocked ? false : false)
-                          const price = sigmaSubPeriod === 'year' ? sub.pricePerYear : sub.pricePerMonth
-                          const periodLabel = sigmaSubPeriod === 'year' ? '/год' : '/мес'
-                          return (
-                            <div key={idx} className="p-3 bg-white rounded border border-[#1e3a5f]/10">
-                              <div className="flex items-start gap-2">
-                                <div className="pt-0.5 shrink-0">
-                                  <Checkbox
-                                    id={`sigma_sub_${sub.id}`}
-                                    checked={isSelected}
-                                    disabled={isLocked}
-                                    onCheckedChange={(c) => setSigmaSubSelections(prev =>
-                                      c ? [...prev, sub.id] : prev.filter(x => x !== sub.id)
-                                    )}
-                                    className="w-4 h-4 mt-0.5"
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <Label htmlFor={`sigma_sub_${sub.id}`} className="font-medium text-[#1e3a5f] text-sm cursor-pointer">{sub.name}</Label>
-                                    {sub.required
-                                      ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
-                                      : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
-                                    }
-                                  </div>
-                                  <p className="text-sm text-slate-600 mt-0.5">{sub.purpose}</p>
-                                  {sub.condition && <p className="text-xs text-slate-500 mt-0.5">({sub.condition})</p>}
-                                  <a href={sub.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline">
-                                    <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница подписки на сайте Атол</span>
-                                  </a>
-                                  {isSelected && (
-                                    <p className="text-sm font-semibold text-[#1e3a5f] mt-1">{price.toLocaleString('ru-RU')} ₽{periodLabel} — оплачивается напрямую у Атол</p>
-                                  )}
-                                </div>
+                      <>
+                        {/* Для новых и б/у — выбор чем торгуете */}
+                        {(kkmCondition === 'new' || kkmCondition === 'used') && (
+                          <div className="p-3 sm:p-4 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
+                            <div className="flex items-center gap-2">
+                              <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
+                              <p className="font-semibold text-[#1e3a5f] text-sm">Чем вы планируете торговать?</p>
+                            </div>
+                            <p className="text-xs text-slate-500">Выберите категорию — нужные подписки Атол подставятся автоматически. Или выберите подписки вручную ниже.</p>
+                            <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="marking" id="sigma_trade_marking" />
+                                <Label htmlFor="sigma_trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="alcohol" id="sigma_trade_alcohol" />
+                                <Label htmlFor="sigma_trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="both" id="sigma_trade_both" />
+                                <Label htmlFor="sigma_trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
+                              </div>
+                            </RadioGroup>
+                            {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
+                              <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите категорию или хотя бы одну подписку ниже, чтобы продолжить</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Для действующей — галочка «имеется подписка» */}
+                        {kkmCondition === 'old' && (
+                          <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                            <p className="font-medium text-[#1e3a5f] text-sm">Что нужно подключить на действующей кассе?</p>
+                            <div className="flex items-start gap-3 p-3 bg-white rounded border border-[#1e3a5f]/10">
+                              <Checkbox id="sigma_has_sub" checked={evotorHasSubscription}
+                                onCheckedChange={(c) => {
+                                  const checked = c as boolean
+                                  setEvotorHasSubscription(checked)
+                                  if (checked) {
+                                    setEvotorTradeType('marking')
+                                    setEvotorAppsSelected(new Set(['marking']))
+                                  } else {
+                                    setEvotorTradeType('none')
+                                    setEvotorAppsSelected(new Set())
+                                  }
+                                }}
+                                className="w-5 h-5 mt-0.5 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <Label htmlFor="sigma_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
+                                  У меня уже есть текущая подписка на приложение Атол для маркировки
+                                </Label>
+                                <p className="text-xs text-slate-500 mt-1">Отметьте, если на кассе Сигма уже оплачена подписка «Маркировка». Мы настроим связь с Честным ЗНАК, ЭДО и ТС ПИоТ.</p>
                               </div>
                             </div>
-                          )
-                        })}
-                        {/* Период подписки */}
-                        <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-[#1e3a5f]/10">
-                          <Label className="text-sm font-medium text-slate-600 shrink-0">Период оплаты:</Label>
-                          <RadioGroup value={sigmaSubPeriod} onValueChange={(v) => setSigmaSubPeriod(v as 'month' | 'year')} className="flex gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <RadioGroupItem value="month" id="sigma_month" />
-                              <Label htmlFor="sigma_month" className="text-sm cursor-pointer">Ежемесячно</Label>
+                            {!evotorHasSubscription && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-slate-500 font-medium">Нужна новая подписка. Выберите категорию:</p>
+                                <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="marking" id="sigma_trade_marking_old" />
+                                    <Label htmlFor="sigma_trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="alcohol" id="sigma_trade_alcohol_old" />
+                                    <Label htmlFor="sigma_trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="both" id="sigma_trade_both_old" />
+                                    <Label htmlFor="sigma_trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
+                                  </div>
+                                </RadioGroup>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Подписки Сигмы */}
+                        <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                          <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote?.title}</p>
+                          <p className="text-sm text-slate-600">{currentKkmInfo.specialNote?.content}</p>
+                          {sigmaSubscriptions.map((sub, idx) => {
+                            const subKey = sub.id === 'sigma_marking' ? 'marking' : sub.id === 'sigma_utm' ? 'utm' : sub.id
+                            const isSelected = evotorAppsSelected.has(subKey) || sigmaSubSelections.includes(sub.id)
+                            const canToggle = !evotorHasSubscription
+                            return (
+                              <div key={idx} className={`p-3 bg-white rounded border ${isSelected ? 'border-[#1e3a5f]/40 bg-[#1e3a5f]/5' : 'border-[#1e3a5f]/10'} ${canToggle ? 'cursor-pointer hover:border-[#1e3a5f]/30 transition-colors' : ''}`}
+                                onClick={() => canToggle ? handleEvotorAppToggle(subKey) : undefined}>
+                                <div className="flex items-start gap-3">
+                                  {canToggle && (
+                                    <Checkbox checked={isSelected} className="w-5 h-5 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(subKey)} />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="font-medium text-[#1e3a5f] text-sm">{sub.name}</p>
+                                      {sub.required
+                                        ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
+                                        : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
+                                      }
+                                      {isSelected && <Badge className="bg-green-100 text-green-700 text-xs">Выбрано</Badge>}
+                                    </div>
+                                    <p className="text-sm text-slate-600 mt-0.5">{sub.purpose}</p>
+                                    {sub.condition && <p className="text-xs text-slate-500 mt-0.5">({sub.condition})</p>}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                          {/* Предупреждение о доп. подписках */}
+                          <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                              <p className="text-xs text-amber-700">
+                                <strong>Внимание:</strong> помимо указанных подписок, для работы кассы Сигма могут потребоваться: подписка «Облачная касса» (для удалённого управления) и другие сервисы Атол. Точный набор зависит от ваших задач — уточните у менеджера.
+                              </p>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <RadioGroupItem value="year" id="sigma_year" />
-                              <Label htmlFor="sigma_year" className="text-sm cursor-pointer">Раз в год <span className="text-xs text-green-600 font-medium">выгоднее</span></Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        {/* Предупреждение о доп. подписках */}
-                        <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                            <p className="text-xs text-amber-700">
-                              <strong>Внимание:</strong> помимо указанных подписок, для работы кассы Сигма могут потребоваться: подписка «Облачная касса» (для удалённого управления) и другие сервисы Атол. Точный набор зависит от ваших задач — уточните у менеджера.
-                            </p>
                           </div>
                         </div>
-                      </div>
+                      </>
                     )}
 
                     {/* ============================================================================ */}
@@ -1068,19 +1122,19 @@ export default function TellurServiceCalculator() {
                             return (
                               <div key={idx} className={`p-3 bg-white rounded border ${isSelected ? 'border-[#1e3a5f]/40 bg-[#1e3a5f]/5' : 'border-[#1e3a5f]/10'} ${canToggle ? 'cursor-pointer hover:border-[#1e3a5f]/30 transition-colors' : ''}`}
                                 onClick={() => canToggle ? handleEvotorAppToggle(appKey) : undefined}>
-                                <div className="flex items-start gap-2">
-                                  <div className="pt-0.5 shrink-0 flex items-center gap-2">
-                                    {canToggle && (
-                                      <Checkbox checked={isSelected} className="w-4 h-4" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
-                                    )}
-                                    {app.required
-                                      ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
-                                      : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
-                                    }
-                                    {isSelected && <Badge className="bg-green-100 text-green-700 text-xs">Выбрано</Badge>}
-                                  </div>
+                                <div className="flex items-start gap-3">
+                                  {canToggle && (
+                                    <Checkbox checked={isSelected} className="w-5 h-5 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
+                                  )}
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-[#1e3a5f] text-sm">{app.name}</p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="font-medium text-[#1e3a5f] text-sm">{app.name}</p>
+                                      {app.required
+                                        ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
+                                        : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
+                                      }
+                                      {isSelected && <Badge className="bg-green-100 text-green-700 text-xs">Выбрано</Badge>}
+                                    </div>
                                     <p className="text-sm text-slate-600 mt-0.5">{app.purpose}</p>
                                     {app.condition && <p className="text-xs text-slate-500 mt-0.5">({app.condition})</p>}
                                     <a href={app.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline"

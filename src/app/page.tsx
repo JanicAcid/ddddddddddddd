@@ -1151,14 +1151,17 @@ export default function TellurServiceCalculator() {
                             <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="marking" id="sigma_trade_marking" />
+                                <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                 <Label htmlFor="sigma_trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="alcohol" id="sigma_trade_alcohol" />
+                                <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                 <Label htmlFor="sigma_trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="both" id="sigma_trade_both" />
+                                <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                 <Label htmlFor="sigma_trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                               </div>
                             </RadioGroup>
@@ -1199,14 +1202,17 @@ export default function TellurServiceCalculator() {
                                 <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="marking" id="sigma_trade_marking_old" />
+                                    <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                     <Label htmlFor="sigma_trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="alcohol" id="sigma_trade_alcohol_old" />
+                                    <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                     <Label htmlFor="sigma_trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="both" id="sigma_trade_both_old" />
+                                    <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                     <Label htmlFor="sigma_trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                                   </div>
                                 </RadioGroup>
@@ -1279,14 +1285,17 @@ export default function TellurServiceCalculator() {
                             <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="marking" id="trade_marking" />
+                                <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                 <Label htmlFor="trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="alcohol" id="trade_alcohol" />
+                                <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                 <Label htmlFor="trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="both" id="trade_both" />
+                                <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                 <Label htmlFor="trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                               </div>
                             </RadioGroup>
@@ -1327,14 +1336,17 @@ export default function TellurServiceCalculator() {
                                 <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="marking" id="trade_marking_old" />
+                                    <Image src="/services/trade_marking.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                     <Label htmlFor="trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="alcohol" id="trade_alcohol_old" />
+                                    <Image src="/services/trade_alcohol.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                     <Label htmlFor="trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="both" id="trade_both_old" />
+                                    <Image src="/services/trade_both.webp" alt="" width={20} height={20} className="w-5 h-5 shrink-0" quality={100} unoptimized />
                                     <Label htmlFor="trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                                   </div>
                                 </RadioGroup>

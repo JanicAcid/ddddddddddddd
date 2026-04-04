@@ -1541,14 +1541,12 @@ export default function TellurServiceCalculator() {
                           onCheckedChange={(c) => {
                             const val = !!c
                             setClientData(prev => ({ ...prev, sellsExcise: val }))
-                            // Для старой кассы — автовыбор перерегистрации при включении подакцизных
                             if (kkmCondition === 'old' && val) {
                               setStep2Selections(prev => {
                                 if (prev.includes('fns_reregistration')) return prev
                                 return [...prev, 'fns_reregistration']
                               })
                             }
-                            // Для старой кассы — убрать перерегистрацию при снятии подакцизных (если нет галочки "не уверен")
                             if (kkmCondition === 'old' && !val && !unsureFnsRegistration) {
                               setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
                             }
@@ -1558,7 +1556,7 @@ export default function TellurServiceCalculator() {
                           <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">
                             Планируете продавать подакцизные товары?
                           </Label>
-                          <p className="text-xs sm:text-sm text-orange-600 mt-0.5">Алкоголь, табачная продукция, пиво — если да, это повлияет на выбор ФН и настройки</p>
+                          <p className="text-xs text-orange-600 mt-0.5">Алкоголь, табачная продукция, пиво — повлияет на выбор ФН и настройки</p>
                         </div>
                       </div>
                     </CardContent>
@@ -1588,9 +1586,6 @@ export default function TellurServiceCalculator() {
                       <CardContent className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                         <div className="flex items-start gap-2">
                           {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
-                            <ServiceIcon className="w-5 h-5 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                          </div>
                           <Checkbox id={service.id} checked={selected}
                             onCheckedChange={() => {
                               const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
@@ -1598,8 +1593,6 @@ export default function TellurServiceCalculator() {
                                 const without = mutuallyExclusive ? prev.filter(x => x !== mutuallyExclusive) : prev
                                 const isNowSelected = !without.includes(service.id)
                                 const next = isNowSelected ? [...without, service.id] : without.filter(x => x !== service.id)
-                                // При выборе частичной настройки — убрать перерегистрацию (клиент уже работает с маркировкой)
-                                // Но НЕ убирать если есть алкоголь (перерегистрация нужна для подакцизных товаров)
                                 if (service.id === 'partial_marketing_setup' && isNowSelected) {
                                   setUnsureFnsRegistration(false)
                                   if (!clientData.sellsExcise) {
@@ -1612,34 +1605,32 @@ export default function TellurServiceCalculator() {
                             className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <Label htmlFor={service.id} className="font-bold text-base leading-snug cursor-pointer">{service.name}</Label>
-                              <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
+                              <Label htmlFor={service.id} className="font-bold text-sm leading-snug cursor-pointer">{service.name}</Label>
+                              <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
-                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{desc}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
                             {service.id === 'partial_marketing_setup' && selected && (
-                              <div className="mt-2 space-y-2">
-                                <div className="p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                              <div className="mt-1.5 space-y-1.5">
+                                <div className="p-1.5 bg-orange-50 border border-orange-200 rounded">
                                   <p className="text-xs text-orange-700 font-medium">⚠ Перерегистрация кассы в ФНС не включена — ответственность за корректность регистрации на Вас. Если касса уже зарегистрирована с признаками маркировки и форматом ФФД 1.2 — всё в порядке.</p>
                                 </div>
-                                <div className="flex items-start gap-2.5 p-2 bg-white rounded-lg border border-slate-200">
+                                <div className="flex items-center gap-2 p-1.5 bg-white rounded border border-slate-200">
                                   <Checkbox id="unsure_fns_reg"
                                     checked={unsureFnsRegistration}
                                     onCheckedChange={(c) => {
                                       const val = c as boolean
                                       setUnsureFnsRegistration(val)
                                       if (val) {
-                                        // Автовыбор перерегистрации
                                         setStep2Selections(prev => {
                                           if (prev.includes('fns_reregistration')) return prev
                                           return [...prev, 'fns_reregistration']
                                         })
                                       } else if (!clientData.sellsExcise) {
-                                        // Снять перерегистрацию если нет алкоголя
                                         setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
                                       }
                                     }}
-                                    className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                                  <Label htmlFor="unsure_fns_reg" className="cursor-pointer text-sm leading-snug">
+                                    className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+                                  <Label htmlFor="unsure_fns_reg" className="cursor-pointer text-xs leading-snug">
                                     Не уверен, верно ли зарегистрирована касса в ФНС
                                   </Label>
                                 </div>
@@ -1701,10 +1692,7 @@ export default function TellurServiceCalculator() {
                       <CardContent className="">
                         <div className="flex items-start gap-2">
                           <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
-                            <Server className="w-5 h-5 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                          </div>                          <Checkbox id="ofd_check"
+                          <Checkbox id="ofd_check"
                             checked={ofdEffective}
                             disabled={ofdLocked}
                             onCheckedChange={(c) => setOfdChecked(c as boolean)}
@@ -1712,44 +1700,40 @@ export default function TellurServiceCalculator() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                <Label htmlFor="ofd_check" className={`font-bold text-base cursor-pointer leading-snug ${ofdLocked ? 'text-[#1e3a5f]' : ''}`}>
+                                <Label htmlFor="ofd_check" className={`font-bold text-sm cursor-pointer leading-snug ${ofdLocked ? 'text-[#1e3a5f]' : ''}`}>
                                   ОФД (оператор фискальных данных)
                                 </Label>
                                 {selectedProvider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs shrink-0">Партнёр</Badge>}
                               </div>
                             </div>
-                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                              ОФД — обязательное подключение для работы кассы. Мы также продлеваем подписки на ОФД.{ofdLocked && ' Для новой кассы подключение обязательно.'}
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Обязательное подключение для работы кассы.{ofdLocked && ' Для новой кассы включено автоматически.'}
                             </p>
                             {ofdEffective && (
-                              <div className="mt-2 space-y-2">
-                                {/* Provider selection (only for non-new registers with multiple providers) */}
+                              <div className="mt-1.5 space-y-1.5">
                                 {visibleProviders.length > 1 && (
-                                  <div className="space-y-2">
-                                    <RadioGroup value={ofdProvider} onValueChange={setOfdProvider} className="space-y-2">
-                                      {visibleProviders.map(provider => (
-                                        <div key={provider.id} className="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-[#1e3a5f]/10">
-                                          <RadioGroupItem value={provider.id} id={`ofd_${provider.id}`} />
-                                          <Label htmlFor={`ofd_${provider.id}`} className="flex-1 cursor-pointer text-sm">
-                                            <span className="font-medium text-[#1e3a5f]">{provider.name}</span>
-                                            {provider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs ml-2">Партнёр</Badge>}
-                                          </Label>
-                                        </div>
-                                      ))}
-                                    </RadioGroup>
-                                  </div>
+                                  <RadioGroup value={ofdProvider} onValueChange={setOfdProvider} className="space-y-1.5">
+                                    {visibleProviders.map(provider => (
+                                      <div key={provider.id} className="flex items-center gap-2 p-1.5 bg-white rounded border border-[#1e3a5f]/10">
+                                        <RadioGroupItem value={provider.id} id={`ofd_${provider.id}`} />
+                                        <Label htmlFor={`ofd_${provider.id}`} className="flex-1 cursor-pointer text-xs">
+                                          <span className="font-medium text-[#1e3a5f]">{provider.name}</span>
+                                          {provider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs ml-2">Партнёр</Badge>}
+                                        </Label>
+                                      </div>
+                                    ))}
+                                  </RadioGroup>
                                 )}
-                                {/* Period selection */}
-                                <RadioGroup value={ofdPeriod} onValueChange={(v) => setOfdPeriod(v as OfdPeriod)} className="space-y-2">
+                                <RadioGroup value={ofdPeriod} onValueChange={(v) => setOfdPeriod(v as OfdPeriod)} className="space-y-1.5">
                                   {(['15', '36'] as const).map(period => {
                                     const info = selectedProvider.periods[period]
                                     return (
-                                      <div key={period} className="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                      <div key={period} className="flex items-center gap-2 p-1.5 bg-white rounded border border-[#1e3a5f]/10">
                                         <RadioGroupItem value={period} id={`ofd_period_${period}`} />
-                                        <Label htmlFor={`ofd_period_${period}`} className="flex-1 cursor-pointer text-sm">
-                                          <span className="font-medium text-[#1e3a5f]">Договор на {period === '15' ? '15' : '36'} месяцев</span>
+                                        <Label htmlFor={`ofd_period_${period}`} className="flex-1 cursor-pointer text-xs">
+                                          <span className="font-medium text-[#1e3a5f]">Договор на {period === '15' ? '15' : '36'} мес.</span>
                                           <span className="ml-2 inline-flex items-center gap-1.5 flex-wrap">
-                                            <span className="font-bold text-[#1e3a5f] text-sm sm:text-base">{info.price.toLocaleString('ru-RU')} ₽</span>
+                                            <span className="font-bold text-[#1e3a5f] text-xs">{info.price.toLocaleString('ru-RU')} ₽</span>
                                             <span className="text-slate-400 line-through text-xs">{info.originalPrice.toLocaleString('ru-RU')} ₽</span>
                                             <span className="text-xs text-green-600 font-medium">скидка</span>
                                           </span>

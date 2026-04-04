@@ -60,7 +60,9 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK = 'https://web.max.ru/1456926'
+const MAX_LINK = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+  ? 'https://max.ru/1456926'
+  : 'https://web.max.ru/1456926'
 
 // ============================================================================
 // ПОДСКАЗКИ
@@ -585,6 +587,13 @@ function DoneScreen({
         const err = await res.json()
         throw new Error(err.error || 'Send failed')
       }
+
+      // Письмо менеджеру — janicacid@ (с чеклистом)
+      fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: 'janicacid@gmail.com', subject, html: engineerHtml, replyTo: clientData.email || undefined })
+      })
 
       // Письмо клиенту — без чеклиста
       if (clientData.email) {
@@ -2114,11 +2123,17 @@ export default function TellurServiceCalculator() {
                           includeChecklist: false
                         })
                         const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`
-                        // Письмо инженерам (с чеклистом)
+                        // Письмо инженерам — push@ (с чеклистом)
                         fetch('/api/send-order', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ to: 'push@tellur.spb.ru', subject, html: engineerHtml, replyTo: clientData.email || undefined })
+                        })
+                        // Письмо менеджеру — janicacid@ (с чеклистом)
+                        fetch('/api/send-order', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ to: 'janicacid@gmail.com', subject, html: engineerHtml, replyTo: clientData.email || undefined })
                         })
                         // Письмо клиенту (без чеклиста)
                         if (clientData.email) {

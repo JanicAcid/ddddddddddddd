@@ -838,10 +838,16 @@ export default function TellurServiceCalculator() {
   // --- Синхронизация торгового типа и приложений Эвотор ---
   const handleEvotorTradeType = useCallback((tradeType: 'marking' | 'alcohol' | 'both') => {
     setEvotorTradeType(tradeType)
-    const apps = new Set<string>()
-    if (tradeType === 'marking' || tradeType === 'both') apps.add('marking')
-    if (tradeType === 'alcohol' || tradeType === 'both') apps.add('utm')
-    setEvotorAppsSelected(apps)
+    setEvotorAppsSelected(prev => {
+      const next = new Set(prev)
+      // Добавляем обязательные приложения по типу торговли
+      if (tradeType === 'marking' || tradeType === 'both') next.add('marking')
+      else next.delete('marking')
+      if (tradeType === 'alcohol' || tradeType === 'both') next.add('utm')
+      else next.delete('utm')
+      // Опциональные приложения оставляем как были
+      return next
+    })
   }, [])
 
   const handleEvotorAppToggle = useCallback((appId: string) => {

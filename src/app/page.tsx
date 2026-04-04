@@ -1192,7 +1192,7 @@ export default function TellurServiceCalculator() {
                             className={`flex items-center justify-center p-0.5 sm:p-1.5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
-                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain opacity-50" quality={100} unoptimized />
+                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain opacity-40" quality={100} unoptimized />
                           </button>
                         )
                       })}
@@ -1523,7 +1523,7 @@ export default function TellurServiceCalculator() {
             {/* УСЛУГИ */}
             {/* ============================================================ */}
             {currentStep === 2 && !isDone && (
-              <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
+              <div className="max-w-2xl mx-auto space-y-2">
 
                 {/* Подакцизные товары — выше всех */}
                 {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || kkmCondition === 'old') && (
@@ -1780,8 +1780,8 @@ export default function TellurServiceCalculator() {
                 </Card>
 
                 <div className="flex gap-4">
-                  <Button variant="outline" className="flex-1 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => { setCurrentStep(1); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2" /> Назад</Button>
-                  <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => goToStep(3)} disabled={!canGoStep3}>Далее <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2" /></Button>
+                  <Button variant="outline" className="flex-1 py-4 text-base font-bold" size="lg" onClick={() => { setCurrentStep(1); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 mr-2" /> Назад</Button>
+                  <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 text-base font-bold" size="lg" onClick={() => goToStep(3)} disabled={!canGoStep3}>Далее <ArrowRight className="w-5 h-5 ml-2" /></Button>
                 </div>
               </div>
             )}

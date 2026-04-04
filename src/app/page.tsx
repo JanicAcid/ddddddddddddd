@@ -1658,7 +1658,7 @@ export default function TellurServiceCalculator() {
                               </div>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                              Оператор фискальных данных — обязательное подключение для работы кассы.
+                              Оператор фискальных данных — обязательное подключение для работы кассы. Мы также продлеваем подписки на ОФД.
                               {ofdLocked && <span className="font-medium text-[#1e3a5f]"> Для новой кассы подключение ОФД обязательно.</span>}
                             </p>
                             {ofdEffective && (

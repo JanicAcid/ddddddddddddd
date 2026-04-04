@@ -1504,6 +1504,40 @@ export default function TellurServiceCalculator() {
             {currentStep === 2 && !isDone && (
               <div className="max-w-2xl mx-auto space-y-5 sm:space-y-7">
 
+                {/* Подакцизные товары — выше всех */}
+                {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || kkmCondition === 'old') && (
+                  <Card className="border-orange-200 bg-orange-50/50">
+                    <CardContent className="pt-5 sm:pt-6">
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="excise_check"
+                          checked={clientData.sellsExcise}
+                          onCheckedChange={(c) => {
+                            const val = !!c
+                            setClientData(prev => ({ ...prev, sellsExcise: val }))
+                            // Для старой кассы — автовыбор перерегистрации при включении подакцизных
+                            if (kkmCondition === 'old' && val) {
+                              setStep2Selections(prev => {
+                                if (prev.includes('fns_reregistration')) return prev
+                                return [...prev, 'fns_reregistration']
+                              })
+                            }
+                            // Для старой кассы — убрать перерегистрацию при снятии подакцизных (если нет галочки "не уверен")
+                            if (kkmCondition === 'old' && !val && !unsureFnsRegistration) {
+                              setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
+                            }
+                          }}
+                          className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">
+                            Планируете продавать подакцизные товары?
+                          </Label>
+                          <p className="text-xs sm:text-sm text-orange-600 mt-1">Алкоголь, табачная продукция, пиво — если да, это повлияет на выбор ФН и настройки</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Активные (доступные для выбора) услуги */}
                 {step2Services.filter(s => {
                   if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
@@ -1630,40 +1664,6 @@ export default function TellurServiceCalculator() {
                     </div>
                   )
                 })()}
-
-                {/* Подакцизные товары */}
-                {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || kkmCondition === 'old') && (
-                  <Card className="border-orange-200 bg-orange-50/50">
-                    <CardContent className="pt-5 sm:pt-6">
-                      <div className="flex items-start gap-3">
-                        <Checkbox id="excise_check"
-                          checked={clientData.sellsExcise}
-                          onCheckedChange={(c) => {
-                            const val = !!c
-                            setClientData(prev => ({ ...prev, sellsExcise: val }))
-                            // Для старой кассы — автовыбор перерегистрации при включении подакцизных
-                            if (kkmCondition === 'old' && val) {
-                              setStep2Selections(prev => {
-                                if (prev.includes('fns_reregistration')) return prev
-                                return [...prev, 'fns_reregistration']
-                              })
-                            }
-                            // Для старой кассы — убрать перерегистрацию при снятии подакцизных (если нет галочки "не уверен")
-                            if (kkmCondition === 'old' && !val && !unsureFnsRegistration) {
-                              setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
-                            }
-                          }}
-                          className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">
-                            Планируете продавать подакцизные товары?
-                          </Label>
-                          <p className="text-xs sm:text-sm text-orange-600 mt-1">Алкоголь, табачная продукция, пиво — если да, это повлияет на выбор ФН и настройки</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
 
                 {/* ОФД */}
                 {(() => {

@@ -385,6 +385,7 @@ function generateOrderHtml(params: {
   serviceContractChecked: boolean
   evotorRestore: boolean
   sigmaHelpChecked: boolean
+  unsureFnsRegistration: boolean
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
@@ -432,6 +433,9 @@ function generateOrderHtml(params: {
   if (params.step2Selections.includes('partial_marketing_setup')) {
     checklist.push('Проверить все подключения (ЭДО, Честный ЗНАК, ТС ПИоТ)')
     checklist.push('Настроить недостающие модули маркировки')
+  }
+  if (params.unsureFnsRegistration) {
+    checklist.push('Проверить регистрацию ККТ в ФНС — признаки маркировки и ФФД 1.2')
   }
   if (params.scannerChecked) {
     checklist.push('Подключить 2D-сканер')
@@ -533,8 +537,8 @@ function DoneScreen({
 
   const orderHtml = useMemo(() => generateOrderHtml({
     effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked
-  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked])
+    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
+  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration])
 
   const handleSaveFile = useCallback(() => {
     const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
@@ -558,7 +562,7 @@ function DoneScreen({
       // Generate full order HTML with engineer checklist
       const emailHtml = generateOrderHtml({
         effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked
+        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
       })
 
       const res = await fetch('/api/send-order', {
@@ -770,6 +774,7 @@ export default function TellurServiceCalculator() {
   const [fnActivityType, setFnActivityType] = useState('general')
   // Сигма — 3 тарифа, оплачиваются отдельно на sigma.ru/tarify/
   const [sigmaHelpChecked, setSigmaHelpChecked] = useState(false)
+  const [unsureFnsRegistration, setUnsureFnsRegistration] = useState(false)
   const [serviceContractChecked, setServiceContractChecked] = useState(false)
   const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
 
@@ -844,26 +849,62 @@ export default function TellurServiceCalculator() {
     })
   }, [])
 
-  // Автоматическая постановка галочек в step2 на основе выбора Эвотор/Сигмы
+  // Автоматическая постановка галочек в step2 на основе состояния
   useMemo(() => {
     const isSmartTerminal = kkmType === 'evotor' || effectiveKkm === 'sigma'
-    if (!isSmartTerminal) return
-    if (evotorTradeType === 'none' && evotorAppsSelected.size === 0) return
-    const hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking')
-    const hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || evotorAppsSelected.has('utm')
+
+    // Определяем наличие маркировки и алкоголя
+    let hasMarking = false
+    let hasAlcohol = false
+    if (isSmartTerminal) {
+      hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking')
+      hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || evotorAppsSelected.has('utm')
+    }
+    // Для не-смарт терминалов (Атол, Меркурий и др.): sellsExcise — единственный показатель алкоголя
+    if (!isSmartTerminal) {
+      hasAlcohol = clientData.sellsExcise
+    }
+
+    // Авто-установка sellsExcise при выборе алкоголя на смарт-терминале
+    if (isSmartTerminal && hasAlcohol && !clientData.sellsExcise) {
+      setClientData(prev => ({ ...prev, sellsExcise: true }))
+    }
+
+    // Не-смарт терминал без маркировки/алкоголя — не ставим ничего автоматически
+    if (!isSmartTerminal && !hasMarking && !hasAlcohol && kkmCondition !== 'old') return
+
     setStep2Selections(prev => {
       const next = new Set(prev)
-      if (hasMarking) {
-        if (!next.has('marking_setup')) next.add('marking_setup')
-      }
+
+      // ====== СТАРАЯ КАССА (любой бренд) ======
       if (kkmCondition === 'old') {
-        if (hasMarking || hasAlcohol) {
+        // Всегда частичная настройка — клиент уже работает с маркировкой
+        next.delete('marking_setup')
+        if (!next.has('partial_marketing_setup')) next.add('partial_marketing_setup')
+
+        if (hasAlcohol) {
+          // Добавление алкоголя → нужна перерегистрация
           if (!next.has('fns_reregistration')) next.add('fns_reregistration')
+        } else {
+          // Только маркировка, без алкоголя → перерегистрация не нужна
+          next.delete('fns_reregistration')
+        }
+        return [...next]
+      }
+
+      // ====== НОВАЯ / Б/У КАССА ======
+      if (isSmartTerminal) {
+        if (hasMarking) {
+          if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
+        }
+        if (hasAlcohol && !next.has('fns_reregistration') && kkmCondition !== 'new') {
+          next.add('fns_reregistration')
         }
       }
+
       return [...next]
     })
-  }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition])
+  }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition, clientData.sellsExcise])
 
   const markingDesc = useMemo(() => {
     if (kkmType === 'evotor') return 'Связываем ЭДО, Честный ЗНАК, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека'
@@ -950,7 +991,7 @@ export default function TellurServiceCalculator() {
   const handlePrint = () => {
     const printContent = generateOrderHtml({
       effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-      step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked
+      step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
     })
     const printWithScript = printContent.replace('</body>', '<script>window.print();</script></body>')
     const w = window.open('', '_blank')
@@ -1466,12 +1507,17 @@ export default function TellurServiceCalculator() {
                 {/* Активные (доступные для выбора) услуги */}
                 {step2Services.filter(s => {
                   if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
+                  // Полная настройка недоступна для старой кассы (уже работает с маркировкой)
+                  if (s.id === 'marking_setup' && kkmCondition === 'old') return false
                   const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
                   const isMutuallyDisabled = (
                     (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
                     (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
                   )
-                  return !isLocked && !isMutuallyDisabled
+                  // Перерегистрация для старой кассы — только при подакцизных или галочке "не уверен"
+                  const isFnsBlockedForOld = kkmCondition === 'old' && s.id === 'fns_reregistration' &&
+                    !clientData.sellsExcise && !unsureFnsRegistration
+                  return !isLocked && !isMutuallyDisabled && !isFnsBlockedForOld
                 }).map((service, idx) => {
                   const desc = service.id === 'marking_setup' ? markingDesc : service.description
                   const selected = step2Selections.includes(service.id)
@@ -1489,7 +1535,17 @@ export default function TellurServiceCalculator() {
                               const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
                               setStep2Selections(prev => {
                                 const without = mutuallyExclusive ? prev.filter(x => x !== mutuallyExclusive) : prev
-                                return without.includes(service.id) ? without.filter(x => x !== service.id) : [...without, service.id]
+                                const isNowSelected = !without.includes(service.id)
+                                const next = isNowSelected ? [...without, service.id] : without.filter(x => x !== service.id)
+                                // При выборе частичной настройки — убрать перерегистрацию (клиент уже работает с маркировкой)
+                                // Но НЕ убирать если есть алкоголь (перерегистрация нужна для подакцизных товаров)
+                                if (service.id === 'partial_marketing_setup' && isNowSelected) {
+                                  setUnsureFnsRegistration(false)
+                                  if (!clientData.sellsExcise) {
+                                    return next.filter(x => x !== 'fns_reregistration')
+                                  }
+                                }
+                                return next
                               })
                             }}
                             className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
@@ -1499,6 +1555,35 @@ export default function TellurServiceCalculator() {
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">{desc}</p>
+                            {service.id === 'partial_marketing_setup' && selected && (
+                              <div className="mt-3 space-y-2.5">
+                                <div className="p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
+                                  <p className="text-xs text-orange-700 font-medium">⚠ Перерегистрация кассы в ФНС не включена — ответственность за корректность регистрации на Вас. Если касса уже зарегистрирована с признаками маркировки и форматом ФФД 1.2 — всё в порядке.</p>
+                                </div>
+                                <div className="flex items-start gap-2.5 p-2.5 bg-white rounded-lg border border-slate-200">
+                                  <Checkbox id="unsure_fns_reg"
+                                    checked={unsureFnsRegistration}
+                                    onCheckedChange={(c) => {
+                                      const val = c as boolean
+                                      setUnsureFnsRegistration(val)
+                                      if (val) {
+                                        // Автовыбор перерегистрации
+                                        setStep2Selections(prev => {
+                                          if (prev.includes('fns_reregistration')) return prev
+                                          return [...prev, 'fns_reregistration']
+                                        })
+                                      } else if (!clientData.sellsExcise) {
+                                        // Снять перерегистрацию если нет алкоголя
+                                        setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
+                                      }
+                                    }}
+                                    className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                  <Label htmlFor="unsure_fns_reg" className="cursor-pointer text-sm leading-snug">
+                                    Не уверен, верно ли зарегистрирована касса в ФНС
+                                  </Label>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -1510,23 +1595,35 @@ export default function TellurServiceCalculator() {
                 {(() => {
                   const unavailable = step2Services.filter(s => {
                     if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
+                    // Полная настройка недоступна для старой кассы
+                    const isMarkingLockedForOld = kkmCondition === 'old' && s.id === 'marking_setup'
                     const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
                     const isMutuallyDisabled = (
                       (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
                       (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
                     )
-                    return isLocked || isMutuallyDisabled
+                    const isFnsBlockedForOld = kkmCondition === 'old' && s.id === 'fns_reregistration' &&
+                      !clientData.sellsExcise && !unsureFnsRegistration
+                    return isMarkingLockedForOld || isLocked || isMutuallyDisabled || isFnsBlockedForOld
                   })
                   if (unavailable.length === 0) return null
                   return (
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
                       <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Недоступные для выбора:</p>
                       {unavailable.map(s => {
+                        const isMarkingLockedForOld = kkmCondition === 'old' && s.id === 'marking_setup'
                         const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
+                        const isFnsBlockedForOld = kkmCondition === 'old' && s.id === 'fns_reregistration' &&
+                          !clientData.sellsExcise && !unsureFnsRegistration
+                        const reason = isMarkingLockedForOld
+                          ? 'касса уже работает с маркировкой — доступна только частичная настройка'
+                          : isLocked ? 'включено автоматически'
+                          : isFnsBlockedForOld ? 'отметьте «Подакцизные товары» или «Не уверен» ниже чтобы открыть'
+                          : 'взаимоисключает выбранную услугу'
                         return (
                           <p key={s.id} className="text-xs text-slate-400">
                             <span className="line-through">{s.name}</span>
-                            <span className="ml-1.5">— {isLocked ? 'включено автоматически' : 'взаимоисключает выбранную услугу'}</span>
+                            <span className="ml-1.5">— {reason}</span>
                           </p>
                         )
                       })}
@@ -1535,13 +1632,27 @@ export default function TellurServiceCalculator() {
                 })()}
 
                 {/* Подакцизные товары */}
-                {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new') && (
+                {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || kkmCondition === 'old') && (
                   <Card className="border-orange-200 bg-orange-50/50">
                     <CardContent className="pt-5 sm:pt-6">
                       <div className="flex items-start gap-3">
                         <Checkbox id="excise_check"
                           checked={clientData.sellsExcise}
-                          onCheckedChange={(c) => setClientData(prev => ({ ...prev, sellsExcise: !!c }))}
+                          onCheckedChange={(c) => {
+                            const val = !!c
+                            setClientData(prev => ({ ...prev, sellsExcise: val }))
+                            // Для старой кассы — автовыбор перерегистрации при включении подакцизных
+                            if (kkmCondition === 'old' && val) {
+                              setStep2Selections(prev => {
+                                if (prev.includes('fns_reregistration')) return prev
+                                return [...prev, 'fns_reregistration']
+                              })
+                            }
+                            // Для старой кассы — убрать перерегистрацию при снятии подакцизных (если нет галочки "не уверен")
+                            if (kkmCondition === 'old' && !val && !unsureFnsRegistration) {
+                              setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
+                            }
+                          }}
                           className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">

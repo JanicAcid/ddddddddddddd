@@ -1014,10 +1014,9 @@ export default function TellurServiceCalculator() {
                   <p className="text-sm sm:text-base text-slate-500 truncate">Рассчитайте стоимость подключения маркировки</p>
                 </div>
               </div>
-              <a href="tel:+79219324163" className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors shrink-0 whitespace-nowrap">
-                <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <a href="tel:+79219324163" title="+7 921 932 41 63" className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:inline-flex sm:gap-1.5 sm:px-3 sm:py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-full sm:rounded-lg transition-colors shrink-0">
+                <Phone className="w-4 h-4 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Позвонить менеджеру</span>
-                <span className="sm:hidden">+7 921 932 41 63</span>
               </a>
             </div>
           </div>

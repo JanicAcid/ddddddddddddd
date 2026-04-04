@@ -185,7 +185,7 @@ export const sigmaSubscriptions: SigmaSubscription[] = [
     required: true,
     pricePerMonth: 299,
     pricePerYear: 2990,
-    link: 'https://sigma.online/atol/subscription/marking'
+    link: 'https://sigma.ru/tarify/'
   },
   {
     id: 'sigma_utm',
@@ -195,7 +195,7 @@ export const sigmaSubscriptions: SigmaSubscription[] = [
     condition: 'Только при продаже алкоголя',
     pricePerMonth: 199,
     pricePerYear: 1990,
-    link: 'https://sigma.online/atol/subscription/utm'
+    link: 'https://sigma.ru/tarify/'
   },
   {
     id: 'sigma_inventory',
@@ -205,7 +205,7 @@ export const sigmaSubscriptions: SigmaSubscription[] = [
     condition: 'Для удобного ведения учёта товаров',
     pricePerMonth: 399,
     pricePerYear: 3990,
-    link: 'https://sigma.online/atol/subscription/inventory'
+    link: 'https://sigma.ru/tarify/'
   },
   {
     id: 'sigma_cloud',
@@ -215,7 +215,7 @@ export const sigmaSubscriptions: SigmaSubscription[] = [
     condition: 'Для удалённого управления кассой',
     pricePerMonth: 199,
     pricePerYear: 1990,
-    link: 'https://sigma.online/atol/subscription/cloud'
+    link: 'https://sigma.ru/tarify/'
   }
 ]
 

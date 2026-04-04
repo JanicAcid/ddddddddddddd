@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   keywords: ["маркировка", "Честный ЗНАК", "ККМ", "касса", "ЭЦП", "ЭДО", "ТС ПИоТ", "регистрация ККТ", "Меркурий", "Атол", "Эвотор", "Штрих-М", "Пионер", "калькулятор маркировки"],
   authors: [{ name: "Теллур-Интех" }],
   icons: {
-    icon: "/logo.svg",
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 

@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_6J2WHQqS_BffXxSJGh84
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { to, cc, subject, html, replyTo } = body
+    const { to, subject, html, replyTo } = body
 
     if (!to || !subject || !html) {
       return Response.json({ error: 'Missing required fields: to, subject, html' }, { status: 400 })
@@ -14,7 +14,6 @@ export async function POST(request: Request) {
     const { data, error } = await resend.emails.send({
       from: 'Теллур-Интех <onboarding@resend.dev>',
       to: [to],
-      cc: cc ? [cc] : undefined,
       subject,
       html,
       replyTo: replyTo || undefined,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -29,6 +29,18 @@ import Image from 'next/image'
 type Step = 1 | 2 | 3 | 4
 type KkmCondition = 'new' | 'used' | 'old'
 type OfdPeriod = '15' | '36'
+
+const KKM_BRANDS: Record<string, { color: string; bg: string }> = {
+  mercury: { color: '#0D4F8B', bg: '#0D4F8B' },
+  atol:    { color: '#E8442E', bg: '#E8442E' },
+  shuttle: { color: '#1E1E1E', bg: '#1E1E1E' },
+  pioneer: { color: '#6B8E7B', bg: '#6B8E7B' },
+  aqsi:    { color: '#2563EB', bg: '#2563EB' },
+  evotor:  { color: '#D97706', bg: '#D97706' },
+  sigma:   { color: '#0891B2', bg: '#0891B2' },
+}
+
+// Логотипы теперь содержат текст бренда — маппинг не нужен
 
 // ============================================================================
 // КОНТАКТЫ
@@ -290,7 +302,7 @@ function HintButton({ hintKey }: { hintKey: string }) {
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); setOpen(true) }}
-        className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-700 hover:text-amber-800 transition-colors shrink-0"
+        className="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-700 hover:text-amber-800 transition-colors shrink-0"
         aria-label="Подсказка"
       >
         <span className="text-xs sm:text-sm font-bold">?</span>
@@ -353,74 +365,62 @@ function generateOrderHtml(params: {
   const orderNum = Date.now().toString().slice(-6)
   const sepText = params.kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — оплачиваются отдельно напрямую у поставщиков.' : params.kkmType === 'atol' ? 'ТС ПИоТ, подписки Сигма — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ, подписки — оплачиваются отдельно напрямую у поставщиков.'
 
-  // Чек-лист для инженера
+  // Generate engineer checklist
   const checklist: string[] = []
-  const isNew = params.kkmCondition === 'new'
-  const isOld = params.kkmCondition === 'old'
-  const isUsed = params.kkmCondition === 'used'
-
-  if (isNew) {
-    checklist.push('Зарегистрировать ККТ в ФНС — подать заявление, подписать ЭЦП')
-    checklist.push('Подключить к ОФД — проверить связь, настроить обмен')
-    checklist.push('Установить и активировать ФН')
+  if (params.kkmCondition === 'new') {
+    checklist.push('Зарегистрировать ККТ в ФНС')
+    checklist.push('Подключить ОФД')
+    checklist.push('Установить ФН')
   }
-
-  if (params.step2Selections.includes('fns_reregistration') || isOld) {
-    checklist.push('Перерегистрация в ФНС: добавить признаки маркировки и/или подакцизных товаров')
+  if (params.step2Selections.includes('fns_reregistration') || params.kkmCondition === 'old') {
+    checklist.push('Перерегистрация в ФНС с признаками маркировки/подакцизные товары')
     checklist.push('Сменить формат ФФД на 1.2')
   }
-
   if (params.step2Selections.includes('marking_setup')) {
-    checklist.push('Настроить ЭДО — подключить оператора, протестировать приём накладных')
-    checklist.push('Настроить Честный ЗНАК — регистрация, привязка кассы, проверка кодов')
-    checklist.push('Настроить ТС ПИоТ — установить, активировать лицензию, привязать к Честному ЗНАКу')
+    checklist.push('Настроить ЭДО')
+    checklist.push('Настроить Честный ЗНАК')
+    checklist.push('Настроить ТС ПИоТ')
+    checklist.push('Пробить тестовый маркированный чек')
     if (params.kkmType === 'evotor') {
-      checklist.push('Установить приложение «Маркировка» из магазина Эвотор')
-      checklist.push('Настроить личный кабинет Эвотор — связать с Честным ЗНАКом')
+      checklist.push('Установить приложение «Маркировка» на Эвотор')
+      checklist.push('Настроить личный кабинет Эвотор')
+      if (params.clientData.sellsExcise) {
+        checklist.push('Добавить признак подакцизных товаров')
+        checklist.push('Установить УТМ+ на Эвотор')
+      }
     }
-    if (params.effectiveKkmInfo.name.includes('Сигма')) {
-      checklist.push('Установить подписку «Маркировка» через магазин Атол')
+    if (params.kkmType === 'atol') {
+      checklist.push('Установить подписку «Маркировка» на Сигма')
     }
-    if (params.clientData.sellsExcise) {
-      checklist.push('Добавить признак подакцизных товаров в настройках кассы')
-      if (params.kkmType === 'evotor') checklist.push('Установить приложение «УТМ+» для ЕГАИС')
-    }
-    checklist.push('Провести тестовый чек с кодом маркировки — проверить прохождение в ФНС')
   }
-
   if (params.step2Selections.includes('partial_marketing_setup')) {
-    checklist.push('Проверить все связи: ЭДО ↔ Честный ЗНАК ↔ ТС ПИоТ ↔ Касса')
-    checklist.push('Настроить недостающие модули')
-    checklist.push('Протестировать пробитие чека с маркировкой')
+    checklist.push('Проверить все подключения (ЭДО, Честный ЗНАК, ТС ПИоТ)')
+    checklist.push('Настроить недостающие модули маркировки')
   }
-
   if (params.scannerChecked) {
-    checklist.push('Подключить 2D-сканер — проверить чтение кодов Data Matrix')
+    checklist.push('Подключить 2D-сканер')
+    checklist.push('Проверить чтение кодов Data Matrix')
   }
-
   if (params.fnChecked) {
-    checklist.push('Установить ФН — проверить активацию и срок действия')
+    checklist.push('Установить ФН')
+    checklist.push('Проверить активацию ФН')
   }
-
   if (params.productCardCount > 0) {
-    checklist.push(`Создать карточки товаров (${params.productCardCount} шт.) — заполнить название, артикул, привязку к маркировке, цену`)
+    checklist.push(`Создать карточки товаров (${params.productCardCount} шт.)`)
   }
-
   if (params.step3Selections.includes('ecp_renewal')) {
-    checklist.push('Продлить ЭЦП на токене клиента — проверить срок действия')
+    checklist.push('Продлить ЭЦП на токене клиента')
   }
-
   if (params.step3Selections.includes('training')) {
-    checklist.push('Провести обучение: сканирование кодов, приём товара, возвраты, работа с Честным ЗНАКом')
+    checklist.push('Провести обучение работе с маркировкой')
   }
 
-  const checklistHtml = checklist.length > 0 ? `
-<div style="margin:16px 0">
-<h2 style="color:#334155;border-bottom:2px solid #16a34a;padding-bottom:6px;font-size:15px">📋 Чек-лист для инженера</h2>
+  const checklistHtml = checklist.length > 0
+    ? `<div style="margin:16px 0"><h2 style="color:#166534;border-bottom:2px solid #166534;padding-bottom:6px;font-size:15px">📋 Чек-лист для инженера</h2>
 <table style="width:100%;border-collapse:collapse;margin:8px 0"><tbody>
-${checklist.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px;width:30px;text-align:center">☐</td><td style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px">${item}</td></tr>`).join('')}
-</tbody></table>
-</div>` : ''
+${checklist.map(item => `<tr><td style="border:1px solid #bbf7d0;padding:6px 8px;font-size:13px;width:30px;text-align:center">☐</td><td style="border:1px solid #bbf7d0;padding:6px 8px;font-size:13px">${item}</td></tr>`).join('')}
+</tbody></table></div>`
+    : ''
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Заказ-наряд</title><style>
 body{font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:800px;margin:0 auto;color:#1e293b}
@@ -431,7 +431,6 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 .signature{width:180px;border-top:1px solid #000;padding-top:4px;text-align:center;font-size:13px}
 .notice{background:#fef2f2;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
 .info{background:#fffbeb;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
-.checklist{background:#f0fdf4;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
 @media print{body{padding:15px}}
 </style></head><body>
 <div style="text-align:center;margin-bottom:20px"><h1>ЗАКАЗ-НАРЯД</h1>
@@ -443,7 +442,7 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 <p><strong>ИНН:</strong> ${params.clientData.inn || 'Не указано'}</p>
 <p><strong>Телефон:</strong> ${params.clientData.phone || 'Не указано'}</p>
 <p><strong>Email:</strong> ${params.clientData.email || 'Не указано'}</p>
-<p><strong>Адрес установки ККТ:</strong> ${params.clientData.address || 'Не указано'}</p></div>
+<p><strong>Адрес:</strong> ${params.clientData.address || 'Не указано'}</p></div>
 <div style="margin:16px 0"><h2>Касса</h2>
 <p><strong>Тип:</strong> ${params.effectiveKkmInfo.name}</p>
 <p><strong>Состояние:</strong> ${condLabel}</p>
@@ -456,9 +455,9 @@ ${params.kkmType === 'evotor' ? `<p><strong>Логин ЛК Эвотор:</stron
 ${params.totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#94a3b8">Услуги не выбраны</td></tr>' : params.totalCalc.items.map((item, idx) => `<tr><td>${idx + 1}</td><td>${item.name}</td><td style="text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}
 </tbody></table>
 <p class="total">ИТОГО: ${params.totalCalc.total.toLocaleString('ru-RU')} руб.</p>
+${checklistHtml}
 <div class="info"><strong>ТС ПИоТ:</strong> Лицензия ТС ПИоТ оплачивается клиентом напрямую на сайте ao-esp.ru. Стоимость зависит от вида товаров.</div>
 <p style="font-size:11px;color:#94a3b8;margin-top:12px">* ${sepText}</p>
-${checklistHtml}
 ${params.clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2><p>${params.clientData.comment}</p></div>` : ''}
 <div class="footer"><div><p><strong>Исполнитель:</strong></p><div class="signature">М.П. Подпись</div></div>
 <div><p><strong>Заказчик:</strong></p><div class="signature">Подпись</div></div></div>
@@ -509,14 +508,69 @@ function DoneScreen({
     URL.revokeObjectURL(url)
   }, [orderHtml, orderNum])
 
-  const handleSendEmail = useCallback(() => {
-    handleSaveFile()
-    const subject = encodeURIComponent(`Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`)
-    const body = encodeURIComponent(
-      `Добрый день!\n\nФормирую заказ-наряд №${orderNum} от ${orderDate}.\n\nКлиент: ${clientData.name || 'Не указано'}\nКасса: ${effectiveKkmInfo.name} (${condLabel})\nСумма: ${totalCalc.total.toLocaleString('ru-RU')} руб.\n\nФайл заказ-наряда прикреплю отдельным сообщением.\n\nС уважением,\n${clientData.name || ''}${clientData.phone ? ', ' + clientData.phone : ''}`
-    )
-    window.open(`mailto:push@tellur.spb.ru?subject=${subject}&body=${body}`, '_self')
-  }, [orderNum, orderDate, clientData, effectiveKkmInfo, condLabel, totalCalc, handleSaveFile])
+  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  const handleSendEmail = useCallback(async () => {
+    setSendStatus('sending')
+    try {
+      const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`
+      const condLabelFull = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Старая (рабочая)'
+
+      const emailHtml = `
+<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;color:#1e293b">
+  <div style="background:#1e3a5f;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0">
+    <h1 style="margin:0;font-size:20px">ЗАКАЗ-НАРЯД №${orderNum}</h1>
+    <p style="margin:4px 0 0;opacity:0.8;font-size:14px">ООО «Теллур-Интех» — ${orderDate}</p>
+  </div>
+  <div style="padding:20px;background:white;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px">
+    <h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px;margin-top:0">Клиент</h2>
+    <p><strong>Наименование:</strong> ${clientData.name || 'Не указано'}</p>
+    ${clientData.inn ? `<p><strong>ИНН:</strong> ${clientData.inn}</p>` : ''}
+    <p><strong>Телефон:</strong> ${clientData.phone || 'Не указано'}</p>
+    ${clientData.email ? `<p><strong>Email:</strong> ${clientData.email}</p>` : ''}
+    ${clientData.address ? `<p><strong>Адрес:</strong> ${clientData.address}</p>` : ''}
+
+    <h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Касса</h2>
+    <p><strong>Тип:</strong> ${effectiveKkmInfo.name}</p>
+    <p><strong>Состояние:</strong> ${condLabelFull}</p>
+    ${clientData.kkmModel ? `<p><strong>Модель:</strong> ${clientData.kkmModel}</p>` : ''}
+    ${clientData.kkmNumber ? `<p><strong>Зав. №:</strong> ${clientData.kkmNumber}</p>` : ''}
+    ${kkmType === 'evotor' && clientData.evotorLogin ? `<p><strong>ЛК Эвотор:</strong> ${clientData.evotorLogin}</p>` : ''}
+
+    <h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Услуги</h2>
+    ${totalCalc.items.length === 0 ? '<p style="color:#94a3b8">Услуги не выбраны</p>' :
+      `<table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#f1f5f9"><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">№</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">Наименование</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:right">Сумма, руб.</th></tr></thead>
+        <tbody>${totalCalc.items.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:8px">${idx + 1}</td><td style="border:1px solid #cbd5e1;padding:8px">${item.name}</td><td style="border:1px solid #cbd5e1;padding:8px;text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}</tbody>
+      </table>`}
+
+    ${totalCalc.items.length > 0 ? `<p style="font-size:18px;font-weight:bold;text-align:right;margin-top:16px">ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} руб.</p>` : ''}
+    ${clientData.comment ? `<p style="margin-top:16px"><strong>Примечания:</strong> ${clientData.comment}</p>` : ''}
+  </div>
+</div>`
+
+      const res = await fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: 'push@tellur.spb.ru',
+          subject,
+          html: emailHtml,
+          replyTo: clientData.email || undefined,
+        })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Send failed')
+      }
+
+      setSendStatus('sent')
+    } catch (err) {
+      console.error('Email send error:', err)
+      setSendStatus('error')
+    }
+  }, [orderNum, orderDate, clientData, effectiveKkmInfo, condLabel, kkmCondition, totalCalc, kkmType])
 
   const handleWebShare = useCallback(async () => {
     try {
@@ -619,9 +673,21 @@ function DoneScreen({
       <Card>
         <CardContent className="pt-5 space-y-3">
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-3.5 text-sm font-semibold" size="lg" onClick={handleWebShare}>
-              <Send className="w-4 h-4 mr-2" />
-              Отправить
+            <Button
+              className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-3.5 text-sm font-semibold disabled:opacity-60"
+              size="lg"
+              onClick={handleSendEmail}
+              disabled={sendStatus === 'sending' || sendStatus === 'sent'}
+            >
+              {sendStatus === 'sending' ? (
+                <><span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />Отправка...</>
+              ) : sendStatus === 'sent' ? (
+                <><CheckCheck className="w-4 h-4 mr-2" />Отправлено!</>
+              ) : sendStatus === 'error' ? (
+                <><AlertCircle className="w-4 h-4 mr-2" />Ошибка — повторить</>
+              ) : (
+                <><Send className="w-4 h-4 mr-2" />Отправить</>
+              )}
             </Button>
             <Button variant="outline" className="flex-1 py-3.5 text-sm" onClick={onPrint}>
               <Printer className="w-4 h-4 mr-2" />
@@ -656,6 +722,7 @@ function DoneScreen({
 // ============================================================================
 
 export default function TellurServiceCalculator() {
+  const mainRef = useRef<HTMLDivElement>(null)
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [isDone, setIsDone] = useState(false)
   const [kkmType, setKkmType] = useState<KkmType>('mercury')
@@ -667,8 +734,6 @@ export default function TellurServiceCalculator() {
   const [step2Selections, setStep2Selections] = useState<string[]>([])
   const [step3Selections, setStep3Selections] = useState<string[]>([])
   const [trainingHours, setTrainingHours] = useState(1)
-  const [serviceContractChecked, setServiceContractChecked] = useState(false)
-  const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
   const [productCardCount, setProductCardCount] = useState(0)
   const [scannerChecked, setScannerChecked] = useState(false)
   const [firmwareChecked, setFirmwareChecked] = useState(false)
@@ -682,6 +747,8 @@ export default function TellurServiceCalculator() {
   const [fnActivityType, setFnActivityType] = useState('general')
   const [sigmaSubSelections, setSigmaSubSelections] = useState<string[]>(['sigma_marking'])
   // sigmaSubPeriod removed — prices not shown, client checks tariffs via links
+  const [serviceContractChecked, setServiceContractChecked] = useState(false)
+  const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
 
   const [clientData, setClientData] = useState({
     name: '', inn: '', phone: '', email: '', address: '',
@@ -723,7 +790,7 @@ export default function TellurServiceCalculator() {
   const evotorTradeOrAppsReady = smartTerminalNeedsTrade
     ? (evotorTradeType !== 'none' || evotorAppsSelected.size > 0)
     : true
-  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && contactValid && ecpChecked && evotorTradeOrAppsReady
+  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && ecpChecked && evotorTradeOrAppsReady
   const canGoStep3 = step2Selections.length > 0
 
   // --- Синхронизация торгового типа и приложений Эвотор ---
@@ -820,11 +887,10 @@ export default function TellurServiceCalculator() {
 
     // Договор обслуживания
     if (serviceContractChecked) {
-      const monthlyPrice = 2000
-      if (serviceContractPeriod === 'year') {
-        items.push({ name: 'Договор обслуживания (подписка на 12 мес.)', price: monthlyPrice * 12 })
+      if (serviceContractPeriod === 'month') {
+        items.push({ name: 'Договор обслуживания — помесячная оплата', price: 2000 })
       } else {
-        items.push({ name: 'Договор обслуживания (1 мес.)', price: monthlyPrice })
+        items.push({ name: 'Договор обслуживания — подписка на 12 месяцев', price: 24000 })
       }
     }
 
@@ -853,6 +919,10 @@ export default function TellurServiceCalculator() {
     if (step === 3 && !canGoStep3) return
     setCurrentStep(step)
     setIsDone(false)
+    // Авто-скролл наверх при смене шага
+    setTimeout(() => {
+      mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   // Сброс торгового типа при смене типа кассы или состояния
@@ -876,15 +946,23 @@ export default function TellurServiceCalculator() {
   // ===================================================================
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col">
+        <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }`}</style>
         {/* HEADER */}
         <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3 cursor-pointer" onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} role="button" tabIndex={0} aria-label="Вернуться на главную">
+              <div
+                className="flex items-center gap-2.5 sm:gap-3 cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-label="Вернуться на главную"
+                onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
+              >
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
-                  <h1 className="text-lg sm:text-xl font-bold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
-                  <p className="text-xs sm:text-sm text-slate-500 truncate">Рассчитайте стоимость подключения маркировки</p>
+                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
+                  <p className="text-sm sm:text-base text-slate-500 truncate">Рассчитайте стоимость подключения маркировки</p>
                 </div>
               </div>
               <Badge variant="outline" className="text-[#1e3a5f] border-[#1e3a5f]/30 hidden sm:inline-flex shrink-0">ООО &quot;Теллур-Интех&quot;</Badge>
@@ -892,53 +970,24 @@ export default function TellurServiceCalculator() {
           </div>
         </header>
 
-        {/* БАННЕР */}
-        {showBanner && !isDone && (
-          <div className="bg-[#e8a817]/10 border-b border-[#e8a817]/30">
-            <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3">
-              <div className="flex items-start gap-2.5 sm:gap-3">
-                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8a817] shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#1e3a5f] text-sm sm:text-[15px]">
-                    С 1 июля 2026 года продажа маркированных товаров без модуля ТС ПИоТ запрещена
-                  </p>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-                    <strong>Статья 15.12 КоАП РФ</strong> — нарушение влечёт административную ответственность (штраф).
-                    Лицензия ТС ПИоТ приобретается вами напрямую на сайте <strong>ao-esp.ru</strong>.
-                  </p>
-                </div>
-                <button onClick={() => setShowBanner(false)} className="text-slate-400 hover:text-slate-600 text-lg leading-none shrink-0 ml-1" aria-label="Закрыть">×</button>
-              </div>
-            </div>
-          </div>
-        )}
 
-        <main className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full">
+
+        <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full">
 
           <div className="mt-2 sm:mt-4">
             {/* Уведомление об ЭЦП */}
             {!ecpChecked && (
-              <Card className="border-amber-300 bg-amber-50">
-                <CardContent className="pt-4 sm:pt-5">
-                  <div className="flex items-start gap-3">
-                    <ShieldCheck className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-amber-800 text-sm sm:text-base">Наличие электронной подписи (ЭЦП)</h3>
-                      <p className="text-xs sm:text-sm text-amber-700 mt-1">Для работы с маркировкой требуется ЭЦП. Если у вас нет ЭЦП — оформите её заранее через удостоверяющий центр.</p>
-                      <div className="mt-3">
-                        <Button
-                          type="button"
-                          className="bg-amber-600 hover:bg-amber-700 text-white"
-                          onClick={() => setClientData(prev => ({ ...prev, hasEcp: true }))}
-                        >
-                          <Check className="w-4 h-4 mr-2" />
-                          У меня есть ЭЦП
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="animate-fade-in-up flex items-center gap-3 p-3 sm:p-4 rounded-xl border border-amber-300 bg-amber-50">
+                <Checkbox
+                  id="ecp_check_top"
+                  checked={false}
+                  onCheckedChange={() => setClientData(prev => ({ ...prev, hasEcp: true }))}
+                  className="w-7 h-7 shrink-0"
+                />
+                <Label htmlFor="ecp_check_top" className="cursor-pointer text-base sm:text-lg font-medium text-amber-800">
+                  У меня есть ЭЦП
+                </Label>
+              </div>
             )}
 
 
@@ -947,7 +996,7 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {currentStep === 1 && !isDone && (
               <div className={ecpChecked ? '' : 'opacity-50 pointer-events-none relative'}>
-              <div className="max-w-2xl mx-auto space-y-4 sm:space-y-5">
+              <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -955,24 +1004,110 @@ export default function TellurServiceCalculator() {
                       Выберите вашу кассу
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <RadioGroup
-                      value={kkmType}
-                      onValueChange={(v) => { setKkmType(v as KkmType); if (v !== 'atol') setSigmaSelected(false) }}
-                      className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3"
-                    >
-                      {visibleKkmTypes.map(([key, kkm]) => (
-                        <div key={key} className="flex items-center space-x-2">
-                          <RadioGroupItem value={key} id={key} />
-                          <Label htmlFor={key} className="cursor-pointer font-medium text-sm">{kkm.shortName}</Label>
+                  <CardContent className="space-y-5">
+                    {/* Состояние кассы — выше выбора кассы */}
+                    <div>
+                      <h3 className="text-base font-bold text-[#1e3a5f] mb-3">Состояние кассы</h3>
+                      <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                        <div
+                          onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
+                          className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                        >
+                          <Image src="/brands/cond_old.webp" alt="Текущая" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12" quality={100} unoptimized />
+                          <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
+                          <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Работаю на ней</span>
                         </div>
-                      ))}
-                    </RadioGroup>
+                        <div
+                          onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
+                          className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                        >
+                          <Image src="/brands/cond_new.webp" alt="Новая" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12" quality={100} unoptimized />
+                          <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
+                          <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Только что купленная</span>
+                        </div>
+                        <div
+                          onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
+                          className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                        >
+                          <Image src="/brands/cond_used.webp" alt="Б/у" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12" quality={100} unoptimized />
+                          <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
+                          <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Купил с рук</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {needsFirmwareOrLicense && (
+                      <div className="p-3 sm:p-4 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="w-5 h-5 text-[#e8a817] shrink-0 mt-0.5" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-[#1e3a5f] text-sm">Для {kkmCondition === 'used' ? 'б/у' : 'старой'} кассы {effectiveKkmInfo.name} могут потребоваться:</p>
+                            <div className="mt-2 space-y-1.5 text-sm text-slate-700">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-6 h-6 shrink-0" />
+                                  <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
+                                  <HintButton hintKey="firmware_update" />
+                                </div>
+                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
+                              </div>
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-6 h-6 shrink-0" />
+                                  <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
+                                  <HintButton hintKey="kkm_license" />
+                                </div>
+                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2">Отметьте то, что нужно. Если не уверены — мы проверим при осмотре кассы.</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {kkmCondition === 'new' && (
+                      <div className="p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-[#1e3a5f]">
+                          <Info className="w-4 h-4 shrink-0" />
+                          <span className="font-medium">Для новой кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Разделитель */}
+                    <Separator />
+
+                    {/* Сетка касс */}
+                    <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                      {visibleKkmTypes.map(([key, kkm]) => {
+                        const brand = KKM_BRANDS[key] || { color: '#64748b', bg: '#64748b' }
+                        const isSelected = kkmType === key
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') setSigmaSelected(false) }}
+                            className={`flex flex-col items-center gap-2 p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                          >
+                            <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden">
+                              <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={160} className="max-w-full max-h-full object-contain rounded-lg" quality={100} unoptimized />
+                              {isSelected && (
+                                <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center bg-[#1e3a5f] shadow-sm">
+                                  <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
+                              )}
+                            </div>
+                            <span className={`font-bold text-sm sm:text-base leading-tight text-center ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>{kkm.shortName}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
 
                     {kkmType === 'atol' && (
                       <div className="p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <Checkbox id="sigmaCheck" checked={sigmaSelected} onCheckedChange={(c) => setSigmaSelected(c as boolean)} className="w-5 h-5" />
+                          <Checkbox id="sigmaCheck" checked={sigmaSelected} onCheckedChange={(c) => setSigmaSelected(c as boolean)} className="w-7 h-7 shrink-0" />
                           <div className="min-w-0">
                             <Label htmlFor="sigmaCheck" className="cursor-pointer font-medium text-[#1e3a5f] text-sm">У меня касса Сигма (производство Атол)</Label>
                             <p className="text-xs text-slate-500 mt-0.5">Смарт-терминалы под брендом Сигма выпускаются компанией Атол</p>
@@ -980,36 +1115,6 @@ export default function TellurServiceCalculator() {
                         </div>
                       </div>
                     )}
-
-                    {/* Атол — согласие для действующих касс */}
-                    {kkmType === 'atol' && kkmCondition === 'old' && (
-                      <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
-                        <div className="flex items-start gap-2">
-                          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
-                            <p className="text-xs text-blue-600 mt-1">Для обслуживания вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется ваше согласие — скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
-                            <a
-                              href="/soglasiye-atol.pdf"
-                              download
-                              className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
-                            >
-                              <Download className="w-4 h-4" />
-                              Скачать согласие (PDF)
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="p-3 bg-[#1e3a5f]/5 rounded-lg">
-                      <p className="font-medium text-slate-700 text-sm">{currentKkmInfo.description}</p>
-                      <ul className="mt-2 text-sm text-slate-600 space-y-1">
-                        {currentKkmInfo.features.map((f, i) => (
-                          <li key={i} className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#1e3a5f] shrink-0 mt-0.5" />{f}</li>
-                        ))}
-                      </ul>
-                    </div>
 
                     {/* ============================================================================ */}
                     {/* СИГМА — чем торгуете + подписки Атол */}
@@ -1061,7 +1166,7 @@ export default function TellurServiceCalculator() {
                                     setEvotorAppsSelected(new Set())
                                   }
                                 }}
-                                className="w-5 h-5 mt-0.5 shrink-0" />
+                                className="w-6 h-6 mt-0.5 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <Label htmlFor="sigma_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
                                   У меня уже есть текущая подписка на приложение Атол для маркировки
@@ -1100,11 +1205,11 @@ export default function TellurServiceCalculator() {
                             const isSelected = evotorAppsSelected.has(subKey) || sigmaSubSelections.includes(sub.id)
                             const canToggle = !evotorHasSubscription
                             return (
-                              <div key={idx} className={`p-3 bg-white rounded border ${isSelected ? 'border-[#1e3a5f]/40 bg-[#1e3a5f]/5' : 'border-[#1e3a5f]/10'} ${canToggle ? 'cursor-pointer hover:border-[#1e3a5f]/30 transition-colors' : ''}`}
+                              <div key={idx} className={`p-3 sm:p-4 bg-white rounded-lg border ${isSelected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'} ${canToggle ? 'cursor-pointer hover:border-slate-300 transition-colors' : ''}`} style={{ animationDelay: `${idx * 50}ms` }}
                                 onClick={() => canToggle ? handleEvotorAppToggle(subKey) : undefined}>
                                 <div className="flex items-start gap-3">
                                   {canToggle && (
-                                    <Checkbox checked={isSelected} className="w-5 h-5 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(subKey)} />
+                                    <Checkbox checked={isSelected} className="w-6 h-6 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(subKey)} />
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -1189,7 +1294,7 @@ export default function TellurServiceCalculator() {
                                     setEvotorAppsSelected(new Set())
                                   }
                                 }}
-                                className="w-5 h-5 mt-0.5 shrink-0" />
+                                className="w-6 h-6 mt-0.5 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <Label htmlFor="evotor_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
                                   У меня уже есть текущая подписка на приложение Эвотор для маркировки
@@ -1228,11 +1333,11 @@ export default function TellurServiceCalculator() {
                             const isSelected = evotorAppsSelected.has(appKey)
                             const canToggle = !evotorHasSubscription
                             return (
-                              <div key={idx} className={`p-3 bg-white rounded border ${isSelected ? 'border-[#1e3a5f]/40 bg-[#1e3a5f]/5' : 'border-[#1e3a5f]/10'} ${canToggle ? 'cursor-pointer hover:border-[#1e3a5f]/30 transition-colors' : ''}`}
+                              <div key={idx} className={`p-3 sm:p-4 bg-white rounded-lg border ${isSelected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'} ${canToggle ? 'cursor-pointer hover:border-slate-300 transition-colors' : ''}`} style={{ animationDelay: `${idx * 50}ms` }}
                                 onClick={() => canToggle ? handleEvotorAppToggle(appKey) : undefined}>
                                 <div className="flex items-start gap-3">
                                   {canToggle && (
-                                    <Checkbox checked={isSelected} className="w-5 h-5 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
+                                    <Checkbox checked={isSelected} className="w-6 h-6 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -1260,107 +1365,31 @@ export default function TellurServiceCalculator() {
                         </div>
                       </>
                     )}
-                  </CardContent>
-                </Card>
 
-                {/* Состояние кассы */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Состояние кассы</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <RadioGroup value={kkmCondition} onValueChange={(v) => {
-                      setKkmCondition(v as KkmCondition)
-                      // При новой или б/у кассе — автопоставить галочку 2D-сканера, при действующей — снять
-                      if (v === 'new' || v === 'used') {
-                        setScannerChecked(true)
-                      } else if (v === 'old') {
-                        setScannerChecked(false)
-                      }
-                    }} className="space-y-2.5">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="old" id="cond_old" />
-                        <Label htmlFor="cond_old" className="cursor-pointer text-sm">Текущая (работаю на ней, нужно добавить маркировку)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="new" id="cond_new" />
-                        <Label htmlFor="cond_new" className="cursor-pointer text-sm">Новая (только что купленная)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="used" id="cond_used" />
-                        <Label htmlFor="cond_used" className="cursor-pointer text-sm">Б/у (купил с рук / бывшая в употреблении)</Label>
-                      </div>
-                    </RadioGroup>
-
-                    {needsFirmwareOrLicense && (
-                      <div className="mt-4 p-3 sm:p-4 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
+                    {/* Атол — согласие для действующих касс */}
+                    {kkmType === 'atol' && kkmCondition === 'old' && (
+                      <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
                         <div className="flex items-start gap-2">
-                          <AlertCircle className="w-5 h-5 text-[#e8a817] shrink-0 mt-0.5" />
-                          <div className="min-w-0">
-                            <p className="font-semibold text-[#1e3a5f] text-sm">Для {kkmCondition === 'used' ? 'б/у' : 'старой'} кассы {effectiveKkmInfo.name} могут потребоваться:</p>
-                            <div className="mt-2 space-y-1.5 text-sm text-slate-700">
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
-                                <div className="flex items-center gap-2">
-                                  <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-4 h-4 shrink-0" />
-                                  <Label htmlFor="firmware_chk" className="cursor-pointer text-sm">Обновление программы (прошивка)</Label>
-                                  <HintButton hintKey="firmware_update" />
-                                </div>
-                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
-                              </div>
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
-                                <div className="flex items-center gap-2">
-                                  <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-4 h-4 shrink-0" />
-                                  <Label htmlFor="license_chk" className="cursor-pointer text-sm">Лицензия на ПО кассы</Label>
-                                  <HintButton hintKey="kkm_license" />
-                                </div>
-                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
-                              </div>
-                            </div>
-                            <p className="text-xs text-slate-500 mt-2">Отметьте то, что нужно. Если не уверены — мы проверим при осмотре кассы.</p>
+                          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
+                            <p className="text-xs text-blue-600 mt-1">Для обслуживания вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется ваше согласие — скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
+                            <a
+                              href="/soglasiye-atol.pdf"
+                              download
+                              className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
+                            >
+                              <Download className="w-4 h-4" />
+                              Скачать согласие (PDF)
+                            </a>
                           </div>
                         </div>
                       </div>
                     )}
-
-                    {/* Напоминание о регистрационных услугах для новой кассы */}
-                    {kkmCondition === 'new' && (
-                      <div className="mt-4 p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm text-[#1e3a5f]">
-                          <Info className="w-4 h-4 shrink-0" />
-                          <span className="font-medium">Для новой кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
-                {/* Контактные данные */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Info className="w-5 h-5 text-[#1e3a5f] shrink-0" />
-                      Ваши контактные данные
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div>
-                        <Label className="text-sm">Наименование / ФИО</Label>
-                        <Input value={clientData.name} onChange={(e) => setClientData({...clientData, name: e.target.value})} placeholder="ООО Ромашка" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Телефон <span className="text-red-500">*</span></Label>
-                        <Input value={clientData.phone} onChange={(e) => setClientData({...clientData, phone: e.target.value})} placeholder="+7 (999) 123-45-67" className="mt-1" />
-                        {clientData.phone.trim() === '' && <p className="text-xs text-red-500 mt-0.5">Обязательное поле</p>}
-                      </div>
-                      <div><Label className="text-sm">Электронная почта</Label><Input type="email" value={clientData.email} onChange={(e) => setClientData({...clientData, email: e.target.value})} placeholder="info@company.ru" className="mt-1" /></div>
-                      <div><Label className="text-sm">ИНН</Label><Input value={clientData.inn} onChange={(e) => setClientData({...clientData, inn: e.target.value})} placeholder="1234567890" className="mt-1" /></div>
-                    </div>
-                    <div><Label className="text-sm">Адрес</Label><Input value={clientData.address} onChange={(e) => setClientData({...clientData, address: e.target.value})} placeholder="г. Москва, ул. Примерная, д. 1" className="mt-1" /></div>
-                  </CardContent>
-                </Card>
-
-                <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 sm:py-5 text-sm sm:text-base" size="lg" onClick={() => goToStep(2)} disabled={!canGoStep2}>
+                <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-lg sm:text-xl font-bold" size="lg" onClick={() => goToStep(2)} disabled={!canGoStep2}>
                   Далее — выбор услуг <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                 </Button>
               </div>
@@ -1371,12 +1400,12 @@ export default function TellurServiceCalculator() {
             {/* УСЛУГИ */}
             {/* ============================================================ */}
             {currentStep === 2 && !isDone && (
-              <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
+              <div className="max-w-2xl mx-auto space-y-5 sm:space-y-7">
                 <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg text-xs sm:text-sm">
                   <p className="text-[#1e3a5f]"><strong>Касса:</strong> {effectiveKkmInfo.name} ({kkmCondition === 'new' ? 'новая' : kkmCondition === 'used' ? 'б/у' : 'рабочая'})</p>
                 </div>
 
-                {step2Services.filter(s => !(s.id === 'partial_marketing_setup' && kkmCondition !== 'old')).map(service => {
+                {step2Services.filter(s => !(s.id === 'partial_marketing_setup' && kkmCondition !== 'old')).map((service, idx) => {
                   const desc = service.id === 'marking_setup' ? markingDesc : service.description
                   const selected = step2Selections.includes(service.id)
                   // Для новых касс перерегистрация недоступна (регистрация — автоматически на шаге 3)
@@ -1389,8 +1418,8 @@ export default function TellurServiceCalculator() {
                   const mutuallyExclusiveId = service.id === 'partial_marketing_setup' ? 'Полная настройка маркировки' : 'Частичная настройка маркировки'
                   const disabled = isLocked || isMutuallyDisabled
                   return (
-                    <Card key={service.id} className={selected ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                      <CardContent className="pt-4 sm:pt-5">
+                    <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                         <div className="flex items-start gap-3">
                           <Checkbox id={service.id} checked={selected}
                             disabled={disabled}
@@ -1401,11 +1430,11 @@ export default function TellurServiceCalculator() {
                                 return without.includes(service.id) ? without.filter(x => x !== service.id) : [...without, service.id]
                               })
                             }}
-                            className="w-5 h-5 mt-0.5 shrink-0" />
+                            className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Label htmlFor={service.id} className={`font-semibold text-sm leading-snug ${disabled ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
+                                <Label htmlFor={service.id} className={`font-bold text-base leading-snug ${disabled ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
                                 {service.hintKey && <HintButton hintKey={service.hintKey} />}
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
@@ -1423,12 +1452,12 @@ export default function TellurServiceCalculator() {
                 {/* Подакцизные товары */}
                 {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new') && (
                   <Card className="border-orange-200 bg-orange-50/50">
-                    <CardContent className="pt-4 sm:pt-5">
+                    <CardContent className="pt-5 sm:pt-6">
                       <div className="flex items-start gap-3">
                         <Checkbox id="excise_check"
                           checked={clientData.sellsExcise}
                           onCheckedChange={(c) => setClientData(prev => ({ ...prev, sellsExcise: !!c }))}
-                          className="w-5 h-5 mt-0.5 shrink-0" />
+                          className="w-6 h-6 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">
                             Планируете продавать подакцизные товары?
@@ -1445,14 +1474,14 @@ export default function TellurServiceCalculator() {
                   const visibleProviders = OFD_PROVIDERS.filter(p => !p.lockedForNew || kkmCondition !== 'new')
                   const selectedProvider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
                   return (
-                    <Card className={ofdEffective ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                      <CardContent className="pt-4 sm:pt-5">
+                    <Card className={ofdEffective ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                      <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
                           <Checkbox id="ofd_check"
                             checked={ofdEffective}
                             disabled={ofdLocked}
                             onCheckedChange={(c) => setOfdChecked(c as boolean)}
-                            className="w-5 h-5 mt-0.5 shrink-0" />
+                            className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
@@ -1515,7 +1544,7 @@ export default function TellurServiceCalculator() {
 
                 {/* ТС ПИоТ — инфо */}
                 <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
-                  <CardContent className="pt-4 sm:pt-5">
+                  <CardContent className="pt-5 sm:pt-6">
                     <div className="flex items-start gap-3">
                       <Info className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8a817] shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
@@ -1532,9 +1561,9 @@ export default function TellurServiceCalculator() {
                   </CardContent>
                 </Card>
 
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1 py-4 sm:py-5 text-sm sm:text-base" size="lg" onClick={() => setCurrentStep(1)}><ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Назад</Button>
-                  <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-4 sm:py-5 text-sm sm:text-base" size="lg" onClick={() => goToStep(3)} disabled={!canGoStep3}>Далее <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" /></Button>
+                <div className="flex gap-4">
+                  <Button variant="outline" className="flex-1 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => { setCurrentStep(1); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2" /> Назад</Button>
+                  <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => goToStep(3)} disabled={!canGoStep3}>Далее <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2" /></Button>
                 </div>
               </div>
             )}
@@ -1544,19 +1573,19 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {currentStep === 3 && !isDone && (
               <div className="max-w-3xl mx-auto">
-                <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+                <div className="grid lg:grid-cols-3 gap-5 sm:gap-7">
+                  <div className="lg:col-span-2 space-y-5 sm:space-y-7">
                     <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg text-xs sm:text-sm">
                       <p className="text-[#1e3a5f]"><strong>Касса:</strong> {effectiveKkmInfo.name} | <strong>Основные услуги:</strong> {step2Selections.length} шт.</p>
                     </div>
 
                     {/* ФН — фискальный накопитель */}
-                    <Card className={fnChecked ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                      <CardContent className="pt-4 sm:pt-5">
+                    <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
                         <div className="flex items-start gap-3">
                           <Checkbox id="fn_product" checked={fnChecked}
                             onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') } }}
-                            className="w-5 h-5 mt-0.5 shrink-0" />
+                            className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
@@ -1604,10 +1633,10 @@ export default function TellurServiceCalculator() {
                     </Card>
 
                     {/* Сканер */}
-                    <Card className={scannerChecked ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                      <CardContent className="pt-4 sm:pt-5">
+                    <Card className={scannerChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
                         <div className="flex items-start gap-3">
-                          <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-5 h-5 mt-0.5 shrink-0" />
+                          <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
@@ -1624,10 +1653,10 @@ export default function TellurServiceCalculator() {
 
                     {/* Регистрация ККТ в ФНС — только для новых касс, заблокировано */}
                     {kkmCondition === 'new' && (
-                      <Card className="border-[#1e3a5f]/30 bg-[#1e3a5f]/5">
-                        <CardContent className="pt-4 sm:pt-5">
+                      <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
+                        <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                           <div className="flex items-start gap-3">
-                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-5 h-5 mt-0.5 shrink-0" />
+                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-6 h-6 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
@@ -1644,10 +1673,10 @@ export default function TellurServiceCalculator() {
                     )}
 
                     {/* Карточки товаров */}
-                    <Card className={productCardCount > 0 ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                      <CardContent className="pt-4 sm:pt-5">
+                    <Card className={productCardCount > 0 ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
                         <div className="flex items-start gap-3">
-                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-5 h-5 mt-0.5 shrink-0" />
+                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
@@ -1680,19 +1709,19 @@ export default function TellurServiceCalculator() {
                     </Card>
 
                     {/* Доп. услуги */}
-                    {step3Services.map(service => {
+                    {step3Services.map((service, idx) => {
                       const selected = step3Selections.includes(service.id)
                       return (
-                        <Card key={service.id} className={selected ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                          <CardContent className="pt-4 sm:pt-5">
+                        <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                          <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${(idx + 3) * 50}ms` }}>
                             <div className="flex items-start gap-3">
                               <Checkbox id={service.id} checked={selected}
                                 onCheckedChange={() => setStep3Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
-                                className="w-5 h-5 mt-0.5 shrink-0" />
+                                className="w-6 h-6 mt-0.5 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <Label htmlFor={service.id} className="font-semibold text-sm cursor-pointer leading-snug">{service.name}</Label>
+                                    <Label htmlFor={service.id} className="font-bold text-base cursor-pointer leading-snug">{service.name}</Label>
                                     {service.hintKey && <HintButton hintKey={service.hintKey} />}
                                   </div>
                                   <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
@@ -1714,20 +1743,21 @@ export default function TellurServiceCalculator() {
                     })}
 
                     {/* Договор обслуживания */}
-                    <Card className={serviceContractChecked ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
-                      <CardContent className="pt-4 sm:pt-5">
+                    <Card className={serviceContractChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
                         <div className="flex items-start gap-3">
                           <Checkbox id="service_contract" checked={serviceContractChecked}
                             onCheckedChange={(c) => setServiceContractChecked(c as boolean)}
-                            className="w-5 h-5 mt-0.5 shrink-0" />
+                            className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Label htmlFor="service_contract" className="font-semibold text-sm cursor-pointer leading-snug">Договор обслуживания</Label>
+                                <Label htmlFor="service_contract" className="font-bold text-base cursor-pointer leading-snug">Договор обслуживания</Label>
+                                <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">2 000 руб./мес.</span>
                             </div>
-                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Регулярное техническое обслуживание кассы — профилактика, диагностика и поддержка</p>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Регулярное обслуживание кассы — визиты мастера, профилактика, приоритетная поддержка</p>
                             {serviceContractChecked && (
                               <div className="mt-3 space-y-3">
                                 <RadioGroup value={serviceContractPeriod} onValueChange={(v) => setServiceContractPeriod(v as 'month' | 'year')} className="space-y-2">
@@ -1735,29 +1765,29 @@ export default function TellurServiceCalculator() {
                                     <RadioGroupItem value="month" id="sc_month" />
                                     <Label htmlFor="sc_month" className="flex-1 cursor-pointer text-sm">
                                       <span className="font-medium text-[#1e3a5f]">Помесячная оплата</span>
-                                      <span className="ml-2 font-bold text-[#1e3a5f] text-base">2 000 ₽/мес.</span>
+                                      <span className="ml-2 font-bold text-[#1e3a5f]">2 000 ₽/мес.</span>
                                     </Label>
                                   </div>
-                                  <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                  <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-green-200">
                                     <RadioGroupItem value="year" id="sc_year" />
                                     <Label htmlFor="sc_year" className="flex-1 cursor-pointer text-sm">
                                       <span className="font-medium text-[#1e3a5f]">Подписка на 12 месяцев</span>
                                       <span className="ml-2 inline-flex items-center gap-1.5">
-                                        <span className="font-bold text-[#1e3a5f] text-base">24 000 ₽/год</span>
+                                        <span className="font-bold text-[#1e3a5f]">24 000 ₽/год</span>
                                       </span>
                                       <Badge className="bg-green-100 text-green-700 text-xs ml-2">выгодно</Badge>
                                     </Label>
                                   </div>
                                 </RadioGroup>
-                                <div className="p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
-                                  <h4 className="font-semibold text-[#1e3a5f] text-xs uppercase tracking-wide mb-2">Что входит в договор обслуживания:</h4>
-                                  <ul className="space-y-1.5 text-xs sm:text-sm text-slate-700">
-                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Вызов мастера <strong>без дополнительной платы</strong></li>
-                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Ежемесячный визит с ревизией и профилактикой кассы</li>
-                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Удалённая поддержка в рабочие часы (по МСК)</li>
-                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Приоритетная запись на обслуживание</li>
+                                <div className="p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg space-y-1.5">
+                                  <p className="text-xs font-bold text-[#1e3a5f] uppercase tracking-wide">Что входит в договор обслуживания:</p>
+                                  <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                                    <li>Вызов мастера без дополнительной платы</li>
+                                    <li>Ежемесячный визит с ревизией и профилактикой кассы</li>
+                                    <li>Удалённая поддержка в рабочие часы (по МСК)</li>
+                                    <li>Приоритетная запись на обслуживание</li>
                                   </ul>
-                                  <p className="text-xs text-slate-500 mt-2 italic">Подробности — в договоре обслуживания</p>
+                                  <p className="text-xs text-slate-400 italic pt-1">Подробности — в договоре обслуживания</p>
                                 </div>
                               </div>
                             )}
@@ -1778,38 +1808,6 @@ export default function TellurServiceCalculator() {
                           <div><Label className="text-sm">Номер ФН</Label><Input value={clientData.fnNumber} onChange={(e) => setClientData({...clientData, fnNumber: e.target.value})} placeholder="Если знаете" className="mt-1" /></div>
                         </div>
 
-                        {kkmType === 'evotor' && (
-                          <>
-                            <Separator />
-                            <div className="p-3 bg-[#1e3a5f]/5 rounded-lg">
-                              <p className="text-sm text-[#1e3a5f] font-medium flex items-center gap-2">
-                                <AlertTriangle className="w-4 h-4 shrink-0" />Нужны данные от личного кабинета Эвотор
-                              </p>
-                              <p className="text-xs text-slate-500 mt-1 ml-6">Логин — номер телефона, к которому привязана касса</p>
-                            </div>
-                            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-                              <div>
-                                <Label className="text-sm">Логин ЛК Эвотор (телефон)</Label>
-                                <Input type="tel" value={clientData.evotorLogin} onChange={(e) => setClientData({...clientData, evotorLogin: e.target.value})} placeholder="+7 (999) 123-45-67" className="mt-1" />
-                              </div>
-                              <div>
-                                <Label className="text-sm">Пароль ЛК Эвотор</Label>
-                                <Input type="password" value={clientData.evotorPassword} onChange={(e) => setClientData({...clientData, evotorPassword: e.target.value})} placeholder="Пароль" className="mt-1" />
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
-                              <Checkbox id="evotor_restore" checked={evotorRestore} onCheckedChange={(c) => setEvotorRestore(c as boolean)} className="w-5 h-5 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <Label htmlFor="evotor_restore" className="cursor-pointer font-medium text-[#1e3a5f] text-sm">Данные от ЛК Эвотор неизвестны — нужна помощь с восстановлением</Label>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <HintButton hintKey="evotor_restore" />
-                                  <span className="text-sm font-semibold text-[#1e3a5f]">500 руб.</span>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        )}
-
                         <div>
                           <Label className="text-sm">Примечания</Label>
                           <Input value={clientData.comment} onChange={(e) => setClientData({...clientData, comment: e.target.value})} placeholder="Дополнительная информация" className="mt-1" />
@@ -1817,9 +1815,21 @@ export default function TellurServiceCalculator() {
                       </CardContent>
                     </Card>
 
-                    <div className="flex gap-3">
-                      <Button variant="outline" className="flex-1 py-4 sm:py-5 text-sm sm:text-base" size="lg" onClick={() => setCurrentStep(2)}><ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Назад</Button>
-                      <Button className="flex-1 bg-[#e8a817] hover:bg-[#d49a12] py-4 sm:py-5 text-sm sm:text-base font-semibold" size="lg" onClick={() => setIsDone(true)}>
+                    <div className="flex gap-4">
+                      <Button variant="outline" className="flex-1 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => { setCurrentStep(2); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2" /> Назад</Button>
+                      <Button className="flex-1 bg-[#e8a817] hover:bg-[#d49a12] py-5 sm:py-6 text-base sm:text-lg font-bold lg:hidden" size="lg" disabled={!clientData.name.trim() || !clientData.phone.trim() || !clientData.inn.trim()} onClick={async () => {
+                        const orderNum = Date.now().toString().slice(-6)
+                        const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        const condLabelFull = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
+                        try {
+                          await fetch('/api/send-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ to: 'janicacid@gmail.com', subject: `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`, html: `<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;color:#1e293b"><div style="background:#1e3a5f;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0"><h1 style="margin:0;font-size:20px">ЗАКАЗ-НАРЯД №${orderNum}</h1><p style="margin:4px 0 0;opacity:0.8;font-size:14px">ООО «Теллур-Интех» — ${orderDate}</p></div><div style="padding:20px;background:white;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px"><h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px;margin-top:0">Клиент</h2><p><strong>Наименование:</strong> ${clientData.name}</p>${clientData.inn ? `<p><strong>ИНН:</strong> ${clientData.inn}</p>` : ''}<p><strong>Телефон:</strong> ${clientData.phone}</p>${clientData.email ? `<p><strong>Email:</strong> ${clientData.email}</p>` : ''}${clientData.address ? `<p><strong>Адрес:</strong> ${clientData.address}</p>` : ''}<h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Касса</h2><p><strong>Тип:</strong> ${effectiveKkmInfo.name}</p><p><strong>Состояние:</strong> ${condLabelFull}</p>${clientData.kkmModel ? `<p><strong>Модель:</strong> ${clientData.kkmModel}</p>` : ''}${totalCalc.items.length > 0 ? `<h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Услуги</h2><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr style="background:#f1f5f9"><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">№</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">Наименование</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:right">Сумма</th></tr></thead><tbody>${totalCalc.items.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:8px">${idx + 1}</td><td style="border:1px solid #cbd5e1;padding:8px">${item.name}</td><td style="border:1px solid #cbd5e1;padding:8px;text-align:right">${item.price.toLocaleString('ru-RU')} ₽</td></tr>`).join('')}</tbody></table><p style="font-size:18px;font-weight:bold;text-align:right">ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} ₽</p>` : ''}</div></div>` })
+                          })
+                        } catch { /* silent */ }
+                        setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+                      }}>
                         <CheckCheck className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                         Готово
                       </Button>
@@ -1828,7 +1838,7 @@ export default function TellurServiceCalculator() {
 
                   {/* ===== ПРАВАЯ КОЛОНКА ===== */}
                   <div className="lg:col-span-1">
-                    <div className="sticky top-4 sm:top-6 space-y-4 sm:space-y-5">
+                    <div className="sticky top-4 sm:top-6 space-y-5 sm:space-y-6">
                       <Card className="border-[#1e3a5f]/20 bg-white">
                         <CardHeader className="pb-2">
                           <CardTitle className="flex items-center gap-2 text-[#1e3a5f] text-sm sm:text-base"><CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />Расчёт стоимости</CardTitle>
@@ -1855,12 +1865,82 @@ export default function TellurServiceCalculator() {
                         </CardContent>
                       </Card>
 
-                      <Button className="w-full bg-[#e8a817] hover:bg-[#d49a12] py-4 sm:py-5 text-sm sm:text-base font-semibold" size="lg" onClick={() => setIsDone(true)}>
+                      {/* Контактные данные — на последней странице */}
+                      <Card className="border-[#1e3a5f]/20">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm sm:text-base flex items-center gap-2"><Info className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f] shrink-0" />Контактные данные</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label className="text-sm">Наименование (юрлицо / ИП) <span className="text-red-500">*</span></Label>
+                            <Input value={clientData.name} onChange={(e) => setClientData({...clientData, name: e.target.value})} placeholder="ООО «Ромашка»" className="mt-1" />
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-sm">Телефон <span className="text-red-500">*</span></Label>
+                              <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({...clientData, phone: e.target.value})} placeholder="+7" className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-sm">Электронная почта</Label>
+                              <Input type="email" value={clientData.email} onChange={(e) => setClientData({...clientData, email: e.target.value})} className="mt-1" />
+                            </div>
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-sm">ИНН <span className="text-red-500">*</span></Label>
+                              <Input value={clientData.inn} onChange={(e) => setClientData({...clientData, inn: e.target.value})} className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-sm">Адрес</Label>
+                              <Input list="ru-addresses" value={clientData.address} onChange={(e) => setClientData({...clientData, address: e.target.value})} className="mt-1" />
+                              <datalist id="ru-addresses">
+                                <option value="г. Москва" /><option value="г. Санкт-Петербург" /><option value="г. Новосибирск" /><option value="г. Екатеринбург" /><option value="г. Казань" /><option value="г. Нижний Новгород" /><option value="г. Челябинск" /><option value="г. Самара" /><option value="г. Омск" /><option value="г. Ростов-на-Дону" /><option value="г. Уфа" /><option value="г. Красноярск" /><option value="г. Воронеж" /><option value="г. Пермь" /><option value="г. Волгоград" /><option value="г. Краснодар" /><option value="г. Саратов" /><option value="г. Тюмень" /><option value="г. Тольятти" /><option value="г. Ижевск" /><option value="г. Барнаул" /><option value="г. Ульяновск" /><option value="г. Иркутск" /><option value="г. Хабаровск" /><option value="г. Ярославль" /><option value="г. Владивосток" /><option value="г. Махачкала" /><option value="г. Томск" /><option value="г. Оренбург" /><option value="г. Кемерово" /><option value="г. Рязань" /><option value="г. Астрахань" /><option value="г. Набережные Челны" /><option value="г. Пенза" /><option value="г. Липецк" /><option value="г. Тула" /><option value="г. Калининград" /><option value="г. Балашиха" /><option value="г. Курск" /><option value="г. Ставрополь" /><option value="г. Улан-Удэ" /><option value="г. Тверь" /><option value="г. Белгород" /><option value="г. Сочи" /><option value="г. Нижний Тагил" /><option value="г. Архангельск" /><option value="г. Волжский" /><option value="г. Калуга" /><option value="г. Сургут" /><option value="г. Чебоксары" /><option value="г. Ковров" /><option value="г. Иваново" /><option value="г. Брянск" /><option value="г. Смоленск" /><option value="г. Вологда" /><option value="г. Орёл" /><option value="г. Владимир" /><option value="г. Мурманск" /><option value="г. Череповец" /><option value="г. Тамбов" /><option value="г. Петрозаводск" /><option value="г. Кострома" /><option value="г. Новороссийск" /><option value="г. Таганрог" /><option value="г. Сыктывкар" /><option value="г. Комсомольск-на-Амуре" /><option value="г. Нальчик" /><option value="г. Йошкар-Ола" /><option value="г. Грозный" /><option value="г. Дзержинск" /><option value="г. Шахты" /><option value="г. Братск" /><option value="г. Псков" /><option value="г. Ангарск" /><option value="г. Нижневартовск" /><option value="г. Бийск" /><option value="г. Курган" /><option value="г. Прокопьевск" /><option value="г. Рыбинск" /><option value="г. Севастополь" /><option value="г. Симферополь" /><option value="г. Краснодарский край" /><option value="г. Ленинградская область" /><option value="г. Московская область" /><option value="Республика Татарстан" /><option value="Республика Башкортостан" /><option value="Краснодарский край" /><option value="Ставропольский край" /><option value="Республика Крым" />
+                              </datalist>
+                            </div>
+                          </div>
+                          {kkmType === 'evotor' && (
+                            <div className="p-3 bg-[#1e3a5f]/5 rounded-lg space-y-3">
+                              <p className="text-sm text-[#1e3a5f] font-medium flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 shrink-0" />Данные от ЛК Эвотор
+                              </p>
+                              <div className="grid sm:grid-cols-2 gap-3">
+                                <div>
+                                  <Label className="text-sm">Логин (телефон)</Label>
+                                  <Input type="tel" value={clientData.evotorLogin} onChange={(e) => setClientData({...clientData, evotorLogin: e.target.value})} className="mt-1" />
+                                </div>
+                                <div>
+                                  <Label className="text-sm">Пароль</Label>
+                                  <Input type="password" value={clientData.evotorPassword} onChange={(e) => setClientData({...clientData, evotorPassword: e.target.value})} className="mt-1" />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 p-2.5 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
+                                <Checkbox id="evotor_restore_r" checked={evotorRestore} onCheckedChange={(c) => setEvotorRestore(c as boolean)} className="w-5 h-5 shrink-0" />
+                                <Label htmlFor="evotor_restore_r" className="cursor-pointer text-xs text-[#1e3a5f]">Нет данных ЛК — помощь с восстановлением <span className="font-semibold">500 руб.</span></Label>
+                              </div>
+                            </div>
+                          )}
+                          <p className="text-xs text-red-500 font-medium">* Название, телефон и ИНН обязательны</p>
+                        </CardContent>
+                      </Card>
+
+                      <Button className="w-full bg-[#e8a817] hover:bg-[#d49a12] py-5 sm:py-6 text-lg sm:text-xl font-bold" size="lg" disabled={!clientData.name.trim() || !clientData.phone.trim() || !clientData.inn.trim()} onClick={async () => {
+                        const orderNum = Date.now().toString().slice(-6)
+                        const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        const condLabelFull = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Старая (рабочая)'
+                        try {
+                          await fetch('/api/send-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ to: 'janicacid@gmail.com', subject: `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`, html: `<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;color:#1e293b"><div style="background:#1e3a5f;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0"><h1 style="margin:0;font-size:20px">ЗАКАЗ-НАРЯД №${orderNum}</h1><p style="margin:4px 0 0;opacity:0.8;font-size:14px">ООО «Теллур-Интех» — ${orderDate}</p></div><div style="padding:20px;background:white;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px"><h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px;margin-top:0">Клиент</h2><p><strong>Наименование:</strong> ${clientData.name}</p>${clientData.inn ? `<p><strong>ИНН:</strong> ${clientData.inn}</p>` : ''}<p><strong>Телефон:</strong> ${clientData.phone}</p>${clientData.email ? `<p><strong>Email:</strong> ${clientData.email}</p>` : ''}${clientData.address ? `<p><strong>Адрес:</strong> ${clientData.address}</p>` : ''}<h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Касса</h2><p><strong>Тип:</strong> ${effectiveKkmInfo.name}</p><p><strong>Состояние:</strong> ${condLabelFull}</p>${clientData.kkmModel ? `<p><strong>Модель:</strong> ${clientData.kkmModel}</p>` : ''}${totalCalc.items.length > 0 ? `<h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Услуги</h2><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr style="background:#f1f5f9"><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">№</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">Наименование</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:right">Сумма</th></tr></thead><tbody>${totalCalc.items.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:8px">${idx + 1}</td><td style="border:1px solid #cbd5e1;padding:8px">${item.name}</td><td style="border:1px solid #cbd5e1;padding:8px;text-align:right">${item.price.toLocaleString('ru-RU')} ₽</td></tr>`).join('')}</tbody></table><p style="font-size:18px;font-weight:bold;text-align:right">ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} ₽</p>` : ''}</div></div>` })
+                          })
+                        } catch { /* silent */ }
+                        setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+                      }}>
                         <CheckCheck className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                         Готово
                       </Button>
                       <Button variant="outline" className="w-full text-sm" onClick={() => {
-                        setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false); setServiceContractChecked(false)
+                        setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month')
                       }}>Сбросить всё</Button>
 
                       <Card className="bg-[#1e3a5f]/5">
@@ -1897,7 +1977,7 @@ export default function TellurServiceCalculator() {
                 kkmCondition={kkmCondition}
                 clientData={clientData}
                 totalCalc={totalCalc}
-                onBack={() => setIsDone(false)}
+                onBack={() => { setIsDone(false); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
                 onPrint={handlePrint}
                 kkmType={kkmType}
                 step2Selections={step2Selections}
@@ -1929,9 +2009,18 @@ export default function TellurServiceCalculator() {
         )}
 
         <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex items-center justify-center gap-3 cursor-pointer" onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} role="button" tabIndex={0} aria-label="Вернуться на главную">
-            <Image src="/logo.webp" alt="Теллур-Интех" width={56} height={46} className="w-7 h-[23px] sm:w-[56px] sm:h-[46px]" quality={100} />
-            <p className="text-xs sm:text-sm text-slate-500">ООО &quot;Теллур-Интех&quot; — сервисный центр кассового оборудования</p>
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+            <div
+              className="flex items-center justify-center gap-3 cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label="Вернуться на главную"
+              onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
+            >
+              <Image src="/logo.webp" alt="Теллур-Интех" width={56} height={46} className="w-7 h-[23px] sm:w-[56px] sm:h-[46px]" quality={100} />
+              <p className="text-xs sm:text-sm text-slate-500">ООО &quot;Теллур-Интех&quot; — сервисный центр кассового оборудования</p>
+            </div>
           </div>
         </footer>
       </div>

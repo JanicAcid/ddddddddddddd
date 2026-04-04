@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import React from 'react'
+import React, { createPortal } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -39,7 +39,7 @@ const KKM_BRANDS: Record<string, { color: string; bg: string }> = {
   mercury: { color: '#2563EB', bg: '#2563EB' },
   atol:    { color: '#E8442E', bg: '#E8442E' },
   shuttle: { color: '#1E1E1E', bg: '#1E1E1E' },
-  pioneer: { color: '#6B8E7B', bg: '#6B8E7B' },
+  pioneer: { color: '#7A8F80', bg: '#7A8F80' },
   aqsi:    { color: '#2563EB', bg: '#2563EB' },
   evotor:  { color: '#D97706', bg: '#D97706' },
   sigma:   { color: '#0891B2', bg: '#0891B2' },
@@ -314,7 +314,43 @@ function getProductCardPriceLabel(count: number): string {
 function HintButton({ hintKey, activeHint, onHintOpen, onHintClose }: { hintKey: string; activeHint: string | null; onHintOpen: (key: string) => void; onHintClose: () => void }) {
   const hint = hints[hintKey]
   const isOpen = activeHint === hintKey
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
   if (!hint) return null
+  const modal = isOpen && mounted ? createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); onHintClose() }} />
+      <div className="relative z-10 w-full max-w-md max-h-[75vh] flex flex-col bg-white border-2 border-amber-200 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200 shrink-0">
+          <span className="font-bold text-amber-700 text-xs uppercase tracking-wide">Подсказка</span>
+          <button
+            type="button"
+            onClick={() => onHintClose()}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-200/60 hover:bg-amber-300 active:bg-amber-400 text-amber-800 hover:text-amber-900 transition-colors"
+            aria-label="Закрыть"
+          >
+            <X className="w-5 h-5" strokeWidth={3} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+          <p><strong className="text-amber-700">Что это:</strong> {hint.what}</p>
+          <p><strong className="text-amber-700">Зачем:</strong> {hint.why}</p>
+          <p><strong className="text-amber-700">Когда:</strong> {hint.when}</p>
+          <p className="text-slate-500 text-xs pt-3 border-t border-slate-200"><em>Пример: {hint.example}</em></p>
+        </div>
+        <div className="px-4 py-3 border-t border-amber-200 bg-amber-50/50 shrink-0">
+          <button
+            type="button"
+            onClick={() => onHintClose()}
+            className="w-full py-2.5 rounded-lg bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 font-medium text-sm transition-colors"
+          >
+            Понятно
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null
   return (
     <>
       <button
@@ -325,39 +361,7 @@ function HintButton({ hintKey, activeHint, onHintOpen, onHintClose }: { hintKey:
       >
         <span className="text-xs sm:text-sm font-bold">?</span>
       </button>
-      {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); onHintClose() }} />
-          <div className="relative z-10 w-full max-w-md max-h-[75vh] flex flex-col bg-white border-2 border-amber-200 rounded-2xl shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200 shrink-0">
-              <span className="font-bold text-amber-700 text-xs uppercase tracking-wide">Подсказка</span>
-              <button
-                type="button"
-                onClick={() => onHintClose()}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-200/60 hover:bg-amber-300 active:bg-amber-400 text-amber-800 hover:text-amber-900 transition-colors"
-                aria-label="Закрыть"
-              >
-                <X className="w-5 h-5" strokeWidth={3} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
-              <p><strong className="text-amber-700">Что это:</strong> {hint.what}</p>
-              <p><strong className="text-amber-700">Зачем:</strong> {hint.why}</p>
-              <p><strong className="text-amber-700">Когда:</strong> {hint.when}</p>
-              <p className="text-slate-500 text-xs pt-3 border-t border-slate-200"><em>Пример: {hint.example}</em></p>
-            </div>
-            <div className="px-4 py-3 border-t border-amber-200 bg-amber-50/50 shrink-0">
-              <button
-                type="button"
-                onClick={() => onHintClose()}
-                className="w-full py-2.5 rounded-lg bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 font-medium text-sm transition-colors"
-              >
-                Понятно
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {modal}
     </>
   )
 }
@@ -406,6 +410,13 @@ function generateOrderHtml(params: {
         checklist.push('Добавить признак подакцизных товаров')
         checklist.push('Установить УТМ+ на Эвотор')
       }
+    }
+    // Add excise goods checklist items for any brand
+    if (params.clientData.sellsExcise) {
+      if (params.kkmType !== 'evotor') {
+        checklist.push('Добавить признак подакцизных товаров')
+      }
+      checklist.push('Настроить УТМ (ЕГАИС) для подакцизных товаров')
     }
     if (params.kkmType === 'atol') {
       checklist.push('Установить подписку «Маркировка» на Сигма')
@@ -1096,8 +1107,8 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                                      <div className="relative w-full aspect-[3/1] flex items-center justify-center overflow-hidden rounded-lg bg-[#1e3a5f]/5">
-                            <BadgeCheck className="w-8 h-8 sm:w-10 sm:h-10 text-[#1e3a5f]" />
+                                      <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                            <BadgeCheck className="w-7 h-7 sm:w-9 sm:h-9 text-[#1e3a5f]" />
                           </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Работаю на ней</span>
@@ -1106,8 +1117,8 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <div className="relative w-full aspect-[3/1] flex items-center justify-center overflow-hidden rounded-lg bg-[#1e3a5f]/5">
-                            <Star className="w-8 h-8 sm:w-10 sm:h-10 text-[#e8a817]" />
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
+                            <Star className="w-7 h-7 sm:w-9 sm:h-9 text-[#e8a817]" />
                           </div>
                           <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Только что купленная</span>
@@ -1116,50 +1127,14 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <div className="relative w-full aspect-[3/1] flex items-center justify-center overflow-hidden rounded-lg bg-[#1e3a5f]/5">
-                            <Tag className="w-8 h-8 sm:w-10 sm:h-10 text-[#1e3a5f]" />
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                            <Tag className="w-7 h-7 sm:w-9 sm:h-9 text-[#1e3a5f]" />
                           </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Купил с рук</span>
                         </div>
                       </div>
                     </div>
-
-                    {needsFirmwareOrLicense && (
-                      <div className="p-3 sm:p-4 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="w-5 h-5 text-[#e8a817] shrink-0 mt-0.5" />
-                          <div className="min-w-0">
-                            <p className="font-semibold text-[#1e3a5f] text-sm">Для {kkmCondition === 'used' ? 'б/у' : 'старой'} кассы {effectiveKkmInfo.name} могут потребоваться:</p>
-                            <div className="mt-2 space-y-1.5 text-sm text-slate-700">
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
-                                    <Download className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                                  </div>
-                                  <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-6 h-6 shrink-0" />
-                                  <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
-                                  <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                                </div>
-                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
-                              </div>
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
-                                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                                  </div>
-                                  <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-6 h-6 shrink-0" />
-                                  <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
-                                  <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                                </div>
-                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
-                              </div>
-                            </div>
-                            <p className="text-xs text-slate-500 mt-2">Отметьте то, что нужно. Если не уверены — мы проверим при осмотре кассы.</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     {kkmCondition === 'new' && (
                       <div className="p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
@@ -1186,12 +1161,13 @@ export default function TellurServiceCalculator() {
                             key={key}
                             type="button"
                             onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') setSigmaSelected(false) }}
-                            className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                            className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                            style={isSelected ? { borderColor: brand.color } : undefined}
                           >
                             <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden">
                               <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={300} height={120} className="max-w-full max-h-full object-contain rounded" quality={100} unoptimized />
                             </div>
-                            <span className={`font-semibold text-xs sm:text-sm leading-tight text-center ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>{kkm.shortName}</span>
+                            <span className={`font-semibold text-xs sm:text-sm leading-tight text-center ${isSelected ? '' : 'text-slate-700'}`} style={isSelected ? { color: brand.color } : undefined}>{kkm.shortName}</span>
                           </button>
                         )
                       })}
@@ -1296,7 +1272,7 @@ export default function TellurServiceCalculator() {
                               <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
                                 <button type="button" onClick={(e) => { e.stopPropagation(); handleHintOpen('tspiot') }}
                                   className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
-                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера</span>
+                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера!</span>
                               </div>
                             )}
                           </div>
@@ -1441,7 +1417,7 @@ export default function TellurServiceCalculator() {
                               <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
                                 <button type="button" onClick={(e) => { e.stopPropagation(); handleHintOpen('tspiot') }}
                                   className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
-                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера</span>
+                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера!</span>
                               </div>
                             )}
                           </div>
@@ -1506,6 +1482,42 @@ export default function TellurServiceCalculator() {
                               <Download className="w-4 h-4" />
                               Скачать согласие (PDF)
                             </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {needsFirmwareOrLicense && (
+                      <div className="p-3 sm:p-4 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="w-5 h-5 text-[#e8a817] shrink-0 mt-0.5" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-[#1e3a5f] text-sm">Для {kkmCondition === 'used' ? 'б/у' : 'старой'} кассы {effectiveKkmInfo.name} могут потребоваться:</p>
+                            <div className="mt-2 space-y-1.5 text-sm text-slate-700">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                                    <Download className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                                  </div>
+                                  <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-6 h-6 shrink-0" />
+                                  <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
+                                  <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+                                </div>
+                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
+                              </div>
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
+                                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
+                                  </div>
+                                  <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-6 h-6 shrink-0" />
+                                  <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
+                                  <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+                                </div>
+                                <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2">Отметьте то, что нужно. Если не уверены — мы проверим при осмотре кассы.</p>
                           </div>
                         </div>
                       </div>
@@ -1735,7 +1747,7 @@ export default function TellurServiceCalculator() {
 
                     {/* ФН — фискальный накопитель */}
                     <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                      <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
@@ -1791,7 +1803,7 @@ export default function TellurServiceCalculator() {
 
                     {/* Сканер */}
                     <Card className={scannerChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+                      <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
@@ -1814,7 +1826,7 @@ export default function TellurServiceCalculator() {
                     {/* Регистрация ККТ в ФНС — только для новых касс, заблокировано */}
                     {kkmCondition === 'new' && (
                       <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
-                        <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                        <CardContent className="pt-5 sm:pt-6">
                           <div className="flex items-start gap-3">
                             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                               <FilePlus2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
@@ -1837,7 +1849,7 @@ export default function TellurServiceCalculator() {
 
                     {/* Карточки товаров */}
                     <Card className={productCardCount > 0 ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+                      <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <LayoutList className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
@@ -1879,7 +1891,7 @@ export default function TellurServiceCalculator() {
                       const selected = step3Selections.includes(service.id)
                       return (
                         <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                          <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${(idx + 3) * 50}ms` }}>
+                          <CardContent className="pt-5 sm:pt-6">
                             <div className="flex items-start gap-3">
                               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                                 {(() => { const ServiceIcon = service.id === 'training' ? GraduationCap : service.id === 'fn_replacement' ? RefreshCw : KeyRound; return <ServiceIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" /> })()}
@@ -1913,7 +1925,7 @@ export default function TellurServiceCalculator() {
 
                     {/* Договор обслуживания */}
                     <Card className={serviceContractChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
+                      <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />

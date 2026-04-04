@@ -512,7 +512,8 @@ ${params.clientData.comment ? `<div style="margin:16px 0"><h2>Примечани
 function DoneScreen({
   effectiveKkmInfo, kkmCondition, clientData, totalCalc,
   onBack, onPrint, onClose, kkmType, effectiveKkm,
-  step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked
+  step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked,
+  evotorRestore, sigmaHelpChecked, unsureFnsRegistration
 }: {
   effectiveKkmInfo: { name: string }
   kkmCondition: string

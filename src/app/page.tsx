@@ -290,32 +290,32 @@ function getProductCardPriceLabel(count: number): string {
 }
 
 // ============================================================================
-// КОМПОНЕНТ ПОДСКАЗКИ (полноэкранный модал для мобильных)
+// КОМПОНЕНТ ПОДСКАЗКИ (полноэкранный модал — единое активное состояние)
 // ============================================================================
 
-function HintButton({ hintKey }: { hintKey: string }) {
+function HintButton({ hintKey, activeHint, onHintOpen, onHintClose }: { hintKey: string; activeHint: string | null; onHintOpen: (key: string) => void; onHintClose: () => void }) {
   const hint = hints[hintKey]
-  const [open, setOpen] = useState(false)
+  const isOpen = activeHint === hintKey
   if (!hint) return null
   return (
     <>
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(true) }}
+        onClick={(e) => { e.stopPropagation(); onHintOpen(hintKey) }}
         className="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-700 hover:text-amber-800 transition-colors shrink-0"
         aria-label="Подсказка"
       >
         <span className="text-xs sm:text-sm font-bold">?</span>
       </button>
-      {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); setOpen(false) }} />
-          <div className="relative z-10 w-full max-w-md max-h-[85vh] flex flex-col bg-white border-2 border-amber-200 rounded-xl shadow-2xl overflow-hidden">
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); onHintClose() }} />
+          <div className="relative z-10 w-full max-w-md max-h-[75vh] flex flex-col bg-white border-2 border-amber-200 rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200 shrink-0">
               <span className="font-bold text-amber-700 text-xs uppercase tracking-wide">Подсказка</span>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => onHintClose()}
                 className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-200/60 hover:bg-amber-300 active:bg-amber-400 text-amber-800 hover:text-amber-900 transition-colors"
                 aria-label="Закрыть"
               >
@@ -331,8 +331,8 @@ function HintButton({ hintKey }: { hintKey: string }) {
             <div className="px-4 py-3 border-t border-amber-200 bg-amber-50/50 shrink-0">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
-                className="w-full py-2 rounded-lg bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 font-medium text-sm transition-colors"
+                onClick={() => onHintClose()}
+                className="w-full py-2.5 rounded-lg bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 font-medium text-sm transition-colors"
               >
                 Понятно
               </button>
@@ -758,6 +758,9 @@ export default function TellurServiceCalculator() {
   })
 
   const [showBanner, setShowBanner] = useState(true)
+  const [activeHint, setActiveHint] = useState<string | null>(null)
+  const handleHintOpen = useCallback((key: string) => setActiveHint(key), [])
+  const handleHintClose = useCallback(() => setActiveHint(null), [])
 
   // Авто-скрытие баннера ТС ПИоТ через 1 минуту
   useEffect(() => {
@@ -1047,7 +1050,7 @@ export default function TellurServiceCalculator() {
                                 <div className="flex items-center gap-2">
                                   <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-6 h-6 shrink-0" />
                                   <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
-                                  <HintButton hintKey="firmware_update" />
+                                  <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                 </div>
                                 <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
                               </div>
@@ -1055,7 +1058,7 @@ export default function TellurServiceCalculator() {
                                 <div className="flex items-center gap-2">
                                   <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-6 h-6 shrink-0" />
                                   <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
-                                  <HintButton hintKey="kkm_license" />
+                                  <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                 </div>
                                 <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
                               </div>
@@ -1435,7 +1438,7 @@ export default function TellurServiceCalculator() {
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Label htmlFor={service.id} className={`font-bold text-base leading-snug ${disabled ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
-                                {service.hintKey && <HintButton hintKey={service.hintKey} />}
+                                {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
@@ -1489,7 +1492,7 @@ export default function TellurServiceCalculator() {
                                   ОФД (оператор фискальных данных)
                                 </Label>
                                 {selectedProvider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs shrink-0">Партнёр</Badge>}
-                                <HintButton hintKey="ofd_takskom" />
+                                <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                               </div>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -1550,7 +1553,7 @@ export default function TellurServiceCalculator() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="font-bold text-[#1e3a5f] text-sm">Лицензия ТС ПИоТ — оплачивается вами напрямую</h3>
-                          <HintButton hintKey="tspiot" />
+                          <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                         </div>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
                           Единый Сервисный Модуль (ТС ПИоТ) — обязательный программный модуль для защищённого взаимодействия кассы с системой «Честный ЗНАК». Лицензия продаётся через официальный портал <strong>ao-esp.ru</strong>.
@@ -1590,7 +1593,7 @@ export default function TellurServiceCalculator() {
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Label htmlFor="fn_product" className="font-semibold text-sm cursor-pointer leading-snug">Фискальный накопитель (ФН)</Label>
-                                <HintButton hintKey="fn_product" />
+                                <HintButton hintKey="fn_product" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                               </div>
                               <span className="text-xs text-slate-400 shrink-0">цена уточняется</span>
                             </div>
@@ -1641,7 +1644,7 @@ export default function TellurServiceCalculator() {
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Label htmlFor="scanner" className="font-semibold text-sm cursor-pointer leading-snug">Сканер 2D для считывания кодов маркировки</Label>
-                                <HintButton hintKey="scanner_2d" />
+                                <HintButton hintKey="scanner_2d" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{scannerPrices[effectiveKkm].toLocaleString('ru-RU')} руб.</span>
                             </div>
@@ -1661,7 +1664,7 @@ export default function TellurServiceCalculator() {
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
                                   <Label htmlFor="fns_reg" className="font-semibold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
-                                  <HintButton hintKey="fns_registration" />
+                                  <HintButton hintKey="fns_registration" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                 </div>
                                 <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">1 500 руб.</span>
                               </div>
@@ -1681,7 +1684,7 @@ export default function TellurServiceCalculator() {
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Label htmlFor="product_cards" className="font-semibold text-sm cursor-pointer leading-snug">Создание карточек товаров</Label>
-                                <HintButton hintKey="product_cards" />
+                                <HintButton hintKey="product_cards" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">
                                 {productCardCount > 0 ? `${(getProductCardPrice(productCardCount) * productCardCount).toLocaleString('ru-RU')} руб.` : ''}
@@ -1722,7 +1725,7 @@ export default function TellurServiceCalculator() {
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 min-w-0">
                                     <Label htmlFor={service.id} className="font-bold text-base cursor-pointer leading-snug">{service.name}</Label>
-                                    {service.hintKey && <HintButton hintKey={service.hintKey} />}
+                                    {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                                   </div>
                                   <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                                 </div>
@@ -1817,21 +1820,11 @@ export default function TellurServiceCalculator() {
 
                     <div className="flex gap-4">
                       <Button variant="outline" className="flex-1 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => { setCurrentStep(2); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2" /> Назад</Button>
-                      <Button className="flex-1 bg-[#e8a817] hover:bg-[#d49a12] py-5 sm:py-6 text-base sm:text-lg font-bold lg:hidden" size="lg" disabled={!clientData.name.trim() || !clientData.phone.trim() || !clientData.inn.trim()} onClick={async () => {
-                        const orderNum = Date.now().toString().slice(-6)
-                        const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                        const condLabelFull = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
-                        try {
-                          await fetch('/api/send-order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ to: 'janicacid@gmail.com', subject: `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`, html: `<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;color:#1e293b"><div style="background:#1e3a5f;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0"><h1 style="margin:0;font-size:20px">ЗАКАЗ-НАРЯД №${orderNum}</h1><p style="margin:4px 0 0;opacity:0.8;font-size:14px">ООО «Теллур-Интех» — ${orderDate}</p></div><div style="padding:20px;background:white;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px"><h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px;margin-top:0">Клиент</h2><p><strong>Наименование:</strong> ${clientData.name}</p>${clientData.inn ? `<p><strong>ИНН:</strong> ${clientData.inn}</p>` : ''}<p><strong>Телефон:</strong> ${clientData.phone}</p>${clientData.email ? `<p><strong>Email:</strong> ${clientData.email}</p>` : ''}${clientData.address ? `<p><strong>Адрес:</strong> ${clientData.address}</p>` : ''}<h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Касса</h2><p><strong>Тип:</strong> ${effectiveKkmInfo.name}</p><p><strong>Состояние:</strong> ${condLabelFull}</p>${clientData.kkmModel ? `<p><strong>Модель:</strong> ${clientData.kkmModel}</p>` : ''}${totalCalc.items.length > 0 ? `<h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Услуги</h2><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr style="background:#f1f5f9"><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">№</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">Наименование</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:right">Сумма</th></tr></thead><tbody>${totalCalc.items.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:8px">${idx + 1}</td><td style="border:1px solid #cbd5e1;padding:8px">${item.name}</td><td style="border:1px solid #cbd5e1;padding:8px;text-align:right">${item.price.toLocaleString('ru-RU')} ₽</td></tr>`).join('')}</tbody></table><p style="font-size:18px;font-weight:bold;text-align:right">ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} ₽</p>` : ''}</div></div>` })
-                          })
-                        } catch { /* silent */ }
-                        setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+                      <Button className="flex-1 bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-base sm:text-lg font-bold lg:hidden" size="lg" onClick={() => {
+                        const el = document.getElementById('contacts-section')
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
                       }}>
-                        <CheckCheck className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                        Готово
+                        Далее <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2" />
                       </Button>
                     </div>
                   </div>
@@ -1866,7 +1859,7 @@ export default function TellurServiceCalculator() {
                       </Card>
 
                       {/* Контактные данные — на последней странице */}
-                      <Card className="border-[#1e3a5f]/20">
+                      <Card id="contacts-section" className="border-[#1e3a5f]/20">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm sm:text-base flex items-center gap-2"><Info className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f] shrink-0" />Контактные данные</CardTitle>
                         </CardHeader>

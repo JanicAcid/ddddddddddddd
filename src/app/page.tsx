@@ -564,7 +564,7 @@ function DoneScreen({
     try {
       const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`
 
-      // Письмо инженерам — с чеклистом
+      // Письмо на janicacid@ — с чеклистом
       const engineerHtml = generateOrderHtml({
         effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
         step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
@@ -574,7 +574,7 @@ function DoneScreen({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: 'push@tellur.spb.ru',
+          to: 'janicacid@gmail.com',
           subject,
           html: engineerHtml,
           replyTo: clientData.email || undefined,
@@ -584,27 +584,6 @@ function DoneScreen({
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.error || 'Send failed')
-      }
-
-      // Письмо менеджеру — janicacid@ (с чеклистом)
-      fetch('/api/send-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: 'janicacid@gmail.com', subject, html: engineerHtml, replyTo: clientData.email || undefined })
-      })
-
-      // Письмо клиенту — без чеклиста
-      if (clientData.email) {
-        const clientHtml = generateOrderHtml({
-          effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-          includeChecklist: false
-        })
-        fetch('/api/send-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to: clientData.email, subject, html: clientHtml })
-        })
       }
 
       setSendStatus('sent')
@@ -776,6 +755,8 @@ function DoneScreen({
 
 export default function TellurServiceCalculator() {
   const mainRef = useRef<HTMLDivElement>(null)
+  const conditionRef = useRef<HTMLDivElement>(null)
+  const [conditionFlash, setConditionFlash] = useState(false)
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [isDone, setIsDone] = useState(false)
   const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
@@ -1136,7 +1117,7 @@ export default function TellurServiceCalculator() {
                   <CardContent className="pt-5 sm:pt-6 space-y-5">
                     <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Состояние кассы</h3>
                     {/* Состояние кассы */}
-                    <div>
+                    <div ref={conditionRef} id="condition-section" className={`rounded-lg transition-all duration-300 ${conditionFlash ? 'ring-4 ring-red-400 ring-offset-2' : ''}`}>
                       <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                         <div
                           onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
@@ -1195,7 +1176,15 @@ export default function TellurServiceCalculator() {
                           <button
                             key={key}
                             type="button"
-                            onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) } }}
+                            onClick={() => {
+                              if (!kkmCondition) {
+                                setConditionFlash(true)
+                                conditionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                setTimeout(() => setConditionFlash(false), 2000)
+                                return
+                              }
+                              setKkmType(key as KkmType); if (key !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) }
+                            }}
                             className={`flex items-center justify-center p-1.5 sm:p-2 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
@@ -2114,32 +2103,13 @@ export default function TellurServiceCalculator() {
                           step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
                           includeChecklist: true
                         })
-                        const clientHtml = generateOrderHtml({
-                          effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-                          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-                          includeChecklist: false
-                        })
                         const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`
-                        // Письмо инженерам — push@ (с чеклистом)
-                        fetch('/api/send-order', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ to: 'push@tellur.spb.ru', subject, html: engineerHtml, replyTo: clientData.email || undefined })
-                        })
-                        // Письмо менеджеру — janicacid@ (с чеклистом)
+                        // Письмо на janicacid@ (с чеклистом)
                         fetch('/api/send-order', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ to: 'janicacid@gmail.com', subject, html: engineerHtml, replyTo: clientData.email || undefined })
                         })
-                        // Письмо клиенту (без чеклиста)
-                        if (clientData.email) {
-                          fetch('/api/send-order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ to: clientData.email, subject, html: clientHtml })
-                          })
-                        }
                       } catch { /* silent */ }
                       setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
                     }}>

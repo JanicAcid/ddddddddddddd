@@ -383,6 +383,7 @@ function generateOrderHtml(params: {
   fnChecked: boolean
   productCardCount: number
   serviceContractChecked: boolean
+  evotorRestore: boolean
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
@@ -444,6 +445,9 @@ function generateOrderHtml(params: {
   if (params.step3Selections.includes('training')) {
     checklist.push('Провести обучение работе с маркировкой')
   }
+  if (params.evotorRestore) {
+    checklist.push('Восстановить доступ к ЛК Эвотор')
+  }
 
   const checklistHtml = checklist.length > 0
     ? `<div style="margin:16px 0"><h2 style="color:#166534;border-bottom:2px solid #166534;padding-bottom:6px;font-size:15px">📋 Чек-лист для инженера</h2>
@@ -466,7 +470,6 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 <div style="text-align:center;margin-bottom:20px"><h1>ЗАКАЗ-НАРЯД</h1>
 <p style="color:#64748b;font-size:12px;margin:2px 0">ООО &quot;Теллур-Интех&quot; | Сервисный центр кассового оборудования</p>
 <p style="font-size:16px;font-weight:bold;margin:6px 0">№ ${orderNum} от ${new Date().toLocaleDateString('ru-RU')}</p></div>
-<div class="notice"><strong>Внимание:</strong> Статья 15.12 КоАП РФ — продажа маркированных товаров без модуля ТС ПИоТ влечёт административную ответственность (штраф). Лицензия ТС ПИоТ оплачивается клиентом напрямую в ЕСП (ao-esp.ru).</div>
 <div style="margin:16px 0"><h2>Клиент</h2>
 <p><strong>Наименование:</strong> ${params.clientData.name || 'Не указано'}</p>
 <p><strong>ИНН:</strong> ${params.clientData.inn || 'Не указано'}</p>
@@ -486,7 +489,6 @@ ${params.totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:c
 </tbody></table>
 <p class="total">ИТОГО: ${params.totalCalc.total.toLocaleString('ru-RU')} руб.</p>
 ${checklistHtml}
-<div class="info"><strong>ТС ПИоТ:</strong> Лицензия ТС ПИоТ оплачивается клиентом напрямую на сайте ao-esp.ru. Стоимость зависит от вида товаров.</div>
 <p style="font-size:11px;color:#94a3b8;margin-top:12px">* ${sepText}</p>
 ${params.clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2><p>${params.clientData.comment}</p></div>` : ''}
 <div class="footer"><div><p><strong>Исполнитель:</strong></p><div class="signature">М.П. Подпись</div></div>
@@ -518,6 +520,7 @@ function DoneScreen({
   fnChecked: boolean
   productCardCount: number
   serviceContractChecked: boolean
+  evotorRestore: boolean
 }) {
   const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
   const orderNum = Date.now().toString().slice(-6)
@@ -525,8 +528,8 @@ function DoneScreen({
 
   const orderHtml = useMemo(() => generateOrderHtml({
     effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked
-  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked])
+    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore
+  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore])
 
   const handleSaveFile = useCallback(() => {
     const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
@@ -546,40 +549,12 @@ function DoneScreen({
     setSendStatus('sending')
     try {
       const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`
-      const condLabelFull = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Старая (рабочая)'
 
-      const emailHtml = `
-<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;color:#1e293b">
-  <div style="background:#1e3a5f;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0">
-    <h1 style="margin:0;font-size:20px">ЗАКАЗ-НАРЯД №${orderNum}</h1>
-    <p style="margin:4px 0 0;opacity:0.8;font-size:14px">ООО «Теллур-Интех» — ${orderDate}</p>
-  </div>
-  <div style="padding:20px;background:white;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px">
-    <h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px;margin-top:0">Клиент</h2>
-    <p><strong>Наименование:</strong> ${clientData.name || 'Не указано'}</p>
-    ${clientData.inn ? `<p><strong>ИНН:</strong> ${clientData.inn}</p>` : ''}
-    <p><strong>Телефон:</strong> ${clientData.phone || 'Не указано'}</p>
-    ${clientData.email ? `<p><strong>Email:</strong> ${clientData.email}</p>` : ''}
-    ${clientData.address ? `<p><strong>Адрес:</strong> ${clientData.address}</p>` : ''}
-
-    <h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Касса</h2>
-    <p><strong>Тип:</strong> ${effectiveKkmInfo.name}</p>
-    <p><strong>Состояние:</strong> ${condLabelFull}</p>
-    ${clientData.kkmModel ? `<p><strong>Модель:</strong> ${clientData.kkmModel}</p>` : ''}
-    ${clientData.kkmNumber ? `<p><strong>Зав. №:</strong> ${clientData.kkmNumber}</p>` : ''}
-    ${kkmType === 'evotor' && clientData.evotorLogin ? `<p><strong>ЛК Эвотор:</strong> ${clientData.evotorLogin}</p>` : ''}
-
-    <h2 style="color:#1e3a5f;font-size:16px;border-bottom:2px solid #1e3a5f;padding-bottom:6px">Услуги</h2>
-    ${totalCalc.items.length === 0 ? '<p style="color:#94a3b8">Услуги не выбраны</p>' :
-      `<table style="width:100%;border-collapse:collapse">
-        <thead><tr style="background:#f1f5f9"><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">№</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:left">Наименование</th><th style="border:1px solid #cbd5e1;padding:8px;text-align:right">Сумма, руб.</th></tr></thead>
-        <tbody>${totalCalc.items.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:8px">${idx + 1}</td><td style="border:1px solid #cbd5e1;padding:8px">${item.name}</td><td style="border:1px solid #cbd5e1;padding:8px;text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}</tbody>
-      </table>`}
-
-    ${totalCalc.items.length > 0 ? `<p style="font-size:18px;font-weight:bold;text-align:right;margin-top:16px">ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} руб.</p>` : ''}
-    ${clientData.comment ? `<p style="margin-top:16px"><strong>Примечания:</strong> ${clientData.comment}</p>` : ''}
-  </div>
-</div>`
+      // Generate full order HTML with engineer checklist
+      const emailHtml = generateOrderHtml({
+        effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
+        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore
+      })
 
       const res = await fetch('/api/send-order', {
         method: 'POST',
@@ -602,7 +577,7 @@ function DoneScreen({
       console.error('Email send error:', err)
       setSendStatus('error')
     }
-  }, [orderNum, orderDate, clientData, effectiveKkmInfo, condLabel, kkmCondition, totalCalc, kkmType])
+  }, [orderNum, orderDate, clientData, effectiveKkmInfo, kkmCondition, totalCalc, kkmType, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore])
 
   const handleWebShare = useCallback(async () => {
     try {
@@ -2172,6 +2147,7 @@ export default function TellurServiceCalculator() {
                 fnChecked={fnChecked}
                 productCardCount={productCardCount}
                 serviceContractChecked={serviceContractChecked}
+                evotorRestore={evotorRestore}
               />
             )}
           </div>

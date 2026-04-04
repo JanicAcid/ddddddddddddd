@@ -899,9 +899,9 @@ export default function TellurServiceCalculator() {
     // Договор обслуживания
     if (serviceContractChecked) {
       if (serviceContractPeriod === 'month') {
-        items.push({ name: 'Договор обслуживания — помесячная оплата', price: 2000 })
+        items.push({ name: 'Договор обслуживания — помесячная оплата', price: 1000 })
       } else {
-        items.push({ name: 'Договор обслуживания — подписка на 12 месяцев', price: 24000 })
+        items.push({ name: 'Договор обслуживания — подписка на 12 месяцев', price: 10000 })
       }
     }
 
@@ -1026,7 +1026,9 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <Image src="/brands/cond_old.webp" alt="Текущая" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12" quality={100} unoptimized />
+                                      <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg">
+                            <Image src="/brands/cond_old.webp" alt="Текущая" width={200} height={80} className="max-w-full max-h-full object-contain" quality={100} unoptimized />
+                          </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Работаю на ней</span>
                         </div>
@@ -1034,7 +1036,9 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <Image src="/brands/cond_new.webp" alt="Новая" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12" quality={100} unoptimized />
+                          <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg">
+                            <Image src="/brands/cond_new.webp" alt="Новая" width={200} height={80} className="max-w-full max-h-full object-contain" quality={100} unoptimized />
+                          </div>
                           <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Только что купленная</span>
                         </div>
@@ -1042,7 +1046,9 @@ export default function TellurServiceCalculator() {
                           onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
                           className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <Image src="/brands/cond_used.webp" alt="Б/у" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12" quality={100} unoptimized />
+                          <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden rounded-lg">
+                            <Image src="/brands/cond_used.webp" alt="Б/у" width={200} height={80} className="max-w-full max-h-full object-contain" quality={100} unoptimized />
+                          </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                           <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Купил с рук</span>
                         </div>
@@ -1415,18 +1421,18 @@ export default function TellurServiceCalculator() {
             {currentStep === 2 && !isDone && (
               <div className="max-w-2xl mx-auto space-y-5 sm:space-y-7">
 
-                {step2Services.filter(s => !(s.id === 'partial_marketing_setup' && kkmCondition !== 'old')).map((service, idx) => {
+                {/* Активные (доступные для выбора) услуги */}
+                {step2Services.filter(s => {
+                  if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
+                  const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
+                  const isMutuallyDisabled = (
+                    (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
+                    (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
+                  )
+                  return !isLocked && !isMutuallyDisabled
+                }).map((service, idx) => {
                   const desc = service.id === 'marking_setup' ? markingDesc : service.description
                   const selected = step2Selections.includes(service.id)
-                  // Для новых касс перерегистрация недоступна (регистрация — автоматически на шаге 3)
-                  const isLocked = kkmCondition === 'new' && service.id === 'fns_reregistration'
-                  // Взаимоисключающие услуги: Полная vs Частичная настройка маркировки
-                  const isMutuallyDisabled = (
-                    (service.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
-                    (service.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
-                  )
-                  const mutuallyExclusiveId = service.id === 'partial_marketing_setup' ? 'Полная настройка маркировки' : 'Частичная настройка маркировки'
-                  const disabled = isLocked || isMutuallyDisabled
                   return (
                     <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
@@ -1435,7 +1441,6 @@ export default function TellurServiceCalculator() {
                             <Image src={service.icon} alt={service.name} width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5" quality={100} unoptimized />
                           )}
                           <Checkbox id={service.id} checked={selected}
-                            disabled={disabled}
                             onCheckedChange={() => {
                               const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
                               setStep2Selections(prev => {
@@ -1447,20 +1452,46 @@ export default function TellurServiceCalculator() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0">
-                                <Label htmlFor={service.id} className={`font-bold text-base leading-snug ${disabled ? 'text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}>{service.name}</Label>
+                                <Label htmlFor={service.id} className="font-bold text-base leading-snug cursor-pointer">{service.name}</Label>
                                 {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                               </div>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">{desc}</p>
-                            {isLocked && <p className="text-xs text-[#1e3a5f] font-medium mt-1">Для новой кассы недоступно — регистрация ККТ включена автоматически на следующем шаге</p>}
-                            {isMutuallyDisabled && <p className="text-xs text-amber-600 font-medium mt-1">Невозможно выбрать одновременно с «{mutuallyExclusiveId}»</p>}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   )
                 })}
+
+                {/* Компактная секция: недоступные для выбора услуги */}
+                {(() => {
+                  const unavailable = step2Services.filter(s => {
+                    if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
+                    const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
+                    const isMutuallyDisabled = (
+                      (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
+                      (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
+                    )
+                    return isLocked || isMutuallyDisabled
+                  })
+                  if (unavailable.length === 0) return null
+                  return (
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Недоступные для выбора:</p>
+                      {unavailable.map(s => {
+                        const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
+                        return (
+                          <p key={s.id} className="text-xs text-slate-400">
+                            <span className="line-through">{s.name}</span>
+                            <span className="ml-1.5">— {isLocked ? 'включено автоматически' : 'взаимоисключает выбранную услугу'}</span>
+                          </p>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
 
                 {/* Подакцизные товары */}
                 {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new') && (
@@ -1568,7 +1599,6 @@ export default function TellurServiceCalculator() {
                         </div>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
                           Единый Сервисный Модуль (ТС ПИоТ) — обязательный программный модуль для защищённого взаимодействия кассы с системой «Честный ЗНАК». Лицензия продаётся через официальный портал <strong>ao-esp.ru</strong>.
-                          Стоимость зависит от вида ваших товаров.
                         </p>
                       </div>
                     </div>
@@ -1774,7 +1804,7 @@ export default function TellurServiceCalculator() {
                                 <Label htmlFor="service_contract" className="font-bold text-base cursor-pointer leading-snug">Договор обслуживания</Label>
                                 <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
                               </div>
-                              <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">2 000 руб./мес.</span>
+                              <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">1 000 руб./мес.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">Регулярное обслуживание кассы — визиты мастера, профилактика, приоритетная поддержка</p>
                             {serviceContractChecked && (
@@ -1784,7 +1814,7 @@ export default function TellurServiceCalculator() {
                                     <RadioGroupItem value="month" id="sc_month" />
                                     <Label htmlFor="sc_month" className="flex-1 cursor-pointer text-sm">
                                       <span className="font-medium text-[#1e3a5f]">Помесячная оплата</span>
-                                      <span className="ml-2 font-bold text-[#1e3a5f]">2 000 ₽/мес.</span>
+                                      <span className="ml-2 font-bold text-[#1e3a5f]">1 000 ₽/мес.</span>
                                     </Label>
                                   </div>
                                   <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-green-200">
@@ -1792,7 +1822,7 @@ export default function TellurServiceCalculator() {
                                     <Label htmlFor="sc_year" className="flex-1 cursor-pointer text-sm">
                                       <span className="font-medium text-[#1e3a5f]">Подписка на 12 месяцев</span>
                                       <span className="ml-2 inline-flex items-center gap-1.5">
-                                        <span className="font-bold text-[#1e3a5f]">24 000 ₽/год</span>
+                                        <span className="font-bold text-[#1e3a5f]">10 000 ₽/год</span>
                                       </span>
                                       <Badge className="bg-green-100 text-green-700 text-xs ml-2">выгодно</Badge>
                                     </Label>
@@ -2013,7 +2043,7 @@ export default function TellurServiceCalculator() {
           </div>
         )}
 
-        <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-1.5">
+        <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-2 pb-2">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
             <div
               className="flex items-center justify-center gap-3 cursor-pointer"
@@ -2031,27 +2061,31 @@ export default function TellurServiceCalculator() {
 
         {/* ФИКСИРОВАННЫЙ ПРОГРЕСС-БАР ВНИЗУ */}
         {!isDone && (
-          <div className="fixed bottom-0 left-0 right-0 z-50 h-1.5 bg-slate-200">
-            {(() => {
-              let pct = 0
-              if (kkmType !== '') pct += 20
-              if (kkmCondition !== '') pct += 10
-              if (ecpChecked) pct += 5
-              const hasMarking = step2Selections.includes('marking_setup') || step2Selections.includes('partial_marketing_setup')
-              if (step2Selections.length > 0) pct += hasMarking ? 30 : 15
-              if (step3Selections.length > 0) pct += 10
-              if (productCardCount > 0) pct += 5
-              if (clientData.name.trim() && clientData.phone.trim() && clientData.inn.trim()) pct += 15
-              return (
-                <div
-                  className="h-full transition-all duration-500 ease-out rounded-r-full"
-                  style={{
-                    width: `${Math.min(100, pct)}%`,
-                    background: pct >= 80 ? '#166534' : pct >= 50 ? '#1e3a5f' : pct >= 20 ? '#d97706' : '#94a3b8'
-                  }}
-                />
-              )
-            })()}
+          <div className="fixed bottom-0 left-0 right-0 z-[999]">
+            <div className="h-[6px] bg-slate-200/60">
+              {(() => {
+                let pct = 0
+                if (kkmType !== '') pct += 20
+                if (kkmCondition !== '') pct += 10
+                if (ecpChecked) pct += 5
+                const hasMarking = step2Selections.includes('marking_setup') || step2Selections.includes('partial_marketing_setup')
+                if (step2Selections.length > 0) pct += hasMarking ? 30 : 15
+                if (step3Selections.length > 0) pct += 10
+                if (productCardCount > 0) pct += 5
+                if (clientData.name.trim() && clientData.phone.trim() && clientData.inn.trim()) pct += 15
+                const color = pct >= 80 ? '#166534' : pct >= 50 ? '#1e3a5f' : pct >= 20 ? '#d97706' : '#94a3b8'
+                return (
+                  <div
+                    className="h-full transition-all duration-700 ease-out"
+                    style={{
+                      width: `${Math.min(100, pct)}%`,
+                      background: `linear-gradient(90deg, ${color}, ${color}dd)`,
+                      boxShadow: `0 0 12px ${color}88`
+                    }}
+                  />
+                )
+              })()}
+            </div>
           </div>
         )}
       </div>

@@ -855,7 +855,7 @@ export default function TellurServiceCalculator() {
       const next = new Set(prev)
       if (next.has(appId)) next.delete(appId)
       else next.add(appId)
-      // Автоопределение типа торговли по выбранным приложениям
+      // Обратная синхронизация типа торговли по выбранным приложениям
       const hasMarking = next.has('marking')
       const hasUtm = next.has('utm')
       if (hasMarking && hasUtm) setEvotorTradeType('both')
@@ -1429,7 +1429,7 @@ export default function TellurServiceCalculator() {
                                 onClick={() => canToggle ? handleEvotorAppToggle(appKey) : undefined}>
                                 <div className="flex items-start gap-2">
                                   {canToggle && (
-                                    <Checkbox checked={isSelected} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
+                                    <Checkbox checked={isSelected} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 pointer-events-none" />
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">

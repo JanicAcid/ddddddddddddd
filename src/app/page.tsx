@@ -1014,9 +1014,10 @@ export default function TellurServiceCalculator() {
                   <p className="text-sm sm:text-base text-slate-500 truncate">Рассчитайте стоимость подключения маркировки</p>
                 </div>
               </div>
-              <a href="tel:+79219324163" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
-                <Phone className="w-4 h-4" />
-                Позвонить менеджеру
+              <a href="tel:+79219324163" className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors shrink-0 whitespace-nowrap">
+                <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Позвонить менеджеру</span>
+                <span className="sm:hidden">+7 921 932 41 63</span>
               </a>
             </div>
           </div>
@@ -1152,7 +1153,7 @@ export default function TellurServiceCalculator() {
                     <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Выберите Вашу кассу</h3>
 
                     {/* Сетка касс */}
-                    <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
                       {visibleKkmTypes.map(([key, kkm]) => {
                         const brand = KKM_BRANDS[key] || { color: '#64748b', bg: '#64748b' }
                         const isSelected = kkmType === key
@@ -1164,8 +1165,8 @@ export default function TellurServiceCalculator() {
                             className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
-                            <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden">
-                              <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={300} height={120} className="max-w-full max-h-full object-contain rounded" quality={100} unoptimized />
+                            <div className="relative w-full aspect-[2.5/1] flex items-center justify-center">
+                              <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={160} className="max-w-full max-h-full object-contain rounded" quality={100} unoptimized />
                             </div>
                             <span className={`font-semibold text-xs sm:text-sm leading-tight text-center ${isSelected ? '' : 'text-slate-700'}`} style={isSelected ? { color: brand.color } : undefined}>{kkm.shortName}</span>
                           </button>

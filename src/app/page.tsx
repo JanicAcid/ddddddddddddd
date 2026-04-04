@@ -1162,12 +1162,10 @@ export default function TellurServiceCalculator() {
                             key={key}
                             type="button"
                             onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') setSigmaSelected(false) }}
-                            className={`flex items-center justify-center p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                            className={`flex items-center justify-center p-1.5 sm:p-2 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
-                            <div className="relative w-full aspect-[5/3] flex items-center justify-center">
-                              <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={240} className="max-w-full max-h-full object-contain rounded" quality={100} unoptimized />
-                            </div>
+                            <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain" quality={100} unoptimized />
                           </button>
                         )
                       })}

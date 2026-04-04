@@ -384,6 +384,7 @@ function generateOrderHtml(params: {
   productCardCount: number
   serviceContractChecked: boolean
   evotorRestore: boolean
+  sigmaHelpChecked: boolean
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
@@ -421,7 +422,11 @@ function generateOrderHtml(params: {
       checklist.push('Настроить УТМ (ЕГАИС) для подакцизных товаров')
     }
     if (params.kkmType === 'atol') {
-      checklist.push('Проверить тариф Сигма (sigma.ru/tarify/)')
+      checklist.push('Проверить/оформить тариф Сигма (sigma.ru/tarify/)')
+    }
+    if (params.sigmaHelpChecked) {
+      checklist.push('Восстановить доступ к кабинету Сигма')
+      checklist.push('Оформить тариф Сигма')
     }
   }
   if (params.step2Selections.includes('partial_marketing_setup')) {
@@ -528,8 +533,8 @@ function DoneScreen({
 
   const orderHtml = useMemo(() => generateOrderHtml({
     effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore
-  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore])
+    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked
+  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked])
 
   const handleSaveFile = useCallback(() => {
     const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
@@ -553,7 +558,7 @@ function DoneScreen({
       // Generate full order HTML with engineer checklist
       const emailHtml = generateOrderHtml({
         effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore
+        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked
       })
 
       const res = await fetch('/api/send-order', {
@@ -577,7 +582,7 @@ function DoneScreen({
       console.error('Email send error:', err)
       setSendStatus('error')
     }
-  }, [orderNum, orderDate, clientData, effectiveKkmInfo, kkmCondition, totalCalc, kkmType, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore])
+  }, [orderNum, orderDate, clientData, effectiveKkmInfo, kkmCondition, totalCalc, kkmType, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked])
 
   const handleWebShare = useCallback(async () => {
     try {
@@ -764,6 +769,7 @@ export default function TellurServiceCalculator() {
   const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
   const [fnActivityType, setFnActivityType] = useState('general')
   // Сигма — 3 тарифа, оплачиваются отдельно на sigma.ru/tarify/
+  const [sigmaHelpChecked, setSigmaHelpChecked] = useState(false)
   const [serviceContractChecked, setServiceContractChecked] = useState(false)
   const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
 
@@ -914,13 +920,13 @@ export default function TellurServiceCalculator() {
       }
     }
 
-    // Сигма тариф — помощь с оформлением
-    if (effectiveKkm === 'sigma' && !evotorHasSubscription) {
-      items.push({ name: 'Оформление тарифа Сигма', price: 500 })
+    // Сигма — помощь с оформлением тарифа и восстановлением доступа к кабинету
+    if (effectiveKkm === 'sigma' && sigmaHelpChecked) {
+      items.push({ name: 'Оформление тарифа Сигма + восстановление доступа к кабинету', price: 500 })
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, evotorHasSubscription, serviceContractChecked, serviceContractPeriod])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, sigmaHelpChecked, serviceContractChecked, serviceContractPeriod])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -1120,7 +1126,7 @@ export default function TellurServiceCalculator() {
                           <button
                             key={key}
                             type="button"
-                            onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') setSigmaSelected(false) }}
+                            onClick={() => { setKkmType(key as KkmType); if (key !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) } }}
                             className={`flex items-center justify-center p-1.5 sm:p-2 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
@@ -1225,23 +1231,25 @@ export default function TellurServiceCalculator() {
                                 </RadioGroup>
                               </div>
                             )}
-                            {evotorHasSubscription && (
-                              <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
-                                <button type="button" onClick={(e) => { e.stopPropagation(); handleHintOpen('tspiot') }}
-                                  className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
-                                <span className="text-xs text-amber-700">Могут потребоваться дополнительные настройки — уточните у менеджера!</span>
-                              </div>
-                            )}
                           </div>
                         )}
 
                         {!evotorHasSubscription && (
-                        <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-2">
-                          <p className="font-medium text-[#1e3a5f] text-sm">Подписка на Сигма оплачивается отдельно</p>
-                          <p className="text-sm text-slate-600">Для работы кассы Сигма оформите один из трёх тарифов на официальном сайте. Подписка оплачивается напрямую у Сигма. Мы поможем с оформлением тарифа — <strong>500 руб.</strong></p>
-                          <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 hover:underline font-medium">
-                            <ExternalLink className="w-3 h-3 shrink-0" /><span>Тарифы Сигма на официальном сайте</span>
-                          </a>
+                        <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                          <p className="font-medium text-[#1e3a5f] text-sm">Подписка на Сигма оформляется на официальном сайте</p>
+                          <p className="text-sm text-slate-600">Для работы кассы Сигма необходимо оформить один из трёх тарифов на <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">sigma.ru</a>. Подписка оплачивается напрямую у Сигма и включает автообновление.</p>
+                          <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-[#1e3a5f]/10">
+                            <Checkbox id="sigma_help" checked={sigmaHelpChecked}
+                              onCheckedChange={(c) => setSigmaHelpChecked(c as boolean)}
+                              className="w-6 h-6 mt-0.5 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <Label htmlFor="sigma_help" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
+                                Помощь с оформлением тарифа + восстановление доступа к кабинету Сигма
+                              </Label>
+                              <p className="text-xs text-slate-500 mt-1">Если нет доступа к личному кабинету Сигма — восстановим логин/пароль и поможем подобрать и оформить подходящий тариф.</p>
+                              <span className="text-sm font-bold text-[#1e3a5f]">500 руб.</span>
+                            </div>
+                          </div>
                         </div>
                         )}
                       </>
@@ -1995,7 +2003,7 @@ export default function TellurServiceCalculator() {
                       </div>
                     )}
                     <Button variant="outline" className="w-full text-sm" onClick={() => {
-                      setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month'); setFnChecked(false); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
+                      setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setSigmaHelpChecked(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month'); setFnChecked(false); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}>Сбросить всё</Button>
                   </div>
 

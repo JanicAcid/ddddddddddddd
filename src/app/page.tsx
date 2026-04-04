@@ -60,7 +60,8 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK = 'https://max.ru/1456926'
+const MAX_INTENT = 'intent://1456926#Intent;scheme=max;package=ru.max.android;S.browser_fallback_url=https%3A%2F%2Fweb.max.ru%2F1456926;end'
+const MAX_WEB = 'https://web.max.ru/1456926'
 
 // ============================================================================
 // ПОДСКАЗКИ
@@ -732,7 +733,10 @@ function DoneScreen({
               <Phone className="w-4 h-4" />
               {MAX_PHONE_DISPLAY}
             </a>
-            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
+            <a
+              href={typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent) ? MAX_INTENT : MAX_WEB}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
               <MessageCircle className="w-4 h-4" />
               Написать в мессенджер
@@ -1014,13 +1018,13 @@ export default function TellurServiceCalculator() {
 [data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.12)}
 [data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
 [data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}
-.space-y-5 .flex.items-start.gap-3,.space-y-7 .flex.items-start.gap-3,.space-y-6 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
+.space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
         {/* HEADER */}
         <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
             <div className="flex items-center justify-between">
               <div
-                className="flex items-center gap-2.5 sm:gap-3 cursor-pointer"
+                className="flex items-center gap-2 sm:gap-3 cursor-pointer"
                 role="button"
                 tabIndex={0}
                 aria-label="Вернуться на главную"
@@ -1040,9 +1044,9 @@ export default function TellurServiceCalculator() {
 
 
 
-        <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full">
+        <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
 
-          <div className="mt-2 sm:mt-4">
+          <div className="mt-1 sm:mt-2">
             {/* Уведомление об ЭЦП */}
             {!ecpChecked && (
               <div className="animate-fade-in-up p-3 sm:p-4 rounded-xl border border-amber-300 bg-amber-50">
@@ -1070,7 +1074,7 @@ export default function TellurServiceCalculator() {
 
 
             {/* STEP INDICATOR */}
-            <div className="max-w-lg mx-auto mb-5 sm:mb-7">
+            <div className="max-w-lg mx-auto mb-3 sm:mb-5">
               <div className="flex items-center">
                 {[
                   { num: 1, label: 'Касса' },
@@ -1112,42 +1116,42 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {currentStep === 1 && !isDone && (
               <div className={ecpChecked ? '' : 'opacity-50 pointer-events-none relative'}>
-              <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6">
+              <div className="max-w-2xl mx-auto space-y-4">
                 <Card>
-                  <CardContent className="pt-5 sm:pt-6 space-y-5">
+                  <CardContent className="pt-4 sm:pt-5 space-y-4">
                     <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Состояние кассы</h3>
                     {/* Состояние кассы */}
                     <div ref={conditionRef} id="condition-section" className={`rounded-lg transition-all duration-300 ${conditionFlash ? 'ring-4 ring-red-400/50 ring-offset-2' : ''}`}>
-                      <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                         <div
                           onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
-                          className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                          className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                                      <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                            <BadgeCheck className="w-7 h-7 sm:w-9 sm:h-9 text-[#1e3a5f]" />
+                                      <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                            <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
                           </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
-                          <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Работаю на ней</span>
+                          <span className="text-[10px] text-slate-400 text-center leading-tight">Работаю на ней</span>
                         </div>
                         <div
                           onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
-                          className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                          className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
-                            <Star className="w-7 h-7 sm:w-9 sm:h-9 text-[#e8a817]" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
+                            <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8a817]" />
                           </div>
                           <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
-                          <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Только что купленная</span>
+                          <span className="text-[10px] text-slate-400 text-center leading-tight">Только что купленная</span>
                         </div>
                         <div
                           onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
-                          className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                          className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                         >
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                            <Tag className="w-7 h-7 sm:w-9 sm:h-9 text-[#1e3a5f]" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                            <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
                           </div>
                           <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
-                          <span className="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">Купил с рук</span>
+                          <span className="text-[10px] text-slate-400 text-center leading-tight">Купил с рук</span>
                         </div>
                       </div>
                     </div>
@@ -1168,7 +1172,7 @@ export default function TellurServiceCalculator() {
                     <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Выберите Вашу кассу</h3>
 
                     {/* Сетка касс */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
                       {visibleKkmTypes.map(([key, kkm]) => {
                         const brand = KKM_BRANDS[key] || { color: '#64748b', bg: '#64748b' }
                         const isSelected = kkmType === key
@@ -1185,7 +1189,7 @@ export default function TellurServiceCalculator() {
                               }
                               setKkmType(key as KkmType); if (key !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) }
                             }}
-                            className={`flex items-center justify-center p-1.5 sm:p-2 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                            className={`flex items-center justify-center p-0.5 sm:p-1.5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                             style={isSelected ? { borderColor: brand.color } : undefined}
                           >
                             <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain" quality={100} unoptimized />
@@ -1259,7 +1263,7 @@ export default function TellurServiceCalculator() {
                                     setEvotorAppsSelected(new Set())
                                   }
                                 }}
-                                className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <Label htmlFor="sigma_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
                                   У меня уже есть оплаченный тариф Сигма
@@ -1299,7 +1303,7 @@ export default function TellurServiceCalculator() {
                           <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-[#1e3a5f]/10">
                             <Checkbox id="sigma_help" checked={sigmaHelpChecked}
                               onCheckedChange={(c) => setSigmaHelpChecked(c as boolean)}
-                              className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                              className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <Label htmlFor="sigma_help" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
                                 Помощь с оформлением тарифа + восстановление доступа к кабинету Сигма
@@ -1366,7 +1370,7 @@ export default function TellurServiceCalculator() {
                                     setEvotorAppsSelected(new Set())
                                   }
                                 }}
-                                className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <Label htmlFor="evotor_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
                                   У меня уже есть текущая подписка на приложение Эвотор для маркировки
@@ -1419,7 +1423,7 @@ export default function TellurServiceCalculator() {
                                 onClick={() => canToggle ? handleEvotorAppToggle(appKey) : undefined}>
                                 <div className="flex items-start gap-3">
                                   {canToggle && (
-                                    <Checkbox checked={isSelected} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
+                                    <Checkbox checked={isSelected} className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -1480,10 +1484,10 @@ export default function TellurServiceCalculator() {
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                                 <div className="flex items-center gap-2">
                                   <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                                     <Download className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                                   </div>
-                                  <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                  <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                                   <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
                                 </div>
                                 <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
@@ -1491,10 +1495,10 @@ export default function TellurServiceCalculator() {
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                                 <div className="flex items-center gap-2">
                                   <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                                     <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                                   </div>
-                                  <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                  <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                                   <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
                                 </div>
                                 <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
@@ -1519,12 +1523,12 @@ export default function TellurServiceCalculator() {
             {/* УСЛУГИ */}
             {/* ============================================================ */}
             {currentStep === 2 && !isDone && (
-              <div className="max-w-2xl mx-auto space-y-5 sm:space-y-7">
+              <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
 
                 {/* Подакцизные товары — выше всех */}
                 {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || kkmCondition === 'old') && (
                   <Card className="border-orange-200 bg-orange-50/50">
-                    <CardContent className="pt-5 sm:pt-6">
+                    <CardContent className="pt-4 sm:pt-5">
                       <div className="flex items-start gap-3">
                         <Checkbox id="excise_check"
                           checked={clientData.sellsExcise}
@@ -1543,7 +1547,7 @@ export default function TellurServiceCalculator() {
                               setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
                             }
                           }}
-                          className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                          className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <Label htmlFor="excise_check" className="font-semibold text-sm cursor-pointer leading-snug text-orange-800">
                             Планируете продавать подакцизные товары?
@@ -1575,10 +1579,10 @@ export default function TellurServiceCalculator() {
                   const ServiceIcon = service.id === 'fns_reregistration' ? FileSignature : service.id === 'marking_setup' ? Settings2 : Wrench
                   return (
                     <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                      <CardContent className="pt-4 sm:pt-5 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                         <div className="flex items-start gap-3">
                           {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ServiceIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                           </div>
                           <Checkbox id={service.id} checked={selected}
@@ -1599,7 +1603,7 @@ export default function TellurServiceCalculator() {
                                 return next
                               })
                             }}
-                            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                            className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <Label htmlFor={service.id} className="font-bold text-base leading-snug cursor-pointer">{service.name}</Label>
@@ -1628,7 +1632,7 @@ export default function TellurServiceCalculator() {
                                         setStep2Selections(prev => prev.filter(x => x !== 'fns_reregistration'))
                                       }
                                     }}
-                                    className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                    className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                                   <Label htmlFor="unsure_fns_reg" className="cursor-pointer text-sm leading-snug">
                                     Не уверен, верно ли зарегистрирована касса в ФНС
                                   </Label>
@@ -1688,17 +1692,17 @@ export default function TellurServiceCalculator() {
                   const selectedProvider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
                   return (
                     <Card className={ofdEffective ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6">
+                      <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Server className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                           </div>                          <Checkbox id="ofd_check"
                             checked={ofdEffective}
                             disabled={ofdLocked}
                             onCheckedChange={(c) => setOfdChecked(c as boolean)}
-                            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                            className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -1759,11 +1763,11 @@ export default function TellurServiceCalculator() {
 
                 {/* ТС ПИоТ — инфо */}
                 <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
-                  <CardContent className="pt-5 sm:pt-6">
+                  <CardContent className="pt-4 sm:pt-5">
                     <div className="flex items-start gap-3">
                       <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                         <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                       </div>                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-[#1e3a5f] text-sm">Подробнее о ТС ПИоТ</h3>
@@ -1786,19 +1790,19 @@ export default function TellurServiceCalculator() {
             {/* ДОПОЛНИТЕЛЬНО */}
             {/* ============================================================ */}
             {currentStep === 3 && !isDone && (
-              <div className="max-w-3xl mx-auto space-y-5 sm:space-y-7">
+              <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
 
                     {/* ФН — фискальный накопитель */}
                     <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6">
+                      <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <HintButton hintKey="fn_product" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                           </div>                          <Checkbox id="fn_product" checked={fnChecked}
                             onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general'); setStep3Selections(prev => prev.includes('fn_replacement') ? prev : [...prev, 'fn_replacement']) } else { setStep3Selections(prev => prev.filter(x => x !== 'fn_replacement')) } }}
-                            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                            className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
                               <Label htmlFor="fn_product" className="font-bold text-sm cursor-pointer leading-snug">Фискальный накопитель (ФН)</Label>
@@ -1844,13 +1848,13 @@ export default function TellurServiceCalculator() {
 
                     {/* Сканер */}
                     <Card className={scannerChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6">
+                      <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <HintButton hintKey="scanner_2d" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ScanLine className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                          </div>                          <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                          </div>                          <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
                               <Label htmlFor="scanner" className="font-bold text-base cursor-pointer leading-snug">Сканер 2D для считывания кодов маркировки</Label>
@@ -1865,13 +1869,13 @@ export default function TellurServiceCalculator() {
                     {/* Регистрация ККТ в ФНС — только для новых касс, заблокировано */}
                     {kkmCondition === 'new' && (
                       <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
-                        <CardContent className="pt-5 sm:pt-6">
+                        <CardContent className="pt-4 sm:pt-5">
                           <div className="flex items-start gap-3">
                             <HintButton hintKey="fns_registration" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                               <FilePlus2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                            </div>                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                            </div>                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
                                 <Label htmlFor="fns_reg" className="font-bold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
@@ -1886,13 +1890,13 @@ export default function TellurServiceCalculator() {
 
                     {/* Карточки товаров */}
                     <Card className={productCardCount > 0 ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6">
+                      <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <HintButton hintKey="product_cards" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <LayoutList className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                          </div>                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                          </div>                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
                               <Label htmlFor="product_cards" className="font-bold text-base cursor-pointer leading-snug">Создание карточек товаров</Label>
@@ -1926,15 +1930,15 @@ export default function TellurServiceCalculator() {
                       const selected = step3Selections.includes(service.id)
                       return (
                         <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                          <CardContent className="pt-5 sm:pt-6">
+                          <CardContent className="pt-4 sm:pt-5">
                             <div className="flex items-start gap-3">
                               {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
-                              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                                 {(() => { const ServiceIcon = service.id === 'training' ? GraduationCap : service.id === 'fn_replacement' ? RefreshCw : KeyRound; return <ServiceIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" /> })()}
                               </div>
                               <Checkbox id={service.id} checked={selected}
                                 onCheckedChange={() => setStep3Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
-                                className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                                className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
                                   <Label htmlFor={service.id} className="font-bold text-base cursor-pointer leading-snug">{service.name}</Label>
@@ -1958,15 +1962,15 @@ export default function TellurServiceCalculator() {
 
                     {/* Договор обслуживания */}
                     <Card className={serviceContractChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
-                      <CardContent className="pt-5 sm:pt-6">
+                      <CardContent className="pt-4 sm:pt-5">
                         <div className="flex items-start gap-3">
                           <HintButton hintKey="service_contract" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
 
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ClipboardCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                           </div>                          <Checkbox id="service_contract" checked={serviceContractChecked}
                             onCheckedChange={(c) => setServiceContractChecked(c as boolean)}
-                            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                            className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
                               <Label htmlFor="service_contract" className="font-bold text-base cursor-pointer leading-snug">Договор обслуживания</Label>
@@ -2227,7 +2231,7 @@ export default function TellurServiceCalculator() {
         )}
 
         <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-2 pb-2">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div
               className="flex items-center justify-center gap-3 cursor-pointer"
               role="button"

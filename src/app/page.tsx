@@ -1443,7 +1443,7 @@ export default function TellurServiceCalculator() {
                           <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
-                            <p className="text-xs text-blue-600 mt-1">Для обслуживания Вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется Ваше согласие — скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
+                            <p className="text-xs text-blue-600 mt-1">Для обслуживания Вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется Ваше согласие — скачайте, заполните и подпишите. Укажите наш код партнёра <strong>9331</strong> в заявлении. Можете подготовить заранее или наш инженер поможет при обращении.</p>
                             <a
                               href="/soglasiye-atol.pdf"
                               download
@@ -2054,7 +2054,7 @@ export default function TellurServiceCalculator() {
                           <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
-                            <p className="text-xs text-blue-600 mt-1">Для обслуживания Вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Скачайте, заполните и подпишите. Можете подготовить заранее или наш инженер поможет при обращении.</p>
+                            <p className="text-xs text-blue-600 mt-1">Для обслуживания Вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Скачайте, заполните и подпишите. Укажите наш код партнёра <strong>9331</strong> в заявлении. Можете подготовить заранее или наш инженер поможет при обращении.</p>
                             <a href="/soglasiye-atol.pdf" download className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors">
                               <Download className="w-4 h-4" />
                               Скачать согласие (PDF)

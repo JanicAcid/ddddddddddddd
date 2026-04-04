@@ -575,6 +575,9 @@ export default function TellurServiceCalculator() {
   const [kkmType, setKkmType] = useState<KkmType>('mercury')
   const [kkmCondition, setKkmCondition] = useState<KkmCondition>('new')
   const [sigmaSelected, setSigmaSelected] = useState(false)
+  const [evotorTradeType, setEvotorTradeType] = useState<'none' | 'marking' | 'alcohol' | 'both'>('none')
+  const [evotorAppsSelected, setEvotorAppsSelected] = useState<Set<string>>(new Set())
+  const [evotorHasSubscription, setEvotorHasSubscription] = useState(false)
   const [step2Selections, setStep2Selections] = useState<string[]>([])
   const [step3Selections, setStep3Selections] = useState<string[]>([])
   const [trainingHours, setTrainingHours] = useState(1)
@@ -627,8 +630,57 @@ export default function TellurServiceCalculator() {
   // Валидация
   const contactValid = clientData.phone.trim() !== ''
   const ecpChecked = clientData.hasEcp
-  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && contactValid && ecpChecked
+  // Для Эвотор (новый/бу): можно идти дальше если выбрано чем торгует ИЛИ выбрано хотя бы одно приложение
+  const evotorTradeOrAppsReady = kkmType === 'evotor' && (kkmCondition === 'new' || kkmCondition === 'used')
+    ? (evotorTradeType !== 'none' || evotorAppsSelected.size > 0)
+    : true
+  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && contactValid && ecpChecked && evotorTradeOrAppsReady
   const canGoStep3 = step2Selections.length > 0
+
+  // --- Синхронизация торгового типа и приложений Эвотор ---
+  const handleEvotorTradeType = useCallback((tradeType: 'marking' | 'alcohol' | 'both') => {
+    setEvotorTradeType(tradeType)
+    const apps = new Set<string>()
+    if (tradeType === 'marking' || tradeType === 'both') apps.add('marking')
+    if (tradeType === 'alcohol' || tradeType === 'both') apps.add('utm')
+    setEvotorAppsSelected(apps)
+  }, [])
+
+  const handleEvotorAppToggle = useCallback((appId: string) => {
+    setEvotorAppsSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(appId)) next.delete(appId)
+      else next.add(appId)
+      // Автоопределение типа торговли по выбранным приложениям
+      const hasMarking = next.has('marking')
+      const hasUtm = next.has('utm')
+      if (hasMarking && hasUtm) setEvotorTradeType('both')
+      else if (hasMarking) setEvotorTradeType('marking')
+      else if (hasUtm) setEvotorTradeType('alcohol')
+      else setEvotorTradeType('none')
+      return next
+    })
+  }, [])
+
+  // Автоматическая постановка галочек в step2 на основе выбора Эвотор
+  useMemo(() => {
+    if (kkmType !== 'evotor') return
+    if (evotorTradeType === 'none' && evotorAppsSelected.size === 0) return
+    const hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking')
+    const hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || evotorAppsSelected.has('utm')
+    setStep2Selections(prev => {
+      const next = new Set(prev)
+      if (hasMarking) {
+        if (!next.has('marking_setup')) next.add('marking_setup')
+      }
+      if (kkmCondition === 'old') {
+        if (hasMarking || hasAlcohol) {
+          if (!next.has('fns_reregistration')) next.add('fns_reregistration')
+        }
+      }
+      return [...next]
+    })
+  }, [kkmType, evotorTradeType, evotorAppsSelected, kkmCondition])
 
   const markingDesc = useMemo(() => {
     if (kkmType === 'evotor') return 'Связываем ЭДО, Честный ЗНАК, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека'
@@ -697,6 +749,13 @@ export default function TellurServiceCalculator() {
     setCurrentStep(step)
     setIsDone(false)
   }
+
+  // Сброс торгового типа при смене типа кассы или состояния
+  useMemo(() => {
+    setEvotorTradeType('none')
+    setEvotorAppsSelected(new Set())
+    setEvotorHasSubscription(false)
+  }, [kkmType, kkmCondition])
 
   // ---- Печать ----
   const handlePrint = () => {
@@ -918,34 +977,126 @@ export default function TellurServiceCalculator() {
                       </div>
                     )}
 
-                    {currentKkmInfo.specialNote?.apps && effectiveKkm !== 'sigma' && (
-                      <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
-                        <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote.title}</p>
-                        <p className="text-sm text-slate-600">{currentKkmInfo.specialNote.content}</p>
-                        {currentKkmInfo.specialNote.apps.map((app, idx) => (
-                          <div key={idx} className="p-3 bg-white rounded border border-[#1e3a5f]/10">
-                            <div className="flex items-start gap-2">
-                              <div className="pt-0.5 shrink-0">
-                                {app.required
-                                  ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
-                                  : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
-                                }
+                    {/* ============================================================================ */}
+                    {/* ЭВOTOR — чем торгуете + приложения */}
+                    {/* ============================================================================ */}
+                    {kkmType === 'evotor' && currentKkmInfo.specialNote?.apps && (
+                      <>
+                        {/* Для новых и б/у — выбор чем торгуете */}
+                        {(kkmCondition === 'new' || kkmCondition === 'used') && (
+                          <div className="p-3 sm:p-4 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
+                            <div className="flex items-center gap-2">
+                              <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
+                              <p className="font-semibold text-[#1e3a5f] text-sm">Чем вы планируете торговать?</p>
+                            </div>
+                            <p className="text-xs text-slate-500">Выберите категорию — нужные приложения Эвотор подставятся автоматически. Или выберите приложения вручную ниже.</p>
+                            <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="marking" id="trade_marking" />
+                                <Label htmlFor="trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
                               </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="alcohol" id="trade_alcohol" />
+                                <Label htmlFor="trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="both" id="trade_both" />
+                                <Label htmlFor="trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
+                              </div>
+                            </RadioGroup>
+                            {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
+                              <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите категорию или хотя бы одно приложение ниже, чтобы продолжить</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Для действующей — галочка «имеется подписка» */}
+                        {kkmCondition === 'old' && (
+                          <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                            <p className="font-medium text-[#1e3a5f] text-sm">Что нужно подключить на действующей кассе?</p>
+                            <div className="flex items-start gap-3 p-3 bg-white rounded border border-[#1e3a5f]/10">
+                              <Checkbox id="evotor_has_sub" checked={evotorHasSubscription}
+                                onCheckedChange={(c) => {
+                                  const checked = c as boolean
+                                  setEvotorHasSubscription(checked)
+                                  if (checked) {
+                                    setEvotorTradeType('marking')
+                                    setEvotorAppsSelected(new Set(['marking']))
+                                  } else {
+                                    setEvotorTradeType('none')
+                                    setEvotorAppsSelected(new Set())
+                                  }
+                                }}
+                                className="w-5 h-5 mt-0.5 shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-[#1e3a5f] text-sm">{app.name}</p>
-                                <p className="text-sm text-slate-600 mt-0.5">{app.purpose}</p>
-                                {app.condition && <p className="text-xs text-slate-500 mt-0.5">({app.condition})</p>}
-                                <a href={app.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline">
-                                  <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница приложения в магазине Эвотор</span>
-                                </a>
-                                {app.price != null && (
-                                  <p className="text-sm font-semibold text-[#1e3a5f] mt-1">{app.price.toLocaleString('ru-RU')} руб.</p>
-                                )}
+                                <Label htmlFor="evotor_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
+                                  У меня уже есть текущая подписка на приложение Эвотор для маркировки
+                                </Label>
+                                <p className="text-xs text-slate-500 mt-1">Отметьте, если на кассе уже установлено и оплачено приложение «Маркировка». Мы настроим связь с Честным ЗНАК, ЭДО и ТС ПИоТ.</p>
                               </div>
                             </div>
+                            {!evotorHasSubscription && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-slate-500 font-medium">Нужна новая подписка. Выберите категорию:</p>
+                                <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="marking" id="trade_marking_old" />
+                                    <Label htmlFor="trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="alcohol" id="trade_alcohol_old" />
+                                    <Label htmlFor="trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="both" id="trade_both_old" />
+                                    <Label htmlFor="trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
+                                  </div>
+                                </RadioGroup>
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
+                        )}
+
+                        {/* Приложения Эвотор (интерактивные для новых/бу/старых без подписки) */}
+                        <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                          <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote.title}</p>
+                          <p className="text-sm text-slate-600">{currentKkmInfo.specialNote.content}</p>
+                          {currentKkmInfo.specialNote.apps.map((app, idx) => {
+                            const appKey = app.name.includes('\u041c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0430') ? 'marking' : app.name.includes('\u0423\u0422\u041c') ? 'utm' : `opt_${idx}`
+                            const isSelected = evotorAppsSelected.has(appKey)
+                            const canToggle = !evotorHasSubscription
+                            return (
+                              <div key={idx} className={`p-3 bg-white rounded border ${isSelected ? 'border-[#1e3a5f]/40 bg-[#1e3a5f]/5' : 'border-[#1e3a5f]/10'} ${canToggle ? 'cursor-pointer hover:border-[#1e3a5f]/30 transition-colors' : ''}`}
+                                onClick={() => canToggle ? handleEvotorAppToggle(appKey) : undefined}>
+                                <div className="flex items-start gap-2">
+                                  <div className="pt-0.5 shrink-0 flex items-center gap-2">
+                                    {canToggle && (
+                                      <Checkbox checked={isSelected} className="w-4 h-4" onCheckedChange={() => handleEvotorAppToggle(appKey)} />
+                                    )}
+                                    {app.required
+                                      ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
+                                      : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
+                                    }
+                                    {isSelected && <Badge className="bg-green-100 text-green-700 text-xs">Выбрано</Badge>}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-[#1e3a5f] text-sm">{app.name}</p>
+                                    <p className="text-sm text-slate-600 mt-0.5">{app.purpose}</p>
+                                    {app.condition && <p className="text-xs text-slate-500 mt-0.5">({app.condition})</p>}
+                                    <a href={app.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline"
+                                      onClick={(e) => e.stopPropagation()}>
+                                      <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница приложения в магазине Эвотор</span>
+                                    </a>
+                                    {app.price != null && (
+                                      <p className="text-sm font-semibold text-[#1e3a5f] mt-1">{app.price.toLocaleString('ru-RU')} руб.</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>

@@ -914,13 +914,13 @@ export default function TellurServiceCalculator() {
       }
     }
 
-    // Сигма тариф — информационная строка (не в цену, оплачивается отдельно)
-    if (effectiveKkm === 'sigma') {
-      items.push({ name: 'Подписка Сигма (оплачивается отдельно)', price: 0 })
+    // Сигма тариф — помощь с оформлением
+    if (effectiveKkm === 'sigma' && !evotorHasSubscription) {
+      items.push({ name: 'Оформление тарифа Сигма', price: 500 })
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, serviceContractChecked, serviceContractPeriod])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, evotorHasSubscription, serviceContractChecked, serviceContractPeriod])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -1154,7 +1154,7 @@ export default function TellurServiceCalculator() {
                               <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
                               <p className="font-semibold text-[#1e3a5f] text-sm">Чем Вы планируете торговать?</p>
                             </div>
-                            <p className="text-xs text-slate-500">Выберите категорию — это поможет нам подобрать нужные настройки. Подписка на Сигма оплачивается отдельно на официальном сайте.</p>
+                            <p className="text-xs text-slate-500">Выберите категорию — это поможет нам подобрать нужные настройки.</p>
                             <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="marking" id="sigma_trade_marking" />
@@ -1238,7 +1238,7 @@ export default function TellurServiceCalculator() {
                         {!evotorHasSubscription && (
                         <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-2">
                           <p className="font-medium text-[#1e3a5f] text-sm">Подписка на Сигма оплачивается отдельно</p>
-                          <p className="text-sm text-slate-600">Для работы кассы Сигма оформите один из трёх тарифов на официальном сайте. Подписка оплачивается напрямую у Сигма.</p>
+                          <p className="text-sm text-slate-600">Для работы кассы Сигма оформите один из трёх тарифов на официальном сайте. Подписка оплачивается напрямую у Сигма. Мы поможем с оформлением тарифа — <strong>500 руб.</strong></p>
                           <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 hover:underline font-medium">
                             <ExternalLink className="w-3 h-3 shrink-0" /><span>Тарифы Сигма на официальном сайте</span>
                           </a>
@@ -1475,6 +1475,7 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ServiceIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
+                          {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                           <Checkbox id={service.id} checked={selected}
                             onCheckedChange={() => {
                               const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
@@ -1486,10 +1487,7 @@ export default function TellurServiceCalculator() {
                             className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                <Label htmlFor={service.id} className="font-bold text-base leading-snug cursor-pointer">{service.name}</Label>
-                                {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
-                              </div>
+                              <Label htmlFor={service.id} className="font-bold text-base leading-snug cursor-pointer">{service.name}</Label>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">{desc}</p>
@@ -1559,6 +1557,7 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Server className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
+                          <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                           <Checkbox id="ofd_check"
                             checked={ofdEffective}
                             disabled={ofdLocked}
@@ -1571,7 +1570,6 @@ export default function TellurServiceCalculator() {
                                   ОФД (оператор фискальных данных)
                                 </Label>
                                 {selectedProvider.partner && <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs shrink-0">Партнёр</Badge>}
-                                <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                               </div>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -1630,11 +1628,9 @@ export default function TellurServiceCalculator() {
                       <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                         <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                       </div>
+                      <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-bold text-[#1e3a5f] text-sm">Подробнее о ТС ПИоТ</h3>
-                          <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                        </div>
+                        <h3 className="font-bold text-[#1e3a5f] text-sm">Подробнее о ТС ПИоТ</h3>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
                           {effectiveKkm === 'sigma' || kkmType === 'evotor'
                             ? <>ТС ПИоТ — обязательный модуль для маркировки, лицензия на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">ao-esp.ru</a>. Подписка на смарт-терминал (Эвотор, Сигма и др.) оплачивается самостоятельно.</>
@@ -1668,15 +1664,13 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
+                          <HintButton hintKey="fn_product" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                           <Checkbox id="fn_product" checked={fnChecked}
                             onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') } }}
                             className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                <Label htmlFor="fn_product" className="font-bold text-sm cursor-pointer leading-snug">Фискальный накопитель (ФН)</Label>
-                                <HintButton hintKey="fn_product" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                              </div>
+                              <Label htmlFor="fn_product" className="font-bold text-sm cursor-pointer leading-snug">Фискальный накопитель (ФН)</Label>
                               <span className="text-xs text-slate-400 shrink-0">цена уточняется</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">Обязательный чип памяти кассы. Срок зависит от вида деятельности</p>
@@ -1724,13 +1718,11 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
+                          <HintButton hintKey="scanner_2d" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                           <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                <Label htmlFor="scanner" className="font-bold text-base cursor-pointer leading-snug">Сканер 2D для считывания кодов маркировки</Label>
-                                <HintButton hintKey="scanner_2d" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                              </div>
+                              <Label htmlFor="scanner" className="font-bold text-base cursor-pointer leading-snug">Сканер 2D для считывания кодов маркировки</Label>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{scannerPrices[effectiveKkm].toLocaleString('ru-RU')} руб.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">Читает квадратные коды (Data Matrix) на маркированных товарах. Обычный сканер не подойдёт.</p>
@@ -1747,13 +1739,11 @@ export default function TellurServiceCalculator() {
                             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                               <FilePlus2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                             </div>
+                            <HintButton hintKey="fns_registration" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                             <Checkbox id="fns_reg" checked={true} disabled={true} className="w-6 h-6 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                  <Label htmlFor="fns_reg" className="font-bold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
-                                  <HintButton hintKey="fns_registration" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                                </div>
+                                <Label htmlFor="fns_reg" className="font-bold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
                                 <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">1 500 руб.</span>
                               </div>
                               <p className="text-xs sm:text-sm text-slate-500 mt-1">Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение до подтверждения — обязательно для новой кассы</p>
@@ -1770,13 +1760,11 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <LayoutList className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
+                          <HintButton hintKey="product_cards" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                           <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                <Label htmlFor="product_cards" className="font-bold text-base cursor-pointer leading-snug">Создание карточек товаров</Label>
-                                <HintButton hintKey="product_cards" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                              </div>
+                              <Label htmlFor="product_cards" className="font-bold text-base cursor-pointer leading-snug">Создание карточек товаров</Label>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">
                                 {productCardCount > 0 ? `${(getProductCardPrice(productCardCount) * productCardCount).toLocaleString('ru-RU')} руб.` : ''}
                               </span>
@@ -1812,15 +1800,13 @@ export default function TellurServiceCalculator() {
                               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                                 {(() => { const ServiceIcon = service.id === 'training' ? GraduationCap : service.id === 'fn_replacement' ? RefreshCw : KeyRound; return <ServiceIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" /> })()}
                               </div>
+                              {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                               <Checkbox id={service.id} checked={selected}
                                 onCheckedChange={() => setStep3Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
                                 className="w-6 h-6 mt-0.5 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                    <Label htmlFor={service.id} className="font-bold text-base cursor-pointer leading-snug">{service.name}</Label>
-                                    {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
-                                  </div>
+                                  <Label htmlFor={service.id} className="font-bold text-base cursor-pointer leading-snug">{service.name}</Label>
                                   <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">{service.price.toLocaleString('ru-RU')} руб.</span>
                                 </div>
                                 <p className="text-xs sm:text-sm text-slate-500 mt-1">{service.description}</p>
@@ -1846,15 +1832,13 @@ export default function TellurServiceCalculator() {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
+                          <HintButton hintKey="service_contract" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                           <Checkbox id="service_contract" checked={serviceContractChecked}
                             onCheckedChange={(c) => setServiceContractChecked(c as boolean)}
                             className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                                <Label htmlFor="service_contract" className="font-bold text-base cursor-pointer leading-snug">Договор обслуживания</Label>
-                                <HintButton hintKey="service_contract" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                              </div>
+                              <Label htmlFor="service_contract" className="font-bold text-base cursor-pointer leading-snug">Договор обслуживания</Label>
                               <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">1 000 руб./мес.</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-500 mt-1">Регулярное обслуживание кассы — визиты мастера, профилактика, приоритетная поддержка</p>

@@ -60,8 +60,7 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK_DESKTOP = 'https://web.max.ru/1456926'
-const MAX_LINK_MOBILE = 'https://max.ru/+79219324163'
+const MAX_LINK = 'https://web.max.ru/1456926'
 
 // ============================================================================
 // ПОДСКАЗКИ
@@ -387,6 +386,7 @@ function generateOrderHtml(params: {
   evotorRestore: boolean
   sigmaHelpChecked: boolean
   unsureFnsRegistration: boolean
+  includeChecklist?: boolean
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
@@ -459,7 +459,7 @@ function generateOrderHtml(params: {
     checklist.push('Восстановить доступ к ЛК Эвотор')
   }
 
-  const checklistHtml = checklist.length > 0
+  const checklistHtml = params.includeChecklist !== false && checklist.length > 0
     ? `<div style="margin:16px 0"><h2 style="color:#166534;border-bottom:2px solid #166534;padding-bottom:6px;font-size:15px">📋 Чек-лист для инженера</h2>
 <table style="width:100%;border-collapse:collapse;margin:8px 0"><tbody>
 ${checklist.map(item => `<tr><td style="border:1px solid #bbf7d0;padding:6px 8px;font-size:13px;width:30px;text-align:center">☐</td><td style="border:1px solid #bbf7d0;padding:6px 8px;font-size:13px">${item}</td></tr>`).join('')}
@@ -541,7 +541,8 @@ function DoneScreen({
 
   const orderHtml = useMemo(() => generateOrderHtml({
     effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
+    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+    includeChecklist: false
   }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration])
 
   const handleSaveFile = useCallback(() => {
@@ -563,20 +564,19 @@ function DoneScreen({
     try {
       const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`
 
-      // Generate full order HTML with engineer checklist
-      const emailHtml = generateOrderHtml({
+      // Письмо инженерам — с чеклистом
+      const engineerHtml = generateOrderHtml({
         effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
+        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+        includeChecklist: true
       })
-
       const res = await fetch('/api/send-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: 'push@tellur.spb.ru',
-          cc: 'janicacid@gmail.com',
           subject,
-          html: emailHtml,
+          html: engineerHtml,
           replyTo: clientData.email || undefined,
         })
       })
@@ -584,6 +584,20 @@ function DoneScreen({
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.error || 'Send failed')
+      }
+
+      // Письмо клиенту — без чеклиста
+      if (clientData.email) {
+        const clientHtml = generateOrderHtml({
+          effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
+          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+          includeChecklist: false
+        })
+        fetch('/api/send-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: clientData.email, subject, html: clientHtml })
+        })
       }
 
       setSendStatus('sent')
@@ -732,7 +746,7 @@ function DoneScreen({
               <Phone className="w-4 h-4" />
               {MAX_PHONE_DISPLAY}
             </a>
-            <a href={typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? MAX_LINK_MOBILE : MAX_LINK_DESKTOP} target="_blank" rel="noopener noreferrer"
+            <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
               <Image src="/max-logo.webp" alt="Макс" width={20} height={20} className="w-5 h-5 rounded" />
               Написать в Макс
@@ -996,7 +1010,8 @@ export default function TellurServiceCalculator() {
   const handlePrint = () => {
     const printContent = generateOrderHtml({
       effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-      step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
+      step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+      includeChecklist: false
     })
     const printWithScript = printContent.replace('</body>', '<script>window.print();</script></body>')
     const w = window.open('', '_blank')
@@ -2088,15 +2103,31 @@ export default function TellurServiceCalculator() {
                       const orderNum = Date.now().toString().slice(-6)
                       const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
                       try {
-                        const orderHtml = generateOrderHtml({
+                        const engineerHtml = generateOrderHtml({
                           effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-                          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration
+                          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+                          includeChecklist: true
                         })
-                        await fetch('/api/send-order', {
+                        const clientHtml = generateOrderHtml({
+                          effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
+                          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+                          includeChecklist: false
+                        })
+                        const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`
+                        // Письмо инженерам (с чеклистом)
+                        fetch('/api/send-order', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ to: 'push@tellur.spb.ru', cc: 'janicacid@gmail.com', subject: `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`, html: orderHtml, replyTo: clientData.email || undefined })
+                          body: JSON.stringify({ to: 'push@tellur.spb.ru', subject, html: engineerHtml, replyTo: clientData.email || undefined })
                         })
+                        // Письмо клиенту (без чеклиста)
+                        if (clientData.email) {
+                          fetch('/api/send-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ to: clientData.email, subject, html: clientHtml })
+                          })
+                        }
                       } catch { /* silent */ }
                       setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
                     }}>

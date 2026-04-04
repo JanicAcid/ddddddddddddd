@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -11,7 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import {
   Calculator, Printer, Info, CheckCircle2, AlertCircle,
-  ShoppingCart, CreditCard, AlertTriangle,
+  CreditCard, AlertTriangle,
   ScanLine, ArrowRight, ArrowLeft,
   HelpCircle, Phone, Mail, ExternalLink, MessageCircle, CheckCheck, ShieldCheck,
   X, Download, Send, Check, CheckCircle
@@ -995,6 +996,38 @@ export default function TellurServiceCalculator() {
 
 
             {/* ============================================================ */}
+            {/* ПРОГРЕСС-БАР */}
+            {/* ============================================================ */}
+            {!isDone && (
+              <div className="max-w-2xl mx-auto mb-4 sm:mb-6">
+                <div className="flex items-center justify-between gap-1 sm:gap-2">
+                  {([['1', 'Касса'], ['2', 'Услуги'], ['3', 'Доп.' ], ['4', 'Готово']] as const).map(([step, label], idx) => {
+                    const stepNum = Number(step) as Step
+                    const isActive = currentStep === stepNum
+                    const isDone = currentStep > stepNum
+                    const isLast = idx === 3
+                    return (
+                      <React.Fragment key={step}>
+                        <button
+                          type="button"
+                          onClick={() => { if ((stepNum as number) <= currentStep) { setCurrentStep(stepNum); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) } }}
+                          className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${isActive ? 'bg-[#1e3a5f] text-white shadow-sm' : isDone ? 'bg-[#1e3a5f]/10 text-[#1e3a5f] cursor-pointer hover:bg-[#1e3a5f]/20' : 'bg-slate-100 text-slate-400 cursor-default'}`}
+                          disabled={(stepNum as number) > currentStep}
+                        >
+                          <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold shrink-0 ${isActive ? 'bg-white text-[#1e3a5f]' : isDone ? 'bg-[#1e3a5f] text-white' : 'bg-slate-200 text-slate-400'}`}>
+                            {isDone ? '✓' : step}
+                          </span>
+                          <span className="hidden sm:inline">{label}</span>
+                        </button>
+                        {!isLast && <div className={`flex-1 h-0.5 rounded ${currentStep > stepNum ? 'bg-[#1e3a5f]' : 'bg-slate-200'}`} />}
+                      </React.Fragment>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================ */}
             {/* ВЫБОР КАССЫ */}
             {/* ============================================================ */}
             {currentStep === 1 && !isDone && (
@@ -1003,12 +1036,11 @@ export default function TellurServiceCalculator() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                      <ShoppingCart className="w-5 h-5 text-[#1e3a5f] shrink-0" />
                       Выберите вашу кассу
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
-                    {/* Состояние кассы — выше выбора кассы */}
+                    {/* Состояние кассы */}
                     <div>
                       <h3 className="text-base font-bold text-[#1e3a5f] mb-3">Состояние кассы</h3>
                       <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
@@ -1095,11 +1127,6 @@ export default function TellurServiceCalculator() {
                           >
                             <div className="relative w-full aspect-[2.5/1] flex items-center justify-center overflow-hidden">
                               <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={160} className="max-w-full max-h-full object-contain rounded-lg" quality={100} unoptimized />
-                              {isSelected && (
-                                <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center bg-[#1e3a5f] shadow-sm">
-                                  <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                                </div>
-                              )}
                             </div>
                             <span className={`font-bold text-sm sm:text-base leading-tight text-center ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>{kkm.shortName}</span>
                           </button>
@@ -1404,9 +1431,6 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {currentStep === 2 && !isDone && (
               <div className="max-w-2xl mx-auto space-y-5 sm:space-y-7">
-                <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg text-xs sm:text-sm">
-                  <p className="text-[#1e3a5f]"><strong>Касса:</strong> {effectiveKkmInfo.name} ({kkmCondition === 'new' ? 'новая' : kkmCondition === 'used' ? 'б/у' : 'рабочая'})</p>
-                </div>
 
                 {step2Services.filter(s => !(s.id === 'partial_marketing_setup' && kkmCondition !== 'old')).map((service, idx) => {
                   const desc = service.id === 'marking_setup' ? markingDesc : service.description
@@ -1578,9 +1602,6 @@ export default function TellurServiceCalculator() {
               <div className="max-w-3xl mx-auto">
                 <div className="grid lg:grid-cols-3 gap-5 sm:gap-7">
                   <div className="lg:col-span-2 space-y-5 sm:space-y-7">
-                    <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/10 rounded-lg text-xs sm:text-sm">
-                      <p className="text-[#1e3a5f]"><strong>Касса:</strong> {effectiveKkmInfo.name} | <strong>Основные услуги:</strong> {step2Selections.length} шт.</p>
-                    </div>
 
                     {/* ФН — фискальный накопитель */}
                     <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
@@ -1799,24 +1820,7 @@ export default function TellurServiceCalculator() {
                       </CardContent>
                     </Card>
 
-                    {/* Данные кассы */}
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2"><Info className="w-5 h-5 text-[#1e3a5f] shrink-0" />Информация о кассе</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
-                          <div><Label className="text-sm">Модель</Label><Input value={clientData.kkmModel} onChange={(e) => setClientData({...clientData, kkmModel: e.target.value})} placeholder="Меркурий-185Ф" className="mt-1" /></div>
-                          <div><Label className="text-sm">Заводской номер</Label><Input value={clientData.kkmNumber} onChange={(e) => setClientData({...clientData, kkmNumber: e.target.value})} placeholder="На корпусе" className="mt-1" /></div>
-                          <div><Label className="text-sm">Номер ФН</Label><Input value={clientData.fnNumber} onChange={(e) => setClientData({...clientData, fnNumber: e.target.value})} placeholder="Если знаете" className="mt-1" /></div>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm">Примечания</Label>
-                          <Input value={clientData.comment} onChange={(e) => setClientData({...clientData, comment: e.target.value})} placeholder="Дополнительная информация" className="mt-1" />
-                        </div>
-                      </CardContent>
-                    </Card>
+                    {/* Данные кассы — скрыты, перенесены в контакты */}
 
                     <div className="flex gap-4">
                       <Button variant="outline" className="flex-1 py-5 sm:py-6 text-base sm:text-lg font-bold" size="lg" onClick={() => { setCurrentStep(2); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2" /> Назад</Button>
@@ -1858,7 +1862,7 @@ export default function TellurServiceCalculator() {
                         </CardContent>
                       </Card>
 
-                      {/* Контактные данные — на последней странице */}
+                      {/* Контактные данные — в центре экрана */}
                       <Card id="contacts-section" className="border-[#1e3a5f]/20">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm sm:text-base flex items-center gap-2"><Info className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f] shrink-0" />Контактные данные</CardTitle>
@@ -1891,6 +1895,21 @@ export default function TellurServiceCalculator() {
                               </datalist>
                             </div>
                           </div>
+                          {/* Данные кассы — внутри контактов */}
+                          <div className="grid sm:grid-cols-3 gap-3">
+                            <div>
+                              <Label className="text-sm">Модель кассы</Label>
+                              <Input value={clientData.kkmModel} onChange={(e) => setClientData({...clientData, kkmModel: e.target.value})} placeholder="Меркурий-185Ф" className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-sm">Заводской номер</Label>
+                              <Input value={clientData.kkmNumber} onChange={(e) => setClientData({...clientData, kkmNumber: e.target.value})} placeholder="На корпусе" className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-sm">Номер ФН</Label>
+                              <Input value={clientData.fnNumber} onChange={(e) => setClientData({...clientData, fnNumber: e.target.value})} placeholder="Если знаете" className="mt-1" />
+                            </div>
+                          </div>
                           {kkmType === 'evotor' && (
                             <div className="p-3 bg-[#1e3a5f]/5 rounded-lg space-y-3">
                               <p className="text-sm text-[#1e3a5f] font-medium flex items-center gap-2">
@@ -1912,6 +1931,10 @@ export default function TellurServiceCalculator() {
                               </div>
                             </div>
                           )}
+                          <div>
+                            <Label className="text-sm">Примечания</Label>
+                            <Input value={clientData.comment} onChange={(e) => setClientData({...clientData, comment: e.target.value})} placeholder="Дополнительная информация" className="mt-1" />
+                          </div>
                           <p className="text-xs text-red-500 font-medium">* Название, телефон и ИНН обязательны</p>
                         </CardContent>
                       </Card>

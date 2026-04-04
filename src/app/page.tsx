@@ -297,7 +297,7 @@ function HintButton({ hintKey }: { hintKey: string }) {
       </button>
       {open && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setOpen(false) }} />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); setOpen(false) }} />
           <div className="relative z-10 w-full max-w-md max-h-[85vh] flex flex-col bg-white border-2 border-amber-200 rounded-xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200 shrink-0">
               <span className="font-bold text-amber-700 text-xs uppercase tracking-wide">Подсказка</span>
@@ -342,10 +342,86 @@ function generateOrderHtml(params: {
   kkmType: string
   clientData: { name: string; inn: string; phone: string; email: string; address: string; kkmModel: string; kkmNumber: string; comment: string; evotorLogin: string; sellsExcise: boolean }
   totalCalc: { items: { name: string; price: number }[]; total: number }
+  step2Selections: string[]
+  step3Selections: string[]
+  scannerChecked: boolean
+  fnChecked: boolean
+  productCardCount: number
+  serviceContractChecked: boolean
 }): string {
-  const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Старая (работающая)'
+  const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
   const sepText = params.kkmType === 'evotor' ? 'ТС ПИоТ, приложения Эвотор — оплачиваются отдельно напрямую у поставщиков.' : params.kkmType === 'atol' ? 'ТС ПИоТ, подписки Сигма — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ, подписки — оплачиваются отдельно напрямую у поставщиков.'
+
+  // Чек-лист для инженера
+  const checklist: string[] = []
+  const isNew = params.kkmCondition === 'new'
+  const isOld = params.kkmCondition === 'old'
+  const isUsed = params.kkmCondition === 'used'
+
+  if (isNew) {
+    checklist.push('Зарегистрировать ККТ в ФНС — подать заявление, подписать ЭЦП')
+    checklist.push('Подключить к ОФД — проверить связь, настроить обмен')
+    checklist.push('Установить и активировать ФН')
+  }
+
+  if (params.step2Selections.includes('fns_reregistration') || isOld) {
+    checklist.push('Перерегистрация в ФНС: добавить признаки маркировки и/или подакцизных товаров')
+    checklist.push('Сменить формат ФФД на 1.2')
+  }
+
+  if (params.step2Selections.includes('marking_setup')) {
+    checklist.push('Настроить ЭДО — подключить оператора, протестировать приём накладных')
+    checklist.push('Настроить Честный ЗНАК — регистрация, привязка кассы, проверка кодов')
+    checklist.push('Настроить ТС ПИоТ — установить, активировать лицензию, привязать к Честному ЗНАКу')
+    if (params.kkmType === 'evotor') {
+      checklist.push('Установить приложение «Маркировка» из магазина Эвотор')
+      checklist.push('Настроить личный кабинет Эвотор — связать с Честным ЗНАКом')
+    }
+    if (params.effectiveKkmInfo.name.includes('Сигма')) {
+      checklist.push('Установить подписку «Маркировка» через магазин Атол')
+    }
+    if (params.clientData.sellsExcise) {
+      checklist.push('Добавить признак подакцизных товаров в настройках кассы')
+      if (params.kkmType === 'evotor') checklist.push('Установить приложение «УТМ+» для ЕГАИС')
+    }
+    checklist.push('Провести тестовый чек с кодом маркировки — проверить прохождение в ФНС')
+  }
+
+  if (params.step2Selections.includes('partial_marketing_setup')) {
+    checklist.push('Проверить все связи: ЭДО ↔ Честный ЗНАК ↔ ТС ПИоТ ↔ Касса')
+    checklist.push('Настроить недостающие модули')
+    checklist.push('Протестировать пробитие чека с маркировкой')
+  }
+
+  if (params.scannerChecked) {
+    checklist.push('Подключить 2D-сканер — проверить чтение кодов Data Matrix')
+  }
+
+  if (params.fnChecked) {
+    checklist.push('Установить ФН — проверить активацию и срок действия')
+  }
+
+  if (params.productCardCount > 0) {
+    checklist.push(`Создать карточки товаров (${params.productCardCount} шт.) — заполнить название, артикул, привязку к маркировке, цену`)
+  }
+
+  if (params.step3Selections.includes('ecp_renewal')) {
+    checklist.push('Продлить ЭЦП на токене клиента — проверить срок действия')
+  }
+
+  if (params.step3Selections.includes('training')) {
+    checklist.push('Провести обучение: сканирование кодов, приём товара, возвраты, работа с Честным ЗНАКом')
+  }
+
+  const checklistHtml = checklist.length > 0 ? `
+<div style="margin:16px 0">
+<h2 style="color:#334155;border-bottom:2px solid #16a34a;padding-bottom:6px;font-size:15px">📋 Чек-лист для инженера</h2>
+<table style="width:100%;border-collapse:collapse;margin:8px 0"><tbody>
+${checklist.map((item, idx) => `<tr><td style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px;width:30px;text-align:center">☐</td><td style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px">${item}</td></tr>`).join('')}
+</tbody></table>
+</div>` : ''
+
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Заказ-наряд</title><style>
 body{font-family:Arial,Helvetica,sans-serif;padding:20px;max-width:800px;margin:0 auto;color:#1e293b}
 h1{text-align:center;margin:0 0 5px}h2{color:#334155;border-bottom:2px solid #1e3a5f;padding-bottom:6px;font-size:15px}
@@ -355,6 +431,7 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 .signature{width:180px;border-top:1px solid #000;padding-top:4px;text-align:center;font-size:13px}
 .notice{background:#fef2f2;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
 .info{background:#fffbeb;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
+.checklist{background:#f0fdf4;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
 @media print{body{padding:15px}}
 </style></head><body>
 <div style="text-align:center;margin-bottom:20px"><h1>ЗАКАЗ-НАРЯД</h1>
@@ -366,7 +443,7 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 <p><strong>ИНН:</strong> ${params.clientData.inn || 'Не указано'}</p>
 <p><strong>Телефон:</strong> ${params.clientData.phone || 'Не указано'}</p>
 <p><strong>Email:</strong> ${params.clientData.email || 'Не указано'}</p>
-<p><strong>Адрес:</strong> ${params.clientData.address || 'Не указано'}</p></div>
+<p><strong>Адрес установки ККТ:</strong> ${params.clientData.address || 'Не указано'}</p></div>
 <div style="margin:16px 0"><h2>Касса</h2>
 <p><strong>Тип:</strong> ${params.effectiveKkmInfo.name}</p>
 <p><strong>Состояние:</strong> ${condLabel}</p>
@@ -381,6 +458,7 @@ ${params.totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:c
 <p class="total">ИТОГО: ${params.totalCalc.total.toLocaleString('ru-RU')} руб.</p>
 <div class="info"><strong>ТС ПИоТ:</strong> Лицензия ТС ПИоТ оплачивается клиентом напрямую на сайте ao-esp.ru. Стоимость зависит от вида товаров.</div>
 <p style="font-size:11px;color:#94a3b8;margin-top:12px">* ${sepText}</p>
+${checklistHtml}
 ${params.clientData.comment ? `<div style="margin:16px 0"><h2>Примечания</h2><p>${params.clientData.comment}</p></div>` : ''}
 <div class="footer"><div><p><strong>Исполнитель:</strong></p><div class="signature">М.П. Подпись</div></div>
 <div><p><strong>Заказчик:</strong></p><div class="signature">Подпись</div></div></div>
@@ -393,7 +471,8 @@ ${params.clientData.comment ? `<div style="margin:16px 0"><h2>Примечани
 
 function DoneScreen({
   effectiveKkmInfo, kkmCondition, clientData, totalCalc,
-  onBack, onPrint, kkmType
+  onBack, onPrint, kkmType,
+  step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked
 }: {
   effectiveKkmInfo: { name: string }
   kkmCondition: string
@@ -402,14 +481,21 @@ function DoneScreen({
   onBack: () => void
   onPrint: () => void
   kkmType: string
+  step2Selections: string[]
+  step3Selections: string[]
+  scannerChecked: boolean
+  fnChecked: boolean
+  productCardCount: number
+  serviceContractChecked: boolean
 }) {
-  const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Старая (рабочая)'
+  const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
   const orderNum = Date.now().toString().slice(-6)
   const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   const orderHtml = useMemo(() => generateOrderHtml({
-    effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc
-  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc])
+    effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
+    step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked
+  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked])
 
   const handleSaveFile = useCallback(() => {
     const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
@@ -581,6 +667,8 @@ export default function TellurServiceCalculator() {
   const [step2Selections, setStep2Selections] = useState<string[]>([])
   const [step3Selections, setStep3Selections] = useState<string[]>([])
   const [trainingHours, setTrainingHours] = useState(1)
+  const [serviceContractChecked, setServiceContractChecked] = useState(false)
+  const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
   const [productCardCount, setProductCardCount] = useState(0)
   const [scannerChecked, setScannerChecked] = useState(false)
   const [firmwareChecked, setFirmwareChecked] = useState(false)
@@ -593,7 +681,7 @@ export default function TellurServiceCalculator() {
   const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
   const [fnActivityType, setFnActivityType] = useState('general')
   const [sigmaSubSelections, setSigmaSubSelections] = useState<string[]>(['sigma_marking'])
-  const [sigmaSubPeriod, setSigmaSubPeriod] = useState<'month' | 'year'>('month')
+  // sigmaSubPeriod removed — prices not shown, client checks tariffs via links
 
   const [clientData, setClientData] = useState({
     name: '', inn: '', phone: '', email: '', address: '',
@@ -730,20 +818,35 @@ export default function TellurServiceCalculator() {
       items.push({ name: `Создание карточек товаров (${productCardCount} шт.)`, price: p * productCardCount })
     }
 
+    // Договор обслуживания
+    if (serviceContractChecked) {
+      const monthlyPrice = 2000
+      if (serviceContractPeriod === 'year') {
+        items.push({ name: 'Договор обслуживания (подписка на 12 мес.)', price: monthlyPrice * 12 })
+      } else {
+        items.push({ name: 'Договор обслуживания (1 мес.)', price: monthlyPrice })
+      }
+    }
+
     // Сигма подписки — информационная строка (не в цену, т.к. оплачивается отдельно)
-    if (effectiveKkm === 'sigma' && sigmaSubSelections.length > 0) {
-      const subPeriodLabel = sigmaSubPeriod === 'year' ? '/год' : '/мес'
-      sigmaSubSelections.forEach(subId => {
+    if (effectiveKkm === 'sigma') {
+      const selectedSubIds = new Set<string>()
+      sigmaSubSelections.forEach(id => selectedSubIds.add(id))
+      evotorAppsSelected.forEach(key => {
+        if (key === 'marking') selectedSubIds.add('sigma_marking')
+        else if (key === 'utm') selectedSubIds.add('sigma_utm')
+        else if (key.startsWith('sigma_')) selectedSubIds.add(key)
+      })
+      selectedSubIds.forEach(subId => {
         const sub = sigmaSubscriptions.find(s => s.id === subId)
         if (sub) {
-          const price = sigmaSubPeriod === 'year' ? sub.pricePerYear : sub.pricePerMonth
-          items.push({ name: `${sub.name} — ${price.toLocaleString('ru-RU')} ₽${subPeriodLabel} (оплачивается у Атол)`, price: 0 })
+          items.push({ name: `${sub.name} (оплачивается у Атол)`, price: 0 })
         }
       })
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, sigmaSubSelections, sigmaSubPeriod])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, sigmaSubSelections, evotorAppsSelected, serviceContractChecked, serviceContractPeriod])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -762,7 +865,8 @@ export default function TellurServiceCalculator() {
   // ---- Печать ----
   const handlePrint = () => {
     const printContent = generateOrderHtml({
-      effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc
+      effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
+      step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked
     })
     const printWithScript = printContent.replace('</body>', '<script>window.print();</script></body>')
     const w = window.open('', '_blank')
@@ -776,7 +880,7 @@ export default function TellurServiceCalculator() {
         <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3 cursor-pointer" onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} role="button" tabIndex={0} aria-label="Вернуться на главную">
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
                   <h1 className="text-lg sm:text-xl font-bold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
@@ -1013,6 +1117,10 @@ export default function TellurServiceCalculator() {
                                     </div>
                                     <p className="text-sm text-slate-600 mt-0.5">{sub.purpose}</p>
                                     {sub.condition && <p className="text-xs text-slate-500 mt-0.5">({sub.condition})</p>}
+                                    <a href={sub.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline"
+                                      onClick={(e) => e.stopPropagation()}>
+                                      <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница подписки на сайте Атол</span>
+                                    </a>
                                   </div>
                                 </div>
                               </div>
@@ -1171,16 +1279,16 @@ export default function TellurServiceCalculator() {
                       }
                     }} className="space-y-2.5">
                       <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="old" id="cond_old" />
+                        <Label htmlFor="cond_old" className="cursor-pointer text-sm">Текущая (работаю на ней, нужно добавить маркировку)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="new" id="cond_new" />
                         <Label htmlFor="cond_new" className="cursor-pointer text-sm">Новая (только что купленная)</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="used" id="cond_used" />
-                        <Label htmlFor="cond_used" className="cursor-pointer text-sm">Б/у (бывшая в употреблении)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="old" id="cond_old" />
-                        <Label htmlFor="cond_old" className="cursor-pointer text-sm">Старая (уже работает, нужно добавить маркировку)</Label>
+                        <Label htmlFor="cond_used" className="cursor-pointer text-sm">Б/у (купил с рук / бывшая в употреблении)</Label>
                       </div>
                     </RadioGroup>
 
@@ -1605,6 +1713,59 @@ export default function TellurServiceCalculator() {
                       )
                     })}
 
+                    {/* Договор обслуживания */}
+                    <Card className={serviceContractChecked ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5' : ''}>
+                      <CardContent className="pt-4 sm:pt-5">
+                        <div className="flex items-start gap-3">
+                          <Checkbox id="service_contract" checked={serviceContractChecked}
+                            onCheckedChange={(c) => setServiceContractChecked(c as boolean)}
+                            className="w-5 h-5 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Label htmlFor="service_contract" className="font-semibold text-sm cursor-pointer leading-snug">Договор обслуживания</Label>
+                              </div>
+                              <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm sm:text-base">2 000 руб./мес.</span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Регулярное техническое обслуживание кассы — профилактика, диагностика и поддержка</p>
+                            {serviceContractChecked && (
+                              <div className="mt-3 space-y-3">
+                                <RadioGroup value={serviceContractPeriod} onValueChange={(v) => setServiceContractPeriod(v as 'month' | 'year')} className="space-y-2">
+                                  <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                    <RadioGroupItem value="month" id="sc_month" />
+                                    <Label htmlFor="sc_month" className="flex-1 cursor-pointer text-sm">
+                                      <span className="font-medium text-[#1e3a5f]">Помесячная оплата</span>
+                                      <span className="ml-2 font-bold text-[#1e3a5f] text-base">2 000 ₽/мес.</span>
+                                    </Label>
+                                  </div>
+                                  <div className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-[#1e3a5f]/10">
+                                    <RadioGroupItem value="year" id="sc_year" />
+                                    <Label htmlFor="sc_year" className="flex-1 cursor-pointer text-sm">
+                                      <span className="font-medium text-[#1e3a5f]">Подписка на 12 месяцев</span>
+                                      <span className="ml-2 inline-flex items-center gap-1.5">
+                                        <span className="font-bold text-[#1e3a5f] text-base">24 000 ₽/год</span>
+                                      </span>
+                                      <Badge className="bg-green-100 text-green-700 text-xs ml-2">выгодно</Badge>
+                                    </Label>
+                                  </div>
+                                </RadioGroup>
+                                <div className="p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
+                                  <h4 className="font-semibold text-[#1e3a5f] text-xs uppercase tracking-wide mb-2">Что входит в договор обслуживания:</h4>
+                                  <ul className="space-y-1.5 text-xs sm:text-sm text-slate-700">
+                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Вызов мастера <strong>без дополнительной платы</strong></li>
+                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Ежемесячный визит с ревизией и профилактикой кассы</li>
+                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Удалённая поддержка в рабочие часы (по МСК)</li>
+                                    <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />Приоритетная запись на обслуживание</li>
+                                  </ul>
+                                  <p className="text-xs text-slate-500 mt-2 italic">Подробности — в договоре обслуживания</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     {/* Данные кассы */}
                     <Card>
                       <CardHeader className="pb-3">
@@ -1658,6 +1819,10 @@ export default function TellurServiceCalculator() {
 
                     <div className="flex gap-3">
                       <Button variant="outline" className="flex-1 py-4 sm:py-5 text-sm sm:text-base" size="lg" onClick={() => setCurrentStep(2)}><ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Назад</Button>
+                      <Button className="flex-1 bg-[#e8a817] hover:bg-[#d49a12] py-4 sm:py-5 text-sm sm:text-base font-semibold" size="lg" onClick={() => setIsDone(true)}>
+                        <CheckCheck className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        Готово
+                      </Button>
                     </div>
                   </div>
 
@@ -1695,7 +1860,7 @@ export default function TellurServiceCalculator() {
                         Готово
                       </Button>
                       <Button variant="outline" className="w-full text-sm" onClick={() => {
-                        setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false)
+                        setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setOfdChecked(false); setServiceContractChecked(false)
                       }}>Сбросить всё</Button>
 
                       <Card className="bg-[#1e3a5f]/5">
@@ -1735,6 +1900,12 @@ export default function TellurServiceCalculator() {
                 onBack={() => setIsDone(false)}
                 onPrint={handlePrint}
                 kkmType={kkmType}
+                step2Selections={step2Selections}
+                step3Selections={step3Selections}
+                scannerChecked={scannerChecked}
+                fnChecked={fnChecked}
+                productCardCount={productCardCount}
+                serviceContractChecked={serviceContractChecked}
               />
             )}
           </div>
@@ -1758,7 +1929,7 @@ export default function TellurServiceCalculator() {
         )}
 
         <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex items-center justify-center gap-3">
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex items-center justify-center gap-3 cursor-pointer" onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }} role="button" tabIndex={0} aria-label="Вернуться на главную">
             <Image src="/logo.webp" alt="Теллур-Интех" width={56} height={46} className="w-7 h-[23px] sm:w-[56px] sm:h-[46px]" quality={100} />
             <p className="text-xs sm:text-sm text-slate-500">ООО &quot;Теллур-Интех&quot; — сервисный центр кассового оборудования</p>
           </div>

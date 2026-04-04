@@ -23,7 +23,7 @@ import {
   BadgeCheck, Star, Tag, FileSignature, Wrench
 } from 'lucide-react'
 import {
-  kkmTypes, scannerPrices, firmwareLicensePrices, sigmaSubscriptions,
+  kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
 } from '@/config/services'
 import Image from 'next/image'
@@ -387,7 +387,7 @@ function generateOrderHtml(params: {
 }): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
-  const sepText = params.kkmType === 'evotor' || params.kkmType === 'sigma' ? 'ТС ПИоТ и приложения на смарт-терминале — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ — оплачивается отдельно напрямую на сайте ao-esp.ru.'
+  const sepText = params.kkmType === 'evotor' || params.kkmType === 'sigma' ? 'ТС ПИоТ и подписка на смарт-терминале — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ — оплачивается отдельно напрямую на сайте ao-esp.ru.'
 
   // Generate engineer checklist
   const checklist: string[] = []
@@ -421,7 +421,7 @@ function generateOrderHtml(params: {
       checklist.push('Настроить УТМ (ЕГАИС) для подакцизных товаров')
     }
     if (params.kkmType === 'atol') {
-      checklist.push('Установить подписку «Маркировка» на Сигма')
+      checklist.push('Проверить тариф Сигма (sigma.ru/tarify/)')
     }
   }
   if (params.step2Selections.includes('partial_marketing_setup')) {
@@ -679,7 +679,7 @@ function DoneScreen({
           <div className="p-3 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
             <p className="text-xs text-[#1e3a5f]">
               {kkmType === 'evotor' || effectiveKkm === 'sigma'
-                ? <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>. Приложения на смарт-терминалах (Эвотор, Сигма, Акси, СмартПос и др.) покупаются по необходимости самостоятельно через магазины производителей.</>
+                ? <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>. Подписка на смарт-терминал (Эвотор, Сигма и др.) оплачивается самостоятельно через магазин производителя.</>
                 : <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>.</>
               }
             </p>
@@ -763,8 +763,7 @@ export default function TellurServiceCalculator() {
   const [fnChecked, setFnChecked] = useState(false)
   const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
   const [fnActivityType, setFnActivityType] = useState('general')
-  const [sigmaSubSelections, setSigmaSubSelections] = useState<string[]>([])
-  // sigmaSubPeriod removed — prices not shown, client checks tariffs via links
+  // Сигма — 3 тарифа, оплачиваются отдельно на sigma.ru/tarify/
   const [serviceContractChecked, setServiceContractChecked] = useState(false)
   const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
 
@@ -915,25 +914,13 @@ export default function TellurServiceCalculator() {
       }
     }
 
-    // Сигма подписки — информационная строка (не в цену, т.к. оплачивается отдельно)
+    // Сигма тариф — информационная строка (не в цену, оплачивается отдельно)
     if (effectiveKkm === 'sigma') {
-      const selectedSubIds = new Set<string>()
-      sigmaSubSelections.forEach(id => selectedSubIds.add(id))
-      evotorAppsSelected.forEach(key => {
-        if (key === 'marking') selectedSubIds.add('sigma_marking')
-        else if (key === 'utm') selectedSubIds.add('sigma_utm')
-        else if (key.startsWith('sigma_')) selectedSubIds.add(key)
-      })
-      selectedSubIds.forEach(subId => {
-        const sub = sigmaSubscriptions.find(s => s.id === subId)
-        if (sub) {
-          items.push({ name: `${sub.name} (оплачивается у Атол)`, price: 0 })
-        }
-      })
+      items.push({ name: 'Подписка Сигма (оплачивается отдельно)', price: 0 })
     }
 
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, sigmaSubSelections, evotorAppsSelected, serviceContractChecked, serviceContractPeriod])
+  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, serviceContractChecked, serviceContractPeriod])
 
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
@@ -1167,7 +1154,7 @@ export default function TellurServiceCalculator() {
                               <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
                               <p className="font-semibold text-[#1e3a5f] text-sm">Чем Вы планируете торговать?</p>
                             </div>
-                            <p className="text-xs text-slate-500">Выберите категорию — нужные подписки Атол подставятся автоматически. Или выберите подписки вручную ниже.</p>
+                            <p className="text-xs text-slate-500">Выберите категорию — это поможет нам подобрать нужные настройки. Подписка на Сигма оплачивается отдельно на официальном сайте.</p>
                             <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="marking" id="sigma_trade_marking" />
@@ -1186,7 +1173,7 @@ export default function TellurServiceCalculator() {
                               </div>
                             </RadioGroup>
                             {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
-                              <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите категорию или хотя бы одну подписку ниже, чтобы продолжить</p>
+                              <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите категорию торговли, чтобы продолжить</p>
                             )}
                           </div>
                         )}
@@ -1211,14 +1198,14 @@ export default function TellurServiceCalculator() {
                                 className="w-6 h-6 mt-0.5 shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <Label htmlFor="sigma_has_sub" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
-                                  У меня уже есть текущая подписка на приложение Атол для маркировки
+                                  У меня уже есть оплаченный тариф Сигма
                                 </Label>
-                                <p className="text-xs text-slate-500 mt-1">Отметьте, если на кассе Сигма уже оплачена подписка «Маркировка». Мы настроим связь с Честным ЗНАК, ЭДО и ТС ПИоТ.</p>
+                                <p className="text-xs text-slate-500 mt-1">Отметьте, если на кассе Сигма уже оформлен тариф. Мы настроим связь с Честным ЗНАК, ЭДО и ТС ПИоТ.</p>
                               </div>
                             </div>
                             {!evotorHasSubscription && (
                               <div className="space-y-2">
-                                <p className="text-xs text-slate-500 font-medium">Нужна новая подписка. Выберите категорию:</p>
+                                <p className="text-xs text-slate-500 font-medium">Нужен новый тариф. Выберите категорию:</p>
                                 <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="marking" id="sigma_trade_marking_old" />
@@ -1242,59 +1229,19 @@ export default function TellurServiceCalculator() {
                               <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
                                 <button type="button" onClick={(e) => { e.stopPropagation(); handleHintOpen('tspiot') }}
                                   className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
-                                <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера!</span>
+                                <span className="text-xs text-amber-700">Могут потребоваться дополнительные настройки — уточните у менеджера!</span>
                               </div>
                             )}
                           </div>
                         )}
 
                         {!evotorHasSubscription && (
-                        <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
-                          <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote?.title}</p>
-                          <p className="text-sm text-slate-600">{currentKkmInfo.specialNote?.content}</p>
-                          <a href="https://sigma.ru/tarify/" target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline">
+                        <div className="p-3 sm:p-4 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-2">
+                          <p className="font-medium text-[#1e3a5f] text-sm">Подписка на Сигма оплачивается отдельно</p>
+                          <p className="text-sm text-slate-600">Для работы кассы Сигма оформите один из трёх тарифов на официальном сайте. Подписка оплачивается напрямую у Сигма.</p>
+                          <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 hover:underline font-medium">
                             <ExternalLink className="w-3 h-3 shrink-0" /><span>Тарифы Сигма на официальном сайте</span>
                           </a>
-                          {sigmaSubscriptions.map((sub, idx) => {
-                            const subKey = sub.id === 'sigma_marking' ? 'marking' : sub.id === 'sigma_utm' ? 'utm' : sub.id
-                            const isSelected = evotorAppsSelected.has(subKey) || sigmaSubSelections.includes(sub.id)
-                            const canToggle = !evotorHasSubscription
-                            return (
-                              <div key={idx} className={`p-3 sm:p-4 bg-white rounded-lg border ${isSelected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'} ${canToggle ? 'cursor-pointer hover:border-slate-300 transition-colors' : ''}`} style={{ animationDelay: `${idx * 50}ms` }}
-                                onClick={() => canToggle ? handleEvotorAppToggle(subKey) : undefined}>
-                                <div className="flex items-start gap-3">
-                                  {canToggle && (
-                                    <Checkbox checked={isSelected} className="w-6 h-6 mt-0.5 shrink-0" onCheckedChange={() => handleEvotorAppToggle(subKey)} />
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <p className="font-medium text-[#1e3a5f] text-sm">{sub.name}</p>
-                                      {sub.required
-                                        ? <Badge className="bg-[#e8a817]/20 text-[#1e3a5f] text-xs">Обязательно</Badge>
-                                        : <Badge variant="outline" className="text-slate-500 text-xs">Опционально</Badge>
-                                      }
-                                      {isSelected && <Badge className="bg-green-100 text-green-700 text-xs">Выбрано</Badge>}
-                                    </div>
-                                    <p className="text-sm text-slate-600 mt-0.5">{sub.purpose}</p>
-                                    {sub.condition && <p className="text-xs text-slate-500 mt-0.5">({sub.condition})</p>}
-                                    <a href={sub.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline"
-                                      onClick={(e) => e.stopPropagation()}>
-                                      <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница подписки на сайте Атол</span>
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                          {/* Предупреждение о доп. подписках */}
-                          <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
-                            <div className="flex items-start gap-2">
-                              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                              <p className="text-xs text-amber-700">
-                                <strong>Внимание:</strong> помимо указанных подписок, для работы кассы Сигма могут потребоваться: подписка «Облачная касса» (для удалённого управления) и другие сервисы Атол. Точный набор зависит от Ваших задач — уточните у менеджера.
-                              </p>
-                            </div>
-                          </div>
                         </div>
                         )}
                       </>
@@ -1690,7 +1637,7 @@ export default function TellurServiceCalculator() {
                         </div>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
                           {effectiveKkm === 'sigma' || kkmType === 'evotor'
-                            ? <>ТС ПИоТ — обязательный модуль для маркировки, лицензия на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">ao-esp.ru</a>. Приложения на смарт-терминалах (Эвотор, Сигма, Акси, СмартПос и др.) покупаются по необходимости самостоятельно через магазины производителей.</>
+                            ? <>ТС ПИоТ — обязательный модуль для маркировки, лицензия на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">ao-esp.ru</a>. Подписка на смарт-терминал (Эвотор, Сигма и др.) оплачивается самостоятельно.</>
                             : <>ТС ПИоТ — обязательный программный модуль для работы с маркированными товарами. Без него касса не пробьёт чек по маркировке. Лицензия приобретается на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">ao-esp.ru</a>.</>
                           }
                         </p>
@@ -2093,7 +2040,7 @@ export default function TellurServiceCalculator() {
           <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
                           <p className="text-xs text-slate-400">
                             {effectiveKkm === 'sigma' || kkmType === 'evotor'
-                              ? 'ТС ПИоТ — отдельно. Приложения на смарт-терминале — через магазин производителя'
+                              ? 'ТС ПИоТ — отдельно. Подписка на смарт-терминале — у производителя'
                               : 'ТС ПИоТ — оплачивается отдельно'
                             }
                           </p>

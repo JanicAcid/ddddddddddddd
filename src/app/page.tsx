@@ -60,7 +60,7 @@ const PHONES = [
 
 const MAX_PHONE_DISPLAY = '+7 (921) 932-41-63'
 const MAX_PHONE_LINK = '+79219324163'
-const MAX_LINK = 'https://web.max.ru/1456926'
+const MAX_LINK = 'https://max.ru/1456926'
 
 // ============================================================================
 // ПОДСКАЗКИ
@@ -734,8 +734,8 @@ function DoneScreen({
             </a>
             <a href={MAX_LINK} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
-              <Image src="/max-logo.webp" alt="Макс" width={20} height={20} className="w-5 h-5 rounded" />
-              Написать в Макс
+              <MessageCircle className="w-4 h-4" />
+              Написать в мессенджер
             </a>
           </div>
         </CardContent>
@@ -1117,7 +1117,7 @@ export default function TellurServiceCalculator() {
                   <CardContent className="pt-5 sm:pt-6 space-y-5">
                     <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Состояние кассы</h3>
                     {/* Состояние кассы */}
-                    <div ref={conditionRef} id="condition-section" className={`rounded-lg transition-all duration-300 ${conditionFlash ? 'ring-4 ring-red-400 ring-offset-2' : ''}`}>
+                    <div ref={conditionRef} id="condition-section" className={`rounded-lg transition-all duration-300 ${conditionFlash ? 'ring-4 ring-red-400/50 ring-offset-2' : ''}`}>
                       <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                         <div
                           onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}

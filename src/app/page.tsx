@@ -1421,23 +1421,23 @@ export default function TellurServiceCalculator() {
                             <div className="mt-2 space-y-1.5 text-sm text-slate-700">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                                 <div className="flex items-center gap-2">
+                                  <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                                     <Download className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                                   </div>
                                   <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-6 h-6 shrink-0" />
                                   <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
-                                  <HintButton hintKey="firmware_update" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                 </div>
                                 <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
                               </div>
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                                 <div className="flex items-center gap-2">
+                                  <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                                     <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                                   </div>
                                   <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-6 h-6 shrink-0" />
                                   <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
-                                  <HintButton hintKey="kkm_license" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
                                 </div>
                                 <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
                               </div>
@@ -1480,10 +1480,10 @@ export default function TellurServiceCalculator() {
                     <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                         <div className="flex items-start gap-3">
+                          {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ServiceIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
                           </div>
-                          {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                           <Checkbox id={service.id} checked={selected}
                             onCheckedChange={() => {
                               const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
@@ -1562,11 +1562,11 @@ export default function TellurServiceCalculator() {
                     <Card className={ofdEffective ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
+                          <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Server className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                          </div>
-                          <HintButton hintKey="ofd_takskom" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                          <Checkbox id="ofd_check"
+                          </div>                          <Checkbox id="ofd_check"
                             checked={ofdEffective}
                             disabled={ofdLocked}
                             onCheckedChange={(c) => setOfdChecked(c as boolean)}
@@ -1633,11 +1633,11 @@ export default function TellurServiceCalculator() {
                 <Card className="border-[#e8a817]/30 bg-[#e8a817]/5">
                   <CardContent className="pt-5 sm:pt-6">
                     <div className="flex items-start gap-3">
+                      <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                       <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                         <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                      </div>
-                      <HintButton hintKey="tspiot" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                      <div className="flex-1 min-w-0">
+                      </div>                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-[#1e3a5f] text-sm">Подробнее о ТС ПИоТ</h3>
                         <p className="text-xs sm:text-sm text-slate-600 mt-1">
                           {effectiveKkm === 'sigma' || kkmType === 'evotor'
@@ -1669,11 +1669,11 @@ export default function TellurServiceCalculator() {
                     <Card className={fnChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
+                          <HintButton hintKey="fn_product" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                          </div>
-                          <HintButton hintKey="fn_product" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                          <Checkbox id="fn_product" checked={fnChecked}
+                          </div>                          <Checkbox id="fn_product" checked={fnChecked}
                             onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') } }}
                             className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -1723,11 +1723,11 @@ export default function TellurServiceCalculator() {
                     <Card className={scannerChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
+                          <HintButton hintKey="scanner_2d" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                          </div>
-                          <HintButton hintKey="scanner_2d" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                          <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-6 h-6 mt-0.5 shrink-0" />
+                          </div>                          <Checkbox id="scanner" checked={scannerChecked} onCheckedChange={(c) => setScannerChecked(c as boolean)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <Label htmlFor="scanner" className="font-bold text-base cursor-pointer leading-snug">Сканер 2D для считывания кодов маркировки</Label>
@@ -1744,11 +1744,11 @@ export default function TellurServiceCalculator() {
                       <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
                         <CardContent className="pt-5 sm:pt-6">
                           <div className="flex items-start gap-3">
+                            <HintButton hintKey="fns_registration" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                               <FilePlus2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                            </div>
-                            <HintButton hintKey="fns_registration" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-6 h-6 mt-0.5 shrink-0" />
+                            </div>                            <Checkbox id="fns_reg" checked={true} disabled={true} className="w-6 h-6 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
                                 <Label htmlFor="fns_reg" className="font-bold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
@@ -1765,11 +1765,11 @@ export default function TellurServiceCalculator() {
                     <Card className={productCardCount > 0 ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
+                          <HintButton hintKey="product_cards" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <LayoutList className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                          </div>
-                          <HintButton hintKey="product_cards" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-6 h-6 mt-0.5 shrink-0" />
+                          </div>                          <Checkbox id="product_cards" checked={productCardCount > 0} onCheckedChange={(c) => setProductCardCount(c ? 1 : 0)} className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <Label htmlFor="product_cards" className="font-bold text-base cursor-pointer leading-snug">Создание карточек товаров</Label>
@@ -1805,10 +1805,10 @@ export default function TellurServiceCalculator() {
                         <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                           <CardContent className="pt-5 sm:pt-6">
                             <div className="flex items-start gap-3">
+                              {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                                 {(() => { const ServiceIcon = service.id === 'training' ? GraduationCap : service.id === 'fn_replacement' ? RefreshCw : KeyRound; return <ServiceIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" /> })()}
                               </div>
-                              {service.hintKey && <HintButton hintKey={service.hintKey} activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />}
                               <Checkbox id={service.id} checked={selected}
                                 onCheckedChange={() => setStep3Selections(prev => prev.includes(service.id) ? prev.filter(x => x !== service.id) : [...prev, service.id])}
                                 className="w-6 h-6 mt-0.5 shrink-0" />
@@ -1837,11 +1837,11 @@ export default function TellurServiceCalculator() {
                     <Card className={serviceContractChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
                       <CardContent className="pt-5 sm:pt-6">
                         <div className="flex items-start gap-3">
+                          <HintButton hintKey="service_contract" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
+
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shrink-0 mt-0.5 flex items-center justify-center bg-[#1e3a5f]/10">
                             <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
-                          </div>
-                          <HintButton hintKey="service_contract" activeHint={activeHint} onHintOpen={handleHintOpen} onHintClose={handleHintClose} />
-                          <Checkbox id="service_contract" checked={serviceContractChecked}
+                          </div>                          <Checkbox id="service_contract" checked={serviceContractChecked}
                             onCheckedChange={(c) => setServiceContractChecked(c as boolean)}
                             className="w-6 h-6 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">

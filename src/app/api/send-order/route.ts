@@ -37,18 +37,21 @@ export async function POST(request: Request) {
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'Теллур-Интех <onboarding@resend.dev>',
       to: [recipient],
-      cc: [TELLUR_EMAIL],
       subject,
       html,
       replyTo: replyTo || undefined,
     })
+
+    // Если мы отправляем на FALLBACK_TO (не на целевой push@tellur.spb.ru),
+    // информируем об этом в ответе
+    const sentToFallback = !process.env.RESEND_ORDER_EMAIL
 
     if (error) {
       console.error('Resend error:', error)
       return Response.json({ error: error.message }, { status: 500 })
     }
 
-    return Response.json({ success: true, messageId: data?.id })
+    return Response.json({ success: true, messageId: data?.id, sentTo: recipient, sentToFallback })
   } catch (err) {
     console.error('Send order error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

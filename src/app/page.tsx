@@ -57,6 +57,7 @@ export default function TellurServiceCalculator() {
   // Сигма — 3 тарифа, оплачиваются отдельно на sigma.ru/tarify/
   const [sigmaHelpChecked, setSigmaHelpChecked] = useState(false)
   const [unsureFnsRegistration, setUnsureFnsRegistration] = useState(false)
+  const [alreadyMarking, setAlreadyMarking] = useState(false)
   const [serviceContractChecked, setServiceContractChecked] = useState(false)
   const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
 
@@ -142,6 +143,7 @@ export default function TellurServiceCalculator() {
   // Автоматическая постановка галочек в step2 на основе состояния
   useEffect(() => {
     const isSmartTerminal = kkmType === 'evotor' || effectiveKkm === 'sigma'
+    const isPartialMode = alreadyMarking || kkmCondition === 'old'
 
     // Определяем наличие маркировки и алкоголя
     let hasMarking = false
@@ -161,14 +163,14 @@ export default function TellurServiceCalculator() {
     }
 
     // Не-смарт терминал без маркировки/алкоголя — не ставим ничего автоматически
-    if (!isSmartTerminal && !hasMarking && !hasAlcohol && kkmCondition !== 'old') return
+    if (!isSmartTerminal && !hasMarking && !hasAlcohol && !isPartialMode) return
 
     setStep2Selections(prev => {
       const next = new Set(prev)
 
-      // ====== СТАРАЯ КАССА (любой бренд) ======
-      if (kkmCondition === 'old') {
-        // Всегда частичная настройка — клиент уже работает с маркировкой
+      // ====== УЖЕ РАБОТАЕТ С МАРКИРОВКОЙ / СТАРАЯ КАССА ======
+      if (isPartialMode) {
+        // Частичная настройка — клиент уже работает с маркировкой
         next.delete('marking_setup')
         if (!next.has('partial_marketing_setup')) next.add('partial_marketing_setup')
 
@@ -177,12 +179,17 @@ export default function TellurServiceCalculator() {
           if (!next.has('fns_reregistration')) next.add('fns_reregistration')
         } else {
           // Только маркировка, без алкоголя → перерегистрация не нужна
-          next.delete('fns_reregistration')
+          if (!unsureFnsRegistration) next.delete('fns_reregistration')
         }
         return [...next]
       }
 
       // ====== НОВАЯ / Б/У КАССА ======
+      // Убираем partial если ушли из режима "уже работает"
+      if (!isPartialMode) {
+        next.delete('partial_marketing_setup')
+      }
+
       if (isSmartTerminal) {
         if (hasMarking) {
           if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
@@ -194,7 +201,7 @@ export default function TellurServiceCalculator() {
 
       return [...next]
     })
-  }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition, clientData.sellsExcise])
+  }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition, clientData.sellsExcise, alreadyMarking, unsureFnsRegistration])
 
   const markingDesc = useMemo(() => {
     if (kkmType === 'evotor') return 'Связываем ЭДО, Честный ЗНАК, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека'
@@ -423,6 +430,8 @@ export default function TellurServiceCalculator() {
                 firmwareChecked={firmwareChecked}
                 licenseChecked={licenseChecked}
                 effectiveKkmInfo={effectiveKkmInfo}
+                alreadyMarking={alreadyMarking}
+                setAlreadyMarking={setAlreadyMarking}
                 setKkmType={(v) => {
                   if (!kkmCondition) {
                     setConditionFlash(true)
@@ -464,6 +473,7 @@ export default function TellurServiceCalculator() {
                 ofdLocked={ofdLocked}
                 ofdEffective={ofdEffective}
                 unsureFnsRegistration={unsureFnsRegistration}
+                alreadyMarking={alreadyMarking}
                 canGoStep3={canGoStep3}
                 setStep2Selections={setStep2Selections}
                 setOfdChecked={setOfdChecked}

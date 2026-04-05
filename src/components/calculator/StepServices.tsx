@@ -25,6 +25,7 @@ interface StepServicesProps {
   ofdLocked: boolean
   ofdEffective: boolean
   unsureFnsRegistration: boolean
+  alreadyMarking: boolean
   canGoStep3: boolean
   // Setters
   setStep2Selections: (v: string[] | ((prev: string[]) => string[])) => void
@@ -42,16 +43,18 @@ interface StepServicesProps {
 export function StepServices({
   kkmCondition, kkmType, step2Selections, markingDesc,
   clientData, ofdChecked, ofdPeriod, ofdProvider,
-  ofdLocked, ofdEffective, unsureFnsRegistration, canGoStep3,
+  ofdLocked, ofdEffective, unsureFnsRegistration, alreadyMarking, canGoStep3,
   setStep2Selections, setOfdChecked, setOfdPeriod, setOfdProvider,
   setClientData, setUnsureFnsRegistration,
   hintProps, goToStep, setCurrentStep, mainRef
 }: StepServicesProps) {
+  const isPartialMode = alreadyMarking || kkmCondition === 'old'
+
   return (
     <div className="max-w-2xl mx-auto space-y-2">
 
       {/* Подакцизные товары — выше всех */}
-      {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || kkmCondition === 'old') && (
+      {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || isPartialMode) && (
         <Card className="border-orange-200 bg-orange-50/50">
           <CardContent className="">
             <div className="flex items-start gap-2">
@@ -60,13 +63,13 @@ export function StepServices({
                 onCheckedChange={(c) => {
                   const val = !!c
                   setClientData((prev: any) => ({ ...prev, sellsExcise: val }))
-                  if (kkmCondition === 'old' && val) {
+                  if (isPartialMode && val) {
                     setStep2Selections((prev: string[]) => {
                       if (prev.includes('fns_reregistration')) return prev
                       return [...prev, 'fns_reregistration']
                     })
                   }
-                  if (kkmCondition === 'old' && !val && !unsureFnsRegistration) {
+                  if (isPartialMode && !val && !unsureFnsRegistration) {
                     setStep2Selections((prev: string[]) => prev.filter(x => x !== 'fns_reregistration'))
                   }
                 }}
@@ -84,16 +87,16 @@ export function StepServices({
 
       {/* Активные (доступные для выбора) услуги */}
       {step2Services.filter(s => {
-        if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
-        // Полная настройка недоступна для старой кассы (уже работает с маркировкой)
-        if (s.id === 'marking_setup' && kkmCondition === 'old') return false
+        if (s.id === 'partial_marketing_setup' && !isPartialMode) return false
+        // Полная настройка недоступна если уже работает с маркировкой
+        if (s.id === 'marking_setup' && isPartialMode) return false
         const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
         const isMutuallyDisabled = (
           (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
           (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
         )
-        // Перерегистрация для старой кассы — только при подакцизных или галочке "не уверен"
-        const isFnsBlockedForOld = kkmCondition === 'old' && s.id === 'fns_reregistration' &&
+        // Перерегистрация для уже работающей кассы — только при подакцизных или галочке "не уверен"
+        const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
           !clientData.sellsExcise && !unsureFnsRegistration
         return !isLocked && !isMutuallyDisabled && !isFnsBlockedForOld
       }).map((service, idx) => {
@@ -165,15 +168,15 @@ export function StepServices({
       {/* Компактная секция: недоступные для выбора услуги */}
       {(() => {
         const unavailable = step2Services.filter(s => {
-          if (s.id === 'partial_marketing_setup' && kkmCondition !== 'old') return false
-          // Полная настройка недоступна для старой кассы
-          const isMarkingLockedForOld = kkmCondition === 'old' && s.id === 'marking_setup'
+          if (s.id === 'partial_marketing_setup' && !isPartialMode) return false
+          // Полная настройка недоступна если уже работает с маркировкой
+          const isMarkingLockedForOld = isPartialMode && s.id === 'marking_setup'
           const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
           const isMutuallyDisabled = (
             (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
             (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
           )
-          const isFnsBlockedForOld = kkmCondition === 'old' && s.id === 'fns_reregistration' &&
+          const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
             !clientData.sellsExcise && !unsureFnsRegistration
           return isMarkingLockedForOld || isLocked || isMutuallyDisabled || isFnsBlockedForOld
         })
@@ -182,9 +185,9 @@ export function StepServices({
           <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Недоступные для выбора:</p>
             {unavailable.map(s => {
-              const isMarkingLockedForOld = kkmCondition === 'old' && s.id === 'marking_setup'
+              const isMarkingLockedForOld = isPartialMode && s.id === 'marking_setup'
               const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
-              const isFnsBlockedForOld = kkmCondition === 'old' && s.id === 'fns_reregistration' &&
+              const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
                 !clientData.sellsExcise && !unsureFnsRegistration
               const reason = isMarkingLockedForOld
                 ? 'касса уже работает с маркировкой — доступна только частичная настройка'

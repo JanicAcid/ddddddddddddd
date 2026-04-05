@@ -42,6 +42,8 @@ interface StepBrandsProps {
   firmwareChecked: boolean
   licenseChecked: boolean
   effectiveKkmInfo: { name: string }
+  alreadyMarking: boolean
+  setAlreadyMarking: (v: boolean) => void
   // Setters
   setKkmType: (v: KkmType) => void
   setKkmCondition: (v: KkmCondition) => void
@@ -65,6 +67,7 @@ export function StepBrands({
   ecpChecked, conditionFlash, conditionRef, currentKkmInfo, visibleKkmTypes,
   effectiveKkm, showSigmaSubs, sigmaSubsLocked, needsFirmwareOrLicense, fwPrices,
   canGoStep2, evotorTradeOrAppsReady, sigmaHelpChecked, firmwareChecked, licenseChecked, effectiveKkmInfo,
+  alreadyMarking, setAlreadyMarking,
   setKkmType, setKkmCondition, setSigmaSelected, setSigmaHelpChecked,
   setEvotorTradeType, setEvotorHasSubscription, setEvotorAppsSelected,
   setScannerChecked, setFirmwareChecked, setLicenseChecked,
@@ -118,6 +121,28 @@ export function StepBrands({
                 <div className="flex items-center gap-2 text-sm text-[#1e3a5f]">
                   <Info className="w-4 h-4 shrink-0" />
                   <span className="font-medium">Для новой кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
+                </div>
+              </div>
+            )}
+
+            {/* Галочка «Я уже работаю с маркированным товаром» */}
+            {kkmCondition && kkmCondition !== '' && (
+              <div className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-colors ${alreadyMarking ? 'bg-green-50 border-green-200' : 'bg-[#1e3a5f]/5 border-[#1e3a5f]/20'}`}>
+                <Checkbox id="already_marking"
+                  checked={alreadyMarking}
+                  onCheckedChange={(c) => {
+                    const val = !!c
+                    setAlreadyMarking(val)
+                    if (!val) {
+                      setEvotorHasSubscription(false)
+                    }
+                  }}
+                  className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="already_marking" className="cursor-pointer font-medium text-sm leading-snug text-[#1e3a5f]">
+                    Я уже работаю с маркированным товаром
+                  </Label>
+                  <p className="text-xs text-slate-500 mt-0.5">Отметьте, если касса уже настроена для маркировки и Вам нужно подключить дополнительные модули, добавить алкоголь или устранить проблемы.</p>
                 </div>
               </div>
             )}
@@ -207,6 +232,7 @@ export function StepBrands({
                           if (checked) {
                             setEvotorTradeType('marking')
                             setEvotorAppsSelected(new Set(['marking']))
+                            setAlreadyMarking(true)
                           } else {
                             setEvotorTradeType('none')
                             setEvotorAppsSelected(new Set())
@@ -314,6 +340,7 @@ export function StepBrands({
                           if (checked) {
                             setEvotorTradeType('marking')
                             setEvotorAppsSelected(new Set(['marking']))
+                            setAlreadyMarking(true)
                           } else {
                             setEvotorTradeType('none')
                             setEvotorAppsSelected(new Set())

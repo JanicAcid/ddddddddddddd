@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { ShieldCheck, KeyRound, Info, Check } from 'lucide-react'
+import { ShieldCheck, KeyRound, Info, Check, Phone } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
@@ -330,6 +330,10 @@ export default function TellurServiceCalculator() {
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
               </div>
+              <a href="tel:+79219324163" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
+                <Phone className="w-4 h-4" />
+                Позвонить менеджеру
+              </a>
             </div>
           </div>
         </header>

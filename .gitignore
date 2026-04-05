@@ -3,3 +3,7 @@ node_modules/
 out/
 dist/
 .vercel
+.ym-token
+.gsc-api-key
+search*.json
+

@@ -184,7 +184,7 @@ export function DoneScreen({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            to: 'janicacid@gmail.com',
+            to: process.env.NEXT_PUBLIC_ORDER_EMAIL || 'push@tellur.spb.ru',
             subject,
             html: engineerHtml,
             replyTo: clientData.email || undefined,

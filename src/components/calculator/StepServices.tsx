@@ -167,48 +167,6 @@ export function StepServices({
         )
       })}
 
-      {/* Компактная секция: недоступные для выбора услуги */}
-      {(() => {
-        const unavailable = step2Services.filter(s => {
-          if (s.id === 'partial_marketing_setup' && !isPartialMode) return false
-          // Перерегистрация полностью скрыта для б/у
-          if (kkmCondition === 'used' && s.id === 'fns_reregistration') return false
-          // Полная настройка недоступна если уже работает с маркировкой
-          const isMarkingLockedForOld = isPartialMode && s.id === 'marking_setup'
-          const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
-          const isMutuallyDisabled = (
-            (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
-            (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
-          )
-          const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
-            !clientData.sellsExcise && !unsureFnsRegistration
-          return isMarkingLockedForOld || isLocked || isMutuallyDisabled || isFnsBlockedForOld
-        })
-        if (unavailable.length === 0) return null
-        return (
-          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Недоступные для выбора:</p>
-            {unavailable.map(s => {
-              const isMarkingLockedForOld = isPartialMode && s.id === 'marking_setup'
-              const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
-              const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
-                !clientData.sellsExcise && !unsureFnsRegistration
-              const reason = isMarkingLockedForOld
-                ? 'касса уже работает с маркировкой — доступна только частичная настройка'
-                : isLocked ? 'включено автоматически'
-                : isFnsBlockedForOld ? 'отметьте «Подакцизные товары» или «Не уверен» ниже чтобы открыть'
-                : 'взаимоисключает выбранную услугу'
-              return (
-                <p key={s.id} className="text-xs text-slate-400">
-                  <span className="line-through">{s.name}</span>
-                  <span className="ml-1.5">— {reason}</span>
-                </p>
-              )
-            })}
-          </div>
-        )
-      })()}
-
       {/* ОФД */}
       {(() => {
         // Для б/у касс — только Такском, для остальных — все кроме заблокированных для новых

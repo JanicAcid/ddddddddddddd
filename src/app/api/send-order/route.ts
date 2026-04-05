@@ -14,6 +14,7 @@ function getResend(): Resend {
  * на любой адрес — для этого задайте RESEND_FROM_EMAIL и RESEND_ORDER_EMAIL.
  */
 const FALLBACK_TO = 'janicacid@gmail.com'
+const TELLUR_EMAIL = 'push@tellur.spb.ru'
 
 export async function POST(request: Request) {
   try {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'Теллур-Интех <onboarding@resend.dev>',
       to: [recipient],
+      cc: [TELLUR_EMAIL],
       subject,
       html,
       replyTo: replyTo || undefined,

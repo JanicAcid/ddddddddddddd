@@ -45,12 +45,13 @@ export function SeoContentInner() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-[#e8a817] shrink-0" />
-                  <span>{branch.phones.map((phone, i) => {
-                    const href = 'tel:' + phone.replace(/[^0-9+]/g, '')
-                    return (
-                      <a key={i} href={href} className="text-[#1e3a5f] hover:underline">{phone}</a>
-                    )
-                  }).reduce((prev, cur, i) => i > 0 ? <>{prev}, {cur}</> : prev, null)}</span>
+                  <span className="flex flex-wrap gap-x-1.5">
+                    {branch.phones.map((phone, i) => (
+                      <a key={i} href={'tel:' + phone.replace(/[^0-9+]/g, '')} className="text-[#1e3a5f] hover:underline">
+                        {phone}{i < branch.phones.length - 1 ? ',' : ''}
+                      </a>
+                    ))}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5 text-[#e8a817] shrink-0" />

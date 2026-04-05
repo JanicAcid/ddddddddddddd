@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/chat'
+import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
 
 interface SendBody {
   sessionId: string

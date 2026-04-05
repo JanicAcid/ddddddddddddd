@@ -1,6 +1,7 @@
 // ============================================================================
 // SEO ТЕКСТОВЫЙ БЛОК — обёртка с состоянием для сворачивания
 // SeoContentInner — серверный компонент (рендерится для SEO)
+// Контент ВСЕГДА в HTML для поисковых роботов, сворачивается через max-h
 // ============================================================================
 
 'use client'
@@ -27,15 +28,21 @@ export function SeoContent() {
         type="button"
         onClick={() => { setOpen(v => !v) }}
         className="flex items-center justify-between w-full cursor-pointer select-none py-2 max-w-3xl mx-auto px-3 sm:px-4"
+        aria-expanded={open}
       >
         <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] text-left">Сервисный центр кассового оборудования в Санкт-Петербурге и Ленинградской области</h2>
         <ChevronDown className={`w-5 h-5 text-[#1e3a5f]/60 transition-transform shrink-0 ml-2 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="max-w-3xl mx-auto px-3 sm:px-4">
+      {/* Контент всегда в DOM для краулеров. max-h-0 + overflow-hidden = свёрнут визуально */}
+      <div
+        className={`max-w-3xl mx-auto px-3 sm:px-4 transition-[max-height,opacity] duration-500 ease-in-out ${
+          open ? 'max-h-[10000px] opacity-100' : 'max-h-0 overflow-hidden opacity-0'
+        }`}
+      >
+        <div className={open ? 'pt-1' : 'pointer-events-none'}>
           <SeoContentInner />
         </div>
-      )}
+      </div>
     </div>
   )
 }

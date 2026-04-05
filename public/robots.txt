@@ -1,8 +1,15 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 1
+Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&_ga&_gid / *
 
 User-agent: Twitterbot
 Allow: /
@@ -10,10 +17,8 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: YandexBot
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /api/
 
 Sitemap: https://tellurmarkirovka.vercel.app/sitemap.xml

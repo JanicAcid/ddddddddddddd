@@ -137,14 +137,7 @@ export function StepBrands({
                   <button
                     key={key}
                     type="button"
-                    onClick={() => {
-                      if (!kkmCondition) {
-                        // conditionFlash is handled in parent via callback
-                        conditionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                        return
-                      }
-                      setKkmType(key as KkmType); if (key !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) }
-                    }}
+                    onClick={() => setKkmType(key as KkmType)}
                     className={`flex items-center justify-center p-0.5 sm:p-1.5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >

@@ -118,13 +118,9 @@
   }
   html {
     overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
-    overscroll-behavior: none;
-    -webkit-text-size-adjust: 100%;
   }
 }

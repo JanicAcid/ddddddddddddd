@@ -163,10 +163,10 @@ export function StepBrands({
                     key={key}
                     type="button"
                     onClick={() => setKkmType(key as KkmType)}
-                    className={`flex items-center justify-center p-0.5 sm:p-1.5 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`relative h-11 sm:h-14 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
-                    <Image src={`/brands/${key}.webp`} alt={kkm.shortName} width={400} height={80} className="max-w-full h-auto object-contain opacity-85" quality={100} unoptimized />
+                    <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85 p-1.5" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                   </button>
                 )
               })}

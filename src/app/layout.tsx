@@ -11,9 +11,6 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
 }
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
@@ -78,10 +75,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" suppressHydrationWarning className="overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <html lang="ru" suppressHydrationWarning>
       <body
-        className={`${inter.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
       >
         <JsonLd />
         {children}

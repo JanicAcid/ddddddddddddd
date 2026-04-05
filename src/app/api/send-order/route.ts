@@ -1,12 +1,18 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend(): Resend {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY not configured')
+  }
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export async function POST(request: Request) {
   try {
     if (!process.env.RESEND_API_KEY) {
       return Response.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 })
     }
+    const resend = getResend()
     const body = await request.json()
     const { to, subject, html, replyTo } = body
 

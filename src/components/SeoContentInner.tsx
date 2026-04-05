@@ -4,14 +4,19 @@
 // ============================================================================
 
 import { PHONES } from '@/config/contacts'
+import { BRANCHES } from '@/config/contacts'
+import { MapPin, Mail, Phone, Clock } from 'lucide-react'
 
 export function SeoContentInner() {
   return (
     <section className="mb-4 sm:mb-6 space-y-4" aria-label="Информация о компании">
-      {/* ===== SEO-текст для поисковых роботов ===== */}
+      {/* ===== О компании ===== */}
       <div className="bg-white rounded-xl border border-[#1e3a5f]/10 p-4 sm:p-5">
         <p className="text-sm text-slate-600 leading-relaxed mb-2">
-          <strong className="text-slate-700">Теллур-Интех</strong> — сервисный центр кассового оборудования (ККТ) с офисами в&nbsp;Пушкине, Гатчине и&nbsp;центре Санкт-Петербурга. Мы&nbsp;специализируемся на&nbsp;подключении маркировки для малого и&nbsp;среднего бизнеса: от&nbsp;продуктовых магазинов и&nbsp;аптек до&nbsp;розничных точек продаж сигарет, обуви, одежды, воды и&nbsp;других маркированных товаров. Обслуживаем все основные бренды кассового оборудования: <strong>Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI</strong>.
+          <strong className="text-slate-700">Компания ТЕЛЛУР</strong> работает на&nbsp;рынке торгового, офисного и&nbsp;банковского оборудования с&nbsp;1995&nbsp;года. Осуществляем продажу, установку и&nbsp;обслуживание кассового оборудования. Основная деятельность — предоставление комплексных сервисных услуг: ремонт, техническая поддержка и&nbsp;полное решение технических задач «из&nbsp;одних рук». ООО «Теллур-Интех» — сервисный центр кассового оборудования с&nbsp;офисами в&nbsp;Санкт-Петербурге, Пушкине и&nbsp;Гатчине.
+        </p>
+        <p className="text-sm text-slate-600 leading-relaxed mb-2">
+          Мы&nbsp;специализируемся на&nbsp;подключении маркировки для малого и&nbsp;среднего бизнеса: от&nbsp;продуктовых магазинов и&nbsp;аптек до&nbsp;розничных точек продаж сигарет, обуви, одежды, воды и&nbsp;других маркированных товаров. Обслуживаем все основные бренды кассового оборудования: <strong>Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI</strong>.
         </p>
         <p className="text-sm text-slate-600 leading-relaxed mb-2">
           Используйте наш <strong>бесплатный калькулятор маркировки</strong> для расчёта стоимости подключения. Укажите модель кассы, её&nbsp;состояние и&nbsp;необходимые услуги — и&nbsp;получите точную сумму за&nbsp;2&nbsp;минуты. Никаких скрытых платежей: вы&nbsp;видите полную смету до&nbsp;обращения к&nbsp;менеджеру.
@@ -19,6 +24,38 @@ export function SeoContentInner() {
         <p className="text-sm text-slate-600 leading-relaxed">
           Работаем по&nbsp;всей Ленинградской области: Пушкин, Гатчина, Павловск, Колпино, Красное Село, Ломоносов, Петергоф, Всеволожск, Выборг, Тосно, Кировск и&nbsp;другие города. Возможен выезд инженера на&nbsp;территорию клиента.
         </p>
+      </div>
+
+      {/* ===== Филиалы ===== */}
+      <div className="bg-white rounded-xl border border-[#1e3a5f]/10 p-4 sm:p-5">
+        <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-3">
+          Наши офисы
+        </h3>
+        <div className="space-y-4">
+          {BRANCHES.map((branch) => (
+            <div key={branch.name} className="p-3 bg-[#1e3a5f]/[0.03] rounded-lg border border-[#1e3a5f]/10">
+              <p className="font-bold text-[#1e3a5f] text-sm mb-2">&laquo;{branch.name}&raquo;</p>
+              <div className="space-y-1.5 text-sm text-slate-600">
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-[#e8a817] shrink-0 mt-0.5" />
+                  <span className="leading-snug">{branch.address}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-[#e8a817] shrink-0" />
+                  <a href={`mailto:${branch.email}`} className="text-[#1e3a5f] hover:underline">{branch.email}</a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-[#e8a817] shrink-0" />
+                  <span>{branch.phones.join(', ')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-[#e8a817] shrink-0" />
+                  <span>{branch.schedule}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ===== Городские страницы-анкоры ===== */}

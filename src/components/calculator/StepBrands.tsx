@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   ScanLine, Info, AlertCircle,
   Package, Wine, PackageOpen, ExternalLink,
-  Download, BadgeCheck, Star, Tag, ArrowRight
+  Download, BadgeCheck, Star, Handshake, ArrowRight
 } from 'lucide-react'
 import { KKM_BRANDS } from '@/config/brands'
 import { sigmaTariffLink } from '@/config/services'
@@ -87,8 +87,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
                   className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                    <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
+                    <BadgeCheck className="w-12 h-12 sm:w-14 sm:h-14 text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
                   <span className="text-[10px] text-slate-400 text-center leading-tight">Работаю на ней</span>
@@ -97,8 +97,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
                   className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
-                    <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8a817]" />
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-xl bg-[#e8a817]/10 shrink-0">
+                    <Star className="w-12 h-12 sm:w-14 sm:h-14 text-[#e8a817]" />
                   </div>
                   <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
                   <span className="text-[10px] text-slate-400 text-center leading-tight">Только что купленная</span>
@@ -107,8 +107,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
                   className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                    <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
+                    <Handshake className="w-12 h-12 sm:w-14 sm:h-14 text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                   <span className="text-[10px] text-slate-400 text-center leading-tight">Купил с рук</span>

@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
   CheckCheck, CreditCard, AlertCircle, Printer,
-  Phone, MessageCircle, Send, X, ArrowLeft
+  Phone, MessageSquare, Send, X, ArrowLeft
 } from 'lucide-react'
-import { MAX_PHONE_DISPLAY, MAX_PHONE_LINK, MAX_INTENT, MAX_WEB } from '@/config/contacts'
+import { PHONES } from '@/config/contacts'
 import type { DoneScreenProps, GenerateOrderHtmlParams } from './types'
 
 // ============================================================================
@@ -337,16 +337,14 @@ export function DoneScreen({
           </div>
           <Separator />
           <div className="flex flex-col sm:flex-row gap-2 text-sm">
-            <a href={`tel:${MAX_PHONE_LINK}`} className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
+            <a href="tel:+78124659457" className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
               <Phone className="w-4 h-4" />
-              {MAX_PHONE_DISPLAY}
+              {PHONES[0].label}
             </a>
             <a
-              href={typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent) ? MAX_INTENT : MAX_WEB}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="sms:+79219324163"
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
-              <MessageCircle className="w-4 h-4" />
+              <MessageSquare className="w-4 h-4" />
               Написать в мессенджер
             </a>
           </div>

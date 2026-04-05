@@ -90,8 +90,9 @@ export function StepServices({
         if (s.id === 'partial_marketing_setup' && !isPartialMode) return false
         // Полная настройка недоступна если уже работает с маркировкой
         if (s.id === 'marking_setup' && isPartialMode) return false
-        // Перерегистрация недоступна для новых (включена автоматически) и б/у касс
-        const isLocked = (kkmCondition === 'new' || kkmCondition === 'used') && s.id === 'fns_reregistration'
+        // Перерегистрация: полностью скрыта для б/у, недоступна для новых (включена автоматически)
+        if (kkmCondition === 'used' && s.id === 'fns_reregistration') return false
+        const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
         const isMutuallyDisabled = (
           (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
           (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
@@ -170,9 +171,11 @@ export function StepServices({
       {(() => {
         const unavailable = step2Services.filter(s => {
           if (s.id === 'partial_marketing_setup' && !isPartialMode) return false
+          // Перерегистрация полностью скрыта для б/у
+          if (kkmCondition === 'used' && s.id === 'fns_reregistration') return false
           // Полная настройка недоступна если уже работает с маркировкой
           const isMarkingLockedForOld = isPartialMode && s.id === 'marking_setup'
-          const isLocked = (kkmCondition === 'new' || kkmCondition === 'used') && s.id === 'fns_reregistration'
+          const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
           const isMutuallyDisabled = (
             (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
             (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
@@ -187,7 +190,7 @@ export function StepServices({
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Недоступные для выбора:</p>
             {unavailable.map(s => {
               const isMarkingLockedForOld = isPartialMode && s.id === 'marking_setup'
-              const isLocked = (kkmCondition === 'new' || kkmCondition === 'used') && s.id === 'fns_reregistration'
+              const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
               const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
                 !clientData.sellsExcise && !unsureFnsRegistration
               const reason = isMarkingLockedForOld

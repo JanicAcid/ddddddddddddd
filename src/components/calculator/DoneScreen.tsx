@@ -222,15 +222,17 @@ export function DoneScreen({
   }, [orderHtml, orderNum, orderDate, totalCalc, handleSaveFile])
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 relative">
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute -top-2 right-0 sm:top-0 sm:right-0 w-9 h-9 rounded-full bg-white border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all"
-        aria-label="Закрыть"
-      >
-        <X className="w-4 h-4" strokeWidth={2.5} />
-      </button>
+    <div className="max-w-2xl mx-auto space-y-5">
+      <div className="flex justify-end -mb-1">
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-9 h-9 rounded-full bg-white border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all"
+          aria-label="Закрыть"
+        >
+          <X className="w-4 h-4" strokeWidth={2.5} />
+        </button>
+      </div>
       <div className="text-center py-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1e3a5f]/10 mb-3">
           <CheckCheck className="w-9 h-9 text-[#1e3a5f]" />
@@ -287,7 +289,7 @@ export function DoneScreen({
           {totalCalc.items.length > 0 && (
             <>
               <Separator />
-              <div className="flex justify-between items-center bg-[#e8a817]/10 py-3 px-4 -mx-3 sm:-mx-6 sm:px-6 rounded-lg">
+              <div className="flex justify-between items-center bg-[#e8a817]/10 py-3 rounded-lg">
                 <span className="font-bold text-base sm:text-lg">Итого:</span>
                 <span className="font-bold text-xl sm:text-2xl text-[#1e3a5f]">{totalCalc.total.toLocaleString('ru-RU')} руб.</span>
               </div>

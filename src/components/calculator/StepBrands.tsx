@@ -163,7 +163,7 @@ export function StepBrands({
                     key={key}
                     type="button"
                     onClick={() => setKkmType(key as KkmType)}
-                    className={`relative flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 py-3 sm:py-4 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`relative flex flex-col items-center justify-start gap-2 rounded-xl border-2 pt-5 pb-3 sm:pt-6 sm:pb-4 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
                     <span className={`text-[10px] sm:text-xs font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>

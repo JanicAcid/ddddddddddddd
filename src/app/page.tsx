@@ -22,6 +22,7 @@ import { StepBrands } from '@/components/calculator/StepBrands'
 import { StepServices } from '@/components/calculator/StepServices'
 import { StepExtra } from '@/components/calculator/StepExtra'
 import { StepSummary } from '@/components/calculator/StepSummary'
+import { SeoContent } from '@/components/SeoContent'
 
 // ============================================================================
 // ОСНОВНОЙ КОМПОНЕНТ
@@ -564,6 +565,11 @@ export default function TellurServiceCalculator() {
             )}
           </div>
         </main>
+
+        {/* SEO-контент для поисковых систем — ниже калькулятора */}
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-4 sm:pb-6">
+          <SeoContent />
+        </div>
 
         {/* Напоминалка об ЭЦП — после подтверждения */}
         {ecpChecked && !isDone && (

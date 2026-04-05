@@ -119,9 +119,13 @@
   html {
     overflow-x: clip;
     overflow-y: scroll;
+    overscroll-behavior-y: none;
   }
   body {
     @apply bg-background text-foreground;
     overflow-x: clip;
+    overscroll-behavior-y: none;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }

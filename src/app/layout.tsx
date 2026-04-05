@@ -67,6 +67,7 @@ export const metadata: Metadata = {
   },
   verification: {
     yandex: 'verify',
+    google: 'google6d0854c5f9ec794a.html',
   },
 };
 

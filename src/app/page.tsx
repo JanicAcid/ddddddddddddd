@@ -336,7 +336,9 @@ export default function TellurServiceCalculator() {
                 if (window.innerWidth >= 640) {
                   e.preventDefault()
                   window.dispatchEvent(new Event('scroll-to-contacts'))
-                  setTimeout(() => document.getElementById('contacts-section')?.scrollIntoView({ behavior: 'smooth' }), 50)
+                  // Перейти на шаг 3 чтобы contacts-section появился в DOM
+                  setCurrentStep(3)
+                  setTimeout(() => document.getElementById('contacts-section')?.scrollIntoView({ behavior: 'smooth' }), 150)
                 }
               }} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
                 <Phone className="w-4 h-4" />

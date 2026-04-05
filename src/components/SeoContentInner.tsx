@@ -113,7 +113,7 @@ export function SeoContentInner() {
       </div>
 
       {/* ===== Филиалы ===== */}
-      <div className="bg-white rounded-xl border border-[#1e3a5f]/10 p-4 sm:p-5">
+      <div className="bg-white rounded-xl border border-[#1e3a5f]/10 p-4 sm:p-5" id="contacts-section">
         <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-3">
           Офисы сервисного центра Теллур-Интех
         </h2>

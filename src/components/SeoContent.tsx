@@ -15,8 +15,8 @@ export function SeoContent() {
 
   useEffect(() => {
     const handler = () => {
-      const el = document.getElementById('contacts-section')
-      if (el && !open) setOpen(true)
+      if (!open) setOpen(true)
+      setTimeout(() => document.getElementById('contacts-section')?.scrollIntoView({ behavior: 'smooth' }), 600)
     }
     window.addEventListener('scroll-to-contacts', handler)
     return () => window.removeEventListener('scroll-to-contacts', handler)

@@ -163,11 +163,11 @@ export function StepBrands({
                     key={key}
                     type="button"
                     onClick={() => setKkmType(key as KkmType)}
-                    className={`relative flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 py-2 sm:py-2.5 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`relative flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 py-3 sm:py-4 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
                     <span className={`text-[10px] sm:text-xs font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
-                    <div className="relative h-9 sm:h-11 w-full">
+                    <div className="relative h-14 sm:h-16 w-full">
                       <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
                   </button>

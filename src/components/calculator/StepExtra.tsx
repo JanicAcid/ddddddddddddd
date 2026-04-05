@@ -127,7 +127,7 @@ export function StepExtra({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="scanner" className="font-bold text-sm cursor-pointer leading-snug">Сканер 2D для считывания кодов маркировки</Label>
-                  <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">{scannerPrices[effectiveKkm].toLocaleString('ru-RU')} руб.</span>
+                  <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">{scannerPrices[effectiveKkm]?.toLocaleString('ru-RU') ?? '…'} руб.</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">Читает квадратные коды (Data Matrix) на маркированных товарах. Обычный сканер не подойдёт.</p>
               </div>

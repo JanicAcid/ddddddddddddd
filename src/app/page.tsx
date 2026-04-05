@@ -282,6 +282,8 @@ export default function TellurServiceCalculator() {
     setEvotorTradeType('none')
     setEvotorAppsSelected(new Set())
     setEvotorHasSubscription(false)
+    // Для б/у касс — сбрасываем ОФД на Такском
+    if (kkmCondition === 'used' && ofdProvider !== 'takskom') setOfdProvider('takskom')
   }, [kkmType, kkmCondition])
 
   // ---- Печать ----

@@ -208,7 +208,10 @@ export function StepServices({
 
       {/* ОФД */}
       {(() => {
-        const visibleProviders = OFD_PROVIDERS.filter(p => !p.lockedForNew || kkmCondition !== 'new')
+        // Для б/у касс — только Такском, для остальных — все кроме заблокированных для новых
+        const visibleProviders = kkmCondition === 'used'
+          ? OFD_PROVIDERS.filter(p => p.id === 'takskom')
+          : OFD_PROVIDERS.filter(p => !p.lockedForNew || kkmCondition !== 'new')
         const selectedProvider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
         return (
           <Card className={ofdEffective ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>

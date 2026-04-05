@@ -126,7 +126,7 @@ export function StepBrands({
             )}
 
             {/* Галочка «Я уже работаю с маркированным товаром» */}
-            {kkmCondition && kkmCondition !== '' && (
+            {kkmCondition === 'old' && (
               <div className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-colors ${alreadyMarking ? 'bg-green-50 border-green-200' : 'bg-[#1e3a5f]/5 border-[#1e3a5f]/20'}`}>
                 <Checkbox id="already_marking"
                   checked={alreadyMarking}

@@ -278,7 +278,7 @@ export default function TellurServiceCalculator() {
   }
 
   // Сброс торгового типа при смене типа кассы или состояния
-  useMemo(() => {
+  useEffect(() => {
     setEvotorTradeType('none')
     setEvotorAppsSelected(new Set())
     setEvotorHasSubscription(false)

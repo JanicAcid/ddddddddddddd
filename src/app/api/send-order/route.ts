@@ -1,9 +1,12 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_6J2WHQqS_BffXxSJGh84W3fcbE5q8PCLF')
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.RESEND_API_KEY) {
+      return Response.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 })
+    }
     const body = await request.json()
     const { to, subject, html, replyTo } = body
 
@@ -12,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Теллур-Интех <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM_EMAIL || 'Теллур-Интех <onboarding@resend.dev>',
       to: [to],
       subject,
       html,

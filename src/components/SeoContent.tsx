@@ -23,7 +23,7 @@ export function SeoContent() {
   }, [open])
 
   return (
-    <div className="mb-2" id="contacts-section">
+    <div className="mb-2" id="seo-section">
       <button
         type="button"
         onClick={() => { setOpen(v => !v) }}

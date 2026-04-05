@@ -36,7 +36,7 @@ export function StepSummary({ totalCalc, effectiveKkm, effectiveKkmInfo, kkmType
             <span className="font-bold text-base sm:text-lg">Итого:</span>
             <span className="font-bold text-xl sm:text-2xl text-[#1e3a5f]">{totalCalc.total.toLocaleString('ru-RU')} ₽</span>
           </div>
-          <p className="text-xs text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
+          <p className="text-sm text-slate-400 mt-2">Касса: {effectiveKkmInfo.name}</p>
           <p className="text-xs text-slate-400">
             {effectiveKkm === 'sigma' || kkmType === 'evotor'
               ? 'ТС ПИоТ — отдельно. Подписка на смарт-терминале — у производителя'

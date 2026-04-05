@@ -276,7 +276,7 @@ export function StepExtra({
         {/* Контактные данные */}
         <Card id="contacts-section" className="border-[#1e3a5f]/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Info className="w-4 h-4 text-[#1e3a5f] shrink-0" />Контактные данные</CardTitle>
+            <CardTitle className="text-lg sm:text-xl font-extrabold flex items-center gap-2"><Info className="w-5 h-5 text-[#1e3a5f] shrink-0" />Контактные данные</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5">
             <div>

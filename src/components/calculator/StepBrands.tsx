@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   ScanLine, Info, AlertCircle,
   Package, Wine, PackageOpen, ExternalLink,
-  Download, Lock, BadgeCheck, Star, Tag, ArrowRight
+  Download, BadgeCheck, Star, Tag, ArrowRight
 } from 'lucide-react'
 import { KKM_BRANDS } from '@/config/brands'
 import { sigmaTariffLink } from '@/config/services'
@@ -440,22 +440,16 @@ export function StepBrands({
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                         <div className="flex items-center gap-2">
                           <HintButton hintKey="firmware_update" {...hintProps} />
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
-                            <Download className="w-5 h-5 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                          </div>
                           <Checkbox id="firmware_chk" checked={firmwareChecked} onCheckedChange={(c) => setFirmwareChecked(c as boolean)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                          <Label htmlFor="firmware_chk" className="cursor-pointer text-sm sm:text-base font-medium">Обновление программы (прошивка)</Label>
+                          <Label htmlFor="firmware_chk" className="cursor-pointer text-sm font-medium">Обновление программы (прошивка)</Label>
                         </div>
                         <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.firmware.toLocaleString('ru-RU')} руб.</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 p-2 bg-white rounded border border-[#e8a817]/20">
                         <div className="flex items-center gap-2">
                           <HintButton hintKey="kkm_license" {...hintProps} />
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shrink-0 flex items-center justify-center bg-[#1e3a5f]/10">
-                            <Lock className="w-5 h-5 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                          </div>
                           <Checkbox id="license_chk" checked={licenseChecked} onCheckedChange={(c) => setLicenseChecked(c as boolean)} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                          <Label htmlFor="license_chk" className="cursor-pointer text-sm sm:text-base font-medium">Лицензия на ПО кассы</Label>
+                          <Label htmlFor="license_chk" className="cursor-pointer text-sm font-medium">Лицензия на ПО кассы</Label>
                         </div>
                         <span className="font-semibold text-[#1e3a5f] sm:whitespace-nowrap sm:ml-auto">{fwPrices.license.toLocaleString('ru-RU')} руб.</span>
                       </div>

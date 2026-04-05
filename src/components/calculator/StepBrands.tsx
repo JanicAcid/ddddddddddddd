@@ -166,8 +166,8 @@ export function StepBrands({
                     className={`relative flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 py-2 sm:py-2.5 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
-                    <div className="relative h-9 sm:h-11 w-full flex items-center justify-center">
-                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} height={44} width={120} className="object-contain opacity-85 max-h-full" quality={100} unoptimized />
+                    <div className="relative h-9 sm:h-11 w-full">
+                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
                     <span className={`text-[10px] sm:text-xs font-medium leading-none ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
                   </button>

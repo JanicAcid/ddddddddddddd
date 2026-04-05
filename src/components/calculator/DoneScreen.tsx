@@ -279,8 +279,8 @@ export function DoneScreen({
               <div className="space-y-1">
                 {totalCalc.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-start gap-2 text-sm">
-                    <span className="text-slate-700">{idx + 1}. {item.name}</span>
-                    <span className="font-semibold text-slate-800 whitespace-nowrap">{item.price.toLocaleString('ru-RU')} руб.</span>
+                    <span className="text-slate-700 min-w-0">{idx + 1}. {item.name}</span>
+                    <span className="font-semibold text-slate-800 whitespace-nowrap shrink-0">{item.price.toLocaleString('ru-RU')} руб.</span>
                   </div>
                 ))}
               </div>

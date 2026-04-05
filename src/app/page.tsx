@@ -194,7 +194,7 @@ export default function TellurServiceCalculator() {
         if (hasMarking) {
           if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
         }
-        if (hasAlcohol && !next.has('fns_reregistration') && kkmCondition !== 'new') {
+        if (hasAlcohol && !next.has('fns_reregistration') && kkmCondition === 'old') {
           next.add('fns_reregistration')
         }
       }

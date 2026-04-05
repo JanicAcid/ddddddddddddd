@@ -330,9 +330,15 @@ export default function TellurServiceCalculator() {
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
               </div>
-              <a href="tel:+79219324163" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
+              <a href="tel:+79219324163" onClick={(e) => {
+                if (window.innerWidth >= 640) {
+                  e.preventDefault()
+                  window.dispatchEvent(new Event('scroll-to-contacts'))
+                  setTimeout(() => document.getElementById('contacts-section')?.scrollIntoView({ behavior: 'smooth' }), 50)
+                }
+              }} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
                 <Phone className="w-4 h-4" />
-                <span className="hidden sm:inline">Позвонить менеджеру</span>
+                <span className="hidden sm:inline">Контакты</span>
               </a>
             </div>
           </div>

@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
 
+export const runtime = 'nodejs'
+
 interface SendBody {
   sessionId: string
   message: string
@@ -149,7 +151,11 @@ async function handleMultipart(request: NextRequest) {
   // Build Telegram FormData
   const tgFormData = new FormData()
   tgFormData.append('chat_id', OPERATOR_CHAT_ID)
-  tgFormData.append(fileFieldName, file)
+
+  // Для совместимости с Node.js runtime на Vercel — пересоздаём Blob
+  const arrayBuffer = await file.arrayBuffer()
+  const fileBlob = new Blob([arrayBuffer], { type: mimeType })
+  tgFormData.append(fileFieldName, fileBlob, file.name)
 
   // Add caption (only sendPhoto and sendDocument support captions)
   if (message && (endpoint === 'sendPhoto' || endpoint === 'sendDocument')) {

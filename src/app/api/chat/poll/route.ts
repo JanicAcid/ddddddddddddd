@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
 
+export const runtime = 'nodejs'
+
 interface PhotoSize {
   file_id: string
   file_size?: number
@@ -115,15 +117,17 @@ export async function GET(request: NextRequest) {
       // Skip bot messages
       if (msg.from?.is_bot) continue
 
-      // Only accept messages from the operator
+      // Must be from the operator
       if (msg.from?.id !== parseInt(OPERATOR_CHAT_ID, 10)) continue
 
-      // Must be a reply to one of our sent messages
-      if (!msg.reply_to_message) continue
-      if (!msgIds.includes(msg.reply_to_message.message_id)) continue
-
-      // Must have at least text or a file
-      if (!msg.text && !msg.photo && !msg.document && !msg.voice && !msg.audio && !msg.video && !msg.video_note) continue
+      // Для текстовых сообщений — только реплаи на наши сообщения
+      // Для файлов — принимаем любые файлы от оператора
+      const hasFile = msg.photo || msg.document || msg.voice || msg.audio || msg.video || msg.video_note
+      if (!hasFile) {
+        if (!msg.reply_to_message) continue
+        if (!msgIds.includes(msg.reply_to_message.message_id)) continue
+      }
+      if (!hasFile && !msg.text) continue
 
       const senderName =
         msg.from?.first_name || msg.from?.username || 'Оператор'

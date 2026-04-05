@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
 
+export const runtime = 'nodejs'
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> }

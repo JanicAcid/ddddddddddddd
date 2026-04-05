@@ -3,7 +3,6 @@
 // Содержит ключевые слова для поисковых роботов и полезную информацию для людей
 // ============================================================================
 
-import { PHONES } from '@/config/contacts'
 import { BRANCHES } from '@/config/contacts'
 import { MapPin, Mail, Phone, Clock } from 'lucide-react'
 
@@ -64,37 +63,8 @@ export function SeoContentInner() {
       </div>
 
       {/* ===== Городские страницы-анкоры ===== */}
-      <div className="bg-white rounded-xl border border-[#1e3a5f]/10 p-4 sm:p-5">
-        <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-3">
-          Наши услуги в&nbsp;Вашем городе
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-          {[
-            { city: 'Санкт-Петербург', query: 'маркировка в Санкт-Петербурге' },
-            { city: 'Пушкин', query: 'подключение маркировки Пушкин' },
-            { city: 'Гатчина', query: 'кассовое оборудование Гатчина' },
-            { city: 'Павловск', query: 'обслуживание касс Павловск' },
-            { city: 'Колпино', query: 'маркировка Колпино' },
-            { city: 'Красное Село', query: 'настройка кассы Красное Село' },
-            { city: 'Ломоносов', query: 'ККТ Ломоносов' },
-            { city: 'Всеволожск', query: 'маркировка Всеволожск' },
-            { city: 'Тосно', query: 'обслуживание касс Тосно' },
-            { city: 'Петергоф', query: 'кассовое оборудование Петергоф' },
-            { city: 'Выборг', query: 'маркировка Выборг' },
-            { city: 'Кировск', query: 'ККТ Кировск ЛО' },
-          ].map(({ city }) => (
-            <a
-              key={city}
-              href={`tel:${PHONES[0].href.replace('tel:', '')}`}
-              className="flex items-center gap-1.5 p-2 rounded-lg bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10 transition-colors text-slate-700 hover:text-[#1e3a5f]"
-            >
-              <svg className="w-3.5 h-3.5 text-[#e8a817] shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-              </svg>
-              {city}
-            </a>
-          ))}
-        </div>
+      <div className="text-sm text-slate-500 leading-relaxed">
+        Выезжаем по&nbsp;всей Ленинградской области: Санкт-Петербург, Пушкин, Гатчина, Павловск, Колпино, Красное Село, Ломоносов, Петергоф, Всеволожск, Выборг, Тосно, Кировск и&nbsp;др.
       </div>
 
       {/* ===== FAQ ===== */}

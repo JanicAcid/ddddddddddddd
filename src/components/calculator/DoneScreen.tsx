@@ -148,9 +148,6 @@ export function DoneScreen({
   const orderNum = Date.now().toString().slice(-6)
   const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
-  // Версия для контроля кэша при деплое
-  const _deployVer = 'v2'
-
   const orderHtml = useMemo(() => generateOrderHtml({
     effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
     step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,

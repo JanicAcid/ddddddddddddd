@@ -7,6 +7,14 @@ function getResend(): Resend {
   return new Resend(process.env.RESEND_API_KEY)
 }
 
+/**
+ * Resend-аккаунт в тестовом режиме: отправка возможна только на
+ * email владельца аккаунта (janicacid@gmail.com).
+ * Когда домен будет верифицирован в Resend, можно будет отправлять
+ * на любой адрес — для этого задайте RESEND_FROM_EMAIL и RESEND_ORDER_EMAIL.
+ */
+const FALLBACK_TO = 'janicacid@gmail.com'
+
 export async function POST(request: Request) {
   try {
     if (!process.env.RESEND_API_KEY) {
@@ -16,13 +24,18 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { to, subject, html, replyTo } = body
 
-    if (!to || !subject || !html) {
-      return Response.json({ error: 'Missing required fields: to, subject, html' }, { status: 400 })
+    if (!subject || !html) {
+      return Response.json({ error: 'Missing required fields: subject, html' }, { status: 400 })
     }
+
+    // В тестовом режиме Resend позволяет отправлять только на email владельца аккаунта.
+    // Если домен верифицирован и задан RESEND_ORDER_EMAIL — отправляем туда.
+    // Иначе — на FALLBACK_TO (email владельца Resend-аккаунта).
+    const recipient = process.env.RESEND_ORDER_EMAIL || FALLBACK_TO
 
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'Теллур-Интех <onboarding@resend.dev>',
-      to: [to],
+      to: [recipient],
       subject,
       html,
       replyTo: replyTo || undefined,

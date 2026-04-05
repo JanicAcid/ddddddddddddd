@@ -290,22 +290,7 @@ export default function TellurServiceCalculator() {
   }
 
   // ---- Готово ----
-  const handleDone = async () => {
-    const orderNum = Date.now().toString().slice(-6)
-    const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    try {
-      const engineerHtml = generateOrderHtml({
-        effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-        step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-        includeChecklist: true
-      })
-      const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name}`
-      fetch('/api/send-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: 'janicacid@gmail.com', subject, html: engineerHtml, replyTo: clientData.email || undefined })
-      })
-    } catch { /* silent */ }
+  const handleDone = () => {
     setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 

@@ -1,6 +1,38 @@
 import { NextRequest } from 'next/server'
 import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
 
+interface PhotoSize {
+  file_id: string
+  file_size?: number
+  width: number
+  height: number
+}
+
+interface Document {
+  file_id: string
+  file_name?: string
+  mime_type?: string
+  file_size?: number
+}
+
+interface VoiceAudio {
+  file_id: string
+  duration: number
+  mime_type?: string
+  file_size?: number
+}
+
+interface Video {
+  file_id: string
+  duration: number
+  mime_type?: string
+  file_size?: number
+  width?: number
+  height?: number
+  file_name?: string
+  thumbnail?: { file_id: string }
+}
+
 interface TelegramMessage {
   message_id: number
   from?: {
@@ -14,7 +46,14 @@ interface TelegramMessage {
     message_id: number
   }
   text?: string
+  caption?: string
   date: number
+  photo?: PhotoSize[]
+  document?: Document
+  voice?: VoiceAudio
+  audio?: VoiceAudio
+  video?: Video
+  video_note?: Video
 }
 
 interface TelegramUpdate {
@@ -23,9 +62,15 @@ interface TelegramUpdate {
 }
 
 interface PollMessage {
-  text: string
+  type: 'text' | 'photo' | 'file' | 'voice' | 'video' | 'video_note'
+  text?: string
   from: string
   timestamp: number
+  fileId?: string
+  fileName?: string
+  mimeType?: string
+  duration?: number
+  fileSize?: number
 }
 
 export async function GET(request: NextRequest) {
@@ -77,16 +122,91 @@ export async function GET(request: NextRequest) {
       if (!msg.reply_to_message) continue
       if (!msgIds.includes(msg.reply_to_message.message_id)) continue
 
-      if (!msg.text) continue
+      // Must have at least text or a file
+      if (!msg.text && !msg.photo && !msg.document && !msg.voice && !msg.audio && !msg.video && !msg.video_note) continue
 
       const senderName =
         msg.from?.first_name || msg.from?.username || 'Оператор'
 
-      messages.push({
-        text: msg.text,
-        from: senderName,
-        timestamp: msg.date * 1000,
-      })
+      let pollMsg: PollMessage | null = null
+
+      if (msg.photo && msg.photo.length > 0) {
+        // Use the largest photo (last element)
+        const largest = msg.photo[msg.photo.length - 1]
+        pollMsg = {
+          type: 'photo',
+          text: msg.caption || undefined,
+          from: senderName,
+          timestamp: msg.date * 1000,
+          fileId: largest.file_id,
+          fileSize: largest.file_size,
+        }
+      } else if (msg.video) {
+        pollMsg = {
+          type: 'video',
+          text: msg.caption || undefined,
+          from: senderName,
+          timestamp: msg.date * 1000,
+          fileId: msg.video.file_id,
+          fileName: msg.video.file_name,
+          mimeType: msg.video.mime_type,
+          duration: msg.video.duration,
+          fileSize: msg.video.file_size,
+        }
+      } else if (msg.video_note) {
+        pollMsg = {
+          type: 'video_note',
+          text: msg.caption || undefined,
+          from: senderName,
+          timestamp: msg.date * 1000,
+          fileId: msg.video_note.file_id,
+          mimeType: msg.video_note.mime_type,
+          duration: msg.video_note.duration,
+          fileSize: msg.video_note.file_size,
+        }
+      } else if (msg.document) {
+        pollMsg = {
+          type: 'file',
+          text: msg.caption || undefined,
+          from: senderName,
+          timestamp: msg.date * 1000,
+          fileId: msg.document.file_id,
+          fileName: msg.document.file_name,
+          mimeType: msg.document.mime_type,
+          fileSize: msg.document.file_size,
+        }
+      } else if (msg.voice) {
+        pollMsg = {
+          type: 'voice',
+          from: senderName,
+          timestamp: msg.date * 1000,
+          fileId: msg.voice.file_id,
+          mimeType: msg.voice.mime_type,
+          duration: msg.voice.duration,
+          fileSize: msg.voice.file_size,
+        }
+      } else if (msg.audio) {
+        pollMsg = {
+          type: 'voice',
+          from: senderName,
+          timestamp: msg.date * 1000,
+          fileId: msg.audio.file_id,
+          mimeType: msg.audio.mime_type,
+          duration: msg.audio.duration,
+          fileSize: msg.audio.file_size,
+        }
+      } else if (msg.text) {
+        pollMsg = {
+          type: 'text',
+          text: msg.text,
+          from: senderName,
+          timestamp: msg.date * 1000,
+        }
+      }
+
+      if (pollMsg) {
+        messages.push(pollMsg)
+      }
     }
 
     return Response.json({

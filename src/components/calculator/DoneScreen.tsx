@@ -166,7 +166,8 @@ export function DoneScreen({
     URL.revokeObjectURL(url)
   }, [orderHtml, orderNum])
 
-  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'sent_fallback' | 'error'>('idle')
+  const [sentToEmail, setSentToEmail] = useState<string>('')
 
   // Автоотправка письма при появлении экрана
   useEffect(() => {
@@ -192,7 +193,13 @@ export function DoneScreen({
         })
         if (cancelled) return
         if (!res.ok) throw new Error('Send failed')
-        setSendStatus('sent')
+        const result = await res.json()
+        if (result.sentToFallback) {
+          setSentToEmail(result.sentTo)
+          setSendStatus('sent_fallback')
+        } else {
+          setSendStatus('sent')
+        }
       } catch (err) {
         if (cancelled) return
         console.error('Email send error:', err)
@@ -319,6 +326,15 @@ export function DoneScreen({
           <div className="text-sm">
             <p className="font-medium text-green-800">Заявка отправлена менеджеру</p>
             <p className="text-green-700 mt-0.5">Заказ-наряд №{orderNum} получен — мы свяжемся с Вами для уточнения деталей.</p>
+          </div>
+        </div>
+      )}
+      {sendStatus === 'sent_fallback' && (
+        <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in-up">
+          <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-medium text-amber-800">Заявка отправлена на {sentToEmail}</p>
+            <p className="text-amber-700 mt-0.5">Заказ-наряд №{orderNum} получен. Письмо придёт на {sentToEmail} — пересыльте его на push@tellur.spb.ru или позвоните нам.</p>
           </div>
         </div>
       )}

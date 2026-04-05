@@ -117,13 +117,14 @@
     @apply border-border outline-ring/50;
   }
   html {
-    overflow-x: clip;
+    overflow-x: hidden;
     overflow-y: auto;
-  }
-  body {
-    overflow-x: clip;
+    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
   }
 }

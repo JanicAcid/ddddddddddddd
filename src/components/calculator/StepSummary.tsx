@@ -26,7 +26,7 @@ export function StepSummary({ totalCalc, effectiveKkm, effectiveKkmInfo, kkmType
               <p className="text-sm text-slate-500 italic">Отметьте услуги</p>
             ) : totalCalc.items.map((item, idx) => (
               <div key={idx} className="flex justify-between text-xs sm:text-sm gap-2">
-                <span className="text-slate-600 leading-snug">{item.name}</span>
+                <span className="text-slate-600 leading-snug min-w-0">{item.name}</span>
                 <span className="font-medium whitespace-nowrap shrink-0">{item.price.toLocaleString('ru-RU')} ₽</span>
               </div>
             ))}

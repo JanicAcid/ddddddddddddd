@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
@@ -7,6 +7,14 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "cyrillic"],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
@@ -70,9 +78,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning className="overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
       <body
-        className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
+        className={`${inter.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <JsonLd />
         {children}

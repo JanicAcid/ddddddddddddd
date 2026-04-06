@@ -402,7 +402,7 @@ export default function TellurServiceCalculator() {
               >
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
-                  <h1 className="text-lg sm:text-2xl font-extrabold text-[#1e3a5f] whitespace-nowrap overflow-hidden text-ellipsis">Калькулятор маркировки</h1>
+                  <h1 className="text-base sm:text-2xl font-extrabold text-[#1e3a5f] whitespace-nowrap overflow-hidden text-ellipsis">Калькулятор маркировки</h1>
                   <p className="text-[11px] sm:text-xs text-slate-500 flex items-center gap-x-1 whitespace-nowrap overflow-hidden">
                     <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors shrink-0">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-6 h-6 sm:w-6 sm:h-6" /></a>
                     <span className="text-slate-300 shrink-0">·</span>

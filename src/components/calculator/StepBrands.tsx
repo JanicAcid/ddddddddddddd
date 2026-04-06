@@ -162,7 +162,7 @@ export function StepBrands({
                     key={key}
                     type="button"
                     onClick={() => setKkmType(key as KkmType)}
-                    className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all duration-200 cursor-pointer group overflow-hidden ${isLargeLogo ? 'px-1 pt-3 pb-2 sm:pt-4 sm:pb-3' : 'px-1 pt-[11px] pb-[7px] sm:pt-3 sm:pb-2'} ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/90'}`}
+                    className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all duration-200 cursor-pointer group overflow-hidden px-1 pt-3 pb-2 sm:pt-4 sm:pb-3 ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/90'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
                     <div className={`relative ${isLargeLogo ? 'h-[34px] sm:h-[38px]' : 'h-[17px] sm:h-[19px]'} w-full`}>

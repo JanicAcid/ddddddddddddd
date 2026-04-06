@@ -64,6 +64,8 @@ export interface DoneScreenProps {
   evotorRestore: boolean
   sigmaHelpChecked: boolean
   unsureFnsRegistration: boolean
+  orderNum: string | null
+  isCorrection: boolean
 }
 
 // generateOrderHtml params
@@ -83,4 +85,7 @@ export interface GenerateOrderHtmlParams {
   sigmaHelpChecked: boolean
   unsureFnsRegistration: boolean
   includeChecklist?: boolean
+  isCorrection?: boolean
+  correctionTime?: string | null
+  orderNum?: string
 }

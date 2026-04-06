@@ -34,6 +34,8 @@ export default function TellurServiceCalculator() {
   const [conditionFlash, setConditionFlash] = useState(false)
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [isDone, setIsDone] = useState(false)
+  const [orderNum, setOrderNum] = useState<string | null>(null)
+  const [isCorrection, setIsCorrection] = useState(false)
   const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
   const [kkmCondition, setKkmCondition] = useState<KkmCondition>('' as KkmCondition)
   const [sigmaSelected, setSigmaSelected] = useState(false)
@@ -309,6 +311,12 @@ export default function TellurServiceCalculator() {
 
   // ---- Готово ----
   const handleDone = () => {
+    if (orderNum) {
+      setIsCorrection(true)
+    } else {
+      setOrderNum(Date.now().toString().slice(-6))
+      setIsCorrection(false)
+    }
     setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
@@ -329,7 +337,7 @@ export default function TellurServiceCalculator() {
     // Клиентские данные
     setClientData({ name: '', inn: '', phone: '', email: '', address: '', kkmModel: '', kkmNumber: '', fnNumber: '', comment: '', evotorLogin: '', evotorPassword: '', hasEcp: false, fnActivityType: '', sellsExcise: false });
     // Общее
-    setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
+    setCurrentStep(1); setIsDone(false); setOrderNum(null); setIsCorrection(false); window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // ===================================================================
@@ -564,6 +572,8 @@ export default function TellurServiceCalculator() {
                 serviceContractChecked={serviceContractChecked}
                 evotorRestore={evotorRestore}
                 sigmaHelpChecked={sigmaHelpChecked}
+                orderNum={orderNum}
+                isCorrection={isCorrection}
                 unsureFnsRegistration={unsureFnsRegistration}
               />
             )}

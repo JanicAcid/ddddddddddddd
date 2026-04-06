@@ -103,11 +103,14 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 .signature{width:180px;border-top:1px solid #000;padding-top:4px;text-align:center;font-size:13px}
 .notice{background:#fef2f2;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
 .info{background:#fffbeb;padding:10px;border-radius:6px;margin:12px 0;font-size:12px}
+.correction{background:linear-gradient(135deg,#ff6b35 0%,#f7931e 100%);color:#fff;padding:16px 20px;border-radius:10px;margin:16px 0;text-align:center;font-size:18px;font-weight:bold;letter-spacing:1px;box-shadow:0 4px 15px rgba(255,107,53,0.4)}
+.correction-time{font-size:13px;font-weight:normal;margin-top:4px;opacity:0.9}
 @media print{body{padding:15px}}
 </style></head><body>
-<div style="text-align:center;margin-bottom:20px"><h1>ЗАКАЗ-НАРЯД</h1>
+${params.isCorrection ? `<div class="correction">⚡ КОРРЕКТИРОВКА ЗАКАЗА<br><span class="correction-time">Повторная отправка от ${new Date().toLocaleString('ru-RU')}</span></div>` : ''}
+<div style="text-align:center;margin-bottom:20px"><h1>${params.isCorrection ? 'КОРРЕКТИРОВКА — ЗАКАЗ-НАРЯД' : 'ЗАКАЗ-НАРЯД'}</h1>
 <p style="color:#64748b;font-size:12px;margin:2px 0">ООО &quot;Теллур-Интех&quot; | Сервисный центр кассового оборудования</p>
-<p style="font-size:16px;font-weight:bold;margin:6px 0">№ ${orderNum} от ${new Date().toLocaleDateString('ru-RU')}</p></div>
+<p style="font-size:16px;font-weight:bold;margin:6px 0">№ ${params.orderNum || orderNum} от ${new Date().toLocaleDateString('ru-RU')}</p></div>
 <div style="margin:16px 0"><h2>Клиент</h2>
 <p><strong>Наименование:</strong> ${params.clientData.name || 'Не указано'}</p>
 <p><strong>ИНН:</strong> ${params.clientData.inn || 'Не указано'}</p>
@@ -142,29 +145,34 @@ export function DoneScreen({
   effectiveKkmInfo, kkmCondition, clientData, totalCalc,
   onBack, onPrint, onClose, kkmType, effectiveKkm,
   step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked,
-  evotorRestore, sigmaHelpChecked, unsureFnsRegistration
+  evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
+  orderNum, isCorrection
 }: DoneScreenProps) {
   const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
-  const orderNum = Date.now().toString().slice(-6)
+  const safeOrderNum = orderNum || Date.now().toString().slice(-6)
   const orderDate = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const correctionTime = isCorrection ? new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : null
 
   const orderHtml = useMemo(() => generateOrderHtml({
     effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
     step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-    includeChecklist: false
-  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration])
+    includeChecklist: false,
+    isCorrection,
+    correctionTime,
+    orderNum: safeOrderNum
+  }), [effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc, step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration, isCorrection, correctionTime, safeOrderNum])
 
   const handleSaveFile = useCallback(() => {
     const blob = new Blob([orderHtml], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `заказ-наряд-${orderNum}.html`
+    a.download = `заказ-наряд-${safeOrderNum}.html`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  }, [orderHtml, orderNum])
+  }, [orderHtml, safeOrderNum])
 
   const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'sent_fallback' | 'error'>('idle')
   const [sentToEmail, setSentToEmail] = useState<string>('')
@@ -175,11 +183,15 @@ export function DoneScreen({
     ;(async () => {
       setSendStatus('sending')
       try {
-        const subject = `Заказ-наряд №${orderNum} от ${orderDate} — ${clientData.name || 'клиент'}`
+        const correctionLabel = isCorrection ? ' ⚡ КОРРЕКТИРОВКА' : ''
+        const subject = `Заказ-наряд №${safeOrderNum} от ${orderDate}${correctionLabel} — ${clientData.name || 'клиент'}`
         const engineerHtml = generateOrderHtml({
           effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
           step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-          includeChecklist: true
+          includeChecklist: true,
+          isCorrection,
+          correctionTime,
+          orderNum: safeOrderNum
         })
         const res = await fetch('/api/send-order', {
           method: 'POST',
@@ -244,8 +256,14 @@ export function DoneScreen({
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1e3a5f]/10 mb-3">
           <CheckCheck className="w-9 h-9 text-[#1e3a5f]" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-[#1e3a5f]">Заявка сформирована!</h2>
-        <p className="text-sm text-slate-500 mt-0.5">Заказ-наряд №{orderNum} от {orderDate}</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1e3a5f]">{isCorrection ? 'Заявка скорректирована!' : 'Заявка сформирована!'}</h2>
+        <p className="text-sm text-slate-500 mt-0.5">Заказ-наряд №{safeOrderNum} от {orderDate}</p>
+        {isCorrection && (
+          <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-orange-100 border border-orange-300 rounded-full">
+            <AlertCircle className="w-4 h-4 text-orange-600" />
+            <span className="text-sm font-bold text-orange-700">Это корректировка предыдущей заявки — номер сохранён</span>
+          </div>
+        )}
       </div>
 
       <Card className="border-[#1e3a5f]/20">

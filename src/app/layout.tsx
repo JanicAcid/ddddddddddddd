@@ -14,6 +14,8 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'

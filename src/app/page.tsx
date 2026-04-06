@@ -366,7 +366,7 @@ export default function TellurServiceCalculator() {
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
                   <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
-                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с Честным ЗНАКом</p>
+                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с<br/><strong className="text-slate-600 font-bold">Честным ЗНАКом</strong></p>
                 </div>
               </div>
               <button

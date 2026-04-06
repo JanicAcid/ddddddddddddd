@@ -118,25 +118,6 @@ export function StepExtra({
           </CardContent>
         </Card>
 
-        {/* Регистрация ККТ в ФНС — для новых и б/у касс (показана на шаге 2, здесь информационно) */}
-        {(kkmCondition === 'new' || kkmCondition === 'used') && (
-          <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
-            <CardContent className="">
-              <div className="flex items-start gap-2">
-                <HintButton hintKey="fns_registration" {...hintProps} />
-                <Checkbox id="fns_reg" checked={true} disabled={true} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor="fns_reg" className="font-bold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
-                    <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">1 500 руб.</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение — обязательно для {kkmCondition === 'new' ? 'новой' : 'б/у'} кассы</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Сканер */}
         <Card className={scannerChecked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
           <CardContent className="">
@@ -153,25 +134,6 @@ export function StepExtra({
             </div>
           </CardContent>
         </Card>
-
-        {/* Регистрация ККТ в ФНС — только для новых касс, заблокировано */}
-        {kkmCondition === 'new' && (
-          <Card className="border-[#1e3a5f] bg-[#1e3a5f]/[0.03]">
-            <CardContent className="">
-              <div className="flex items-start gap-2">
-                <HintButton hintKey="fns_registration" {...hintProps} />
-                <Checkbox id="fns_reg" checked={true} disabled={true} className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor="fns_reg" className="font-bold text-sm text-[#1e3a5f] leading-snug cursor-default">Регистрация ККТ в ФНС</Label>
-                    <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">1 500 руб.</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение — обязательно для новой кассы</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Карточки товаров */}
         <Card className={productCardCount > 0 ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>

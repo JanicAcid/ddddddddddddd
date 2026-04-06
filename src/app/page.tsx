@@ -280,15 +280,28 @@ export default function TellurServiceCalculator() {
     return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
   }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, sigmaHelpChecked, serviceContractChecked, serviceContractPeriod])
 
+  // Надёжный скролл наверх: работает на мобиле и ПК
+  const smoothScrollToTop = useCallback(() => {
+    const el = mainRef.current
+    if (!el) { window.scrollTo({ top: 0, behavior: 'smooth' }); return }
+    const top = el.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top, behavior: 'smooth' })
+    // Фоллбэк для iOS Safari — принудительный скролл через 300мс
+    setTimeout(() => {
+      const top2 = el.getBoundingClientRect().top + window.scrollY
+      if (Math.abs(window.scrollY - top2) > 10) {
+        window.scrollTo({ top: top2, behavior: 'auto' })
+      }
+    }, 350)
+  }, [])
+
   const goToStep = (step: Step) => {
     if (step === 2 && !canGoStep2) return
     if (step === 3 && !canGoStep3) return
     setCurrentStep(step)
     setIsDone(false)
-    // Авто-скролл наверх при смене шага
-    setTimeout(() => {
-      mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
+    ;(document.activeElement as HTMLElement)?.blur()
+    setTimeout(smoothScrollToTop, 50)
   }
 
   // Сброс торгового типа при смене типа кассы или состояния
@@ -322,7 +335,7 @@ export default function TellurServiceCalculator() {
     }
     setIsDone(true)
     ;(document.activeElement as HTMLElement)?.blur()
-    setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+    setTimeout(smoothScrollToTop, 50)
   }
 
   // ---- Консультация (без выбора услуг) ----
@@ -331,7 +344,7 @@ export default function TellurServiceCalculator() {
     setIsDone(false)
     if (!orderNum) setOrderNum(Date.now().toString().slice(-6))
     ;(document.activeElement as HTMLElement)?.blur()
-    setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+    setTimeout(smoothScrollToTop, 50)
   }
 
   // ---- Полный сброс ----
@@ -637,7 +650,7 @@ export default function TellurServiceCalculator() {
                 kkmCondition={kkmCondition}
                 clientData={clientData}
                 totalCalc={isConsultation ? consultationCalc : totalCalc}
-                onBack={isConsultation ? handleReset : () => { setIsDone(false); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
+                onBack={isConsultation ? handleReset : () => { setIsDone(false); setTimeout(smoothScrollToTop, 50) }}
                 onPrint={handlePrint}
                 onClose={handleReset}
                 kkmType={kkmType}

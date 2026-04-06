@@ -86,6 +86,12 @@ export function generateOrderHtml(params: GenerateOrderHtmlParams): string {
   if (params.evotorRestore) {
     checklist.push('Восстановить доступ к ЛК Эвотор')
   }
+  // ЭЦП — обязательно, уточнить у клиента
+  if (!params.clientData.hasEcp) {
+    checklist.push('⚠️ КЛИЕНТ БЕЗ ЭЦП — проконсультировать и помочь оформить (обязательное требование для маркировки)')
+  } else {
+    checklist.push('У клиента есть ЭЦП — проверить срок действия и тип')
+  }
 
   const checklistHtml = params.includeChecklist !== false && checklist.length > 0
     ? `<div style="margin:16px 0"><h2 style="color:#166534;border-bottom:2px solid #166534;padding-bottom:6px;font-size:15px">📋 Чек-лист для инженера</h2>
@@ -123,7 +129,9 @@ ${params.isCorrection ? `<div class="correction">⚡ КОРРЕКТИРОВКА 
 <p><strong>Модель:</strong> ${params.clientData.kkmModel || 'Не указано'}</p>
 <p><strong>Заводской номер:</strong> ${params.clientData.kkmNumber || 'Не указано'}</p>
 ${params.kkmType === 'evotor' ? `<p><strong>Логин ЛК Эвотор:</strong> ${params.clientData.evotorLogin || 'Не указано'}</p>` : ''}
-<p><strong>Подакцизные товары:</strong> ${params.clientData.sellsExcise ? 'Да' : 'Нет'}</p></div>
+<p><strong>Подакцизные товары:</strong> ${params.clientData.sellsExcise ? 'Да' : 'Нет'}</p>
+<p><strong>ЭЦП (электронная подпись):</strong> ${params.clientData.hasEcp ? '<span style="color:#166534;font-weight:bold">✅ Есть</span>' : '<span style="color:#dc2626;font-weight:bold">❌ Нет</span>'}</p></div>
+${!params.clientData.hasEcp ? '<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:2px solid #f59e0b;border-radius:10px;padding:16px 20px;margin:16px 0;text-align:center"><p style="font-size:16px;font-weight:bold;color:#92400e;margin:0 0 6px">⚠️ У клиента отсутствует ЭЦП</p><p style="font-size:13px;color:#92400e;margin:0 0 4px">ЭЦП (электронная подпись на Рутокен / JaCarta) — <strong>обязательна</strong> для регистрации кассы и работы с маркировкой.</p><p style="font-size:13px;color:#78350f;margin:0"><strong>Действие менеджера:</strong> при звонке клиенту — предупредить об обязательности ЭЦП и помочь подобрать вариант оформления. Мы подскажем, как её можно получить быстро.</p></div>' : '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;margin:16px 0"><p style="font-size:13px;color:#166534;margin:0">✅ У клиента есть ЭЦП — при звонке уточнить срок действия и тип подписи (КЭП / НЭП).</p></div>'}
 <h2>Услуги</h2>
 <table><thead><tr><th>№</th><th>Наименование</th><th style="text-align:right">Сумма, руб.</th></tr></thead><tbody>
 ${params.totalCalc.items.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#94a3b8">Услуги не выбраны</td></tr>' : params.totalCalc.items.map((item, idx) => `<tr><td>${idx + 1}</td><td>${item.name}</td><td style="text-align:right">${item.price.toLocaleString('ru-RU')}</td></tr>`).join('')}

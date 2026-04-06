@@ -317,7 +317,9 @@ export default function TellurServiceCalculator() {
       setOrderNum(Date.now().toString().slice(-6))
       setIsCorrection(false)
     }
-    setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+    setIsDone(true)
+    ;(document.activeElement as HTMLElement)?.blur()
+    setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
   // ---- Полный сброс ----

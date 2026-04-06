@@ -37,7 +37,6 @@ interface StepBrandsProps {
   needsFirmwareOrLicense: boolean
   fwPrices: { firmware: number; license: number }
   canGoStep2: boolean
-  evotorTradeOrAppsReady: boolean
   sigmaHelpChecked: boolean
   firmwareChecked: boolean
   licenseChecked: boolean
@@ -66,7 +65,7 @@ export function StepBrands({
   evotorTradeType, evotorAppsSelected, evotorHasSubscription,
   ecpChecked, conditionFlash, conditionRef, currentKkmInfo, visibleKkmTypes,
   effectiveKkm, showSigmaSubs, sigmaSubsLocked, needsFirmwareOrLicense, fwPrices,
-  canGoStep2, evotorTradeOrAppsReady, sigmaHelpChecked, firmwareChecked, licenseChecked, effectiveKkmInfo,
+  canGoStep2, sigmaHelpChecked, firmwareChecked, licenseChecked, effectiveKkmInfo,
   alreadyMarking, setAlreadyMarking,
   setKkmType, setKkmCondition, setSigmaSelected, setSigmaHelpChecked,
   setEvotorTradeType, setEvotorHasSubscription, setEvotorAppsSelected,
@@ -188,39 +187,68 @@ export function StepBrands({
             )}
 
             {/* ============================================================================ */}
-            {/* СИГМА — чем торгуете + подписки Атол */}
+            {/* ВИД ДЕЯТЕЛЬНОСТИ — для ВСЕХ типов касс (кроме уже работающих с маркировкой) */}
+            {/* ============================================================================ */}
+            {kkmType !== '' && kkmCondition !== '' && !alreadyMarking && (
+              <div className="p-2.5 sm:p-3 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
+                  <p className="font-semibold text-[#1e3a5f] text-sm">Чем планируете торговать?</p>
+                </div>
+                <p className="text-xs text-slate-500">Выберите категорию — это поможет подобрать нужные услуги и настройки.</p>
+                <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="marking" id="trade_marking_all" />
+                    <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
+                    <Label htmlFor="trade_marking_all" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="alcohol" id="trade_alcohol_all" />
+                    <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
+                    <Label htmlFor="trade_alcohol_all" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="both" id="trade_both_all" />
+                    <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
+                    <Label htmlFor="trade_both_all" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
+                  </div>
+                </RadioGroup>
+                {kkmType === 'evotor' && (
+                  <a href="https://market.evotor.ru/store/apps/a50741fb-6e03-4e57-93da-00fdc5647a5a" target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#1e3a5f] hover:underline font-medium">
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                    Приложение «Продажа табака» в магазине Эвотор
+                  </a>
+                )}
+                {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
+                  <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите вид деятельности, чтобы продолжить</p>
+                )}
+              </div>
+            )}
+
+            {/* ============================================================================ */}
+            {/* СИГМА — подписки Атол */}
             {/* ============================================================================ */}
             {showSigmaSubs && (
               <>
-                {/* Для новых и б/у — выбор чем торгуете */}
-                {(kkmCondition === 'new' || kkmCondition === 'used') && (
-                  <div className="p-2.5 sm:p-3 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
-                    <div className="flex items-center gap-2">
-                      <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
-                      <p className="font-semibold text-[#1e3a5f] text-sm">Чем Вы планируете торговать?</p>
+                {/* Для новых и б/у — информация о подписке Сигма */}
+                {(kkmCondition === 'new' || kkmCondition === 'used') && !evotorHasSubscription && (
+                <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
+                  <p className="font-medium text-[#1e3a5f] text-sm">Подписка на Сигма оформляется на официальном сайте</p>
+                  <p className="text-sm text-slate-600">Для работы кассы Сигма необходимо оформить один из трёх тарифов на <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">sigma.ru</a>. Подписка оплачивается напрямую у Сигма и включает автообновление.</p>
+                  <div className="flex items-start gap-2 p-2 bg-white rounded-lg border border-[#1e3a5f]/10">
+                    <Checkbox id="sigma_help" checked={sigmaHelpChecked}
+                      onCheckedChange={(c) => setSigmaHelpChecked(c as boolean)}
+                      className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <Label htmlFor="sigma_help" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
+                        Помощь с оформлением тарифа + восстановление доступа к кабинету Сигма
+                      </Label>
+                      <p className="text-xs text-slate-500 mt-0.5">Если нет доступа к личному кабинету Сигма — восстановим логин/пароль и поможем подобрать и оформить подходящий тариф.</p>
+                      <span className="text-sm font-bold text-[#1e3a5f]">500 руб.</span>
                     </div>
-                    <p className="text-xs text-slate-500">Выберите категорию — это поможет нам подобрать нужные настройки.</p>
-                    <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="marking" id="sigma_trade_marking" />
-                        <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                        <Label htmlFor="sigma_trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="alcohol" id="sigma_trade_alcohol" />
-                        <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                        <Label htmlFor="sigma_trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="both" id="sigma_trade_both" />
-                        <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                        <Label htmlFor="sigma_trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
-                      </div>
-                    </RadioGroup>
-                    {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
-                      <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите категорию торговли, чтобы продолжить</p>
-                    )}
                   </div>
+                </div>
                 )}
 
                 {/* Для действующей — галочка «имеется подписка» */}
@@ -249,88 +277,23 @@ export function StepBrands({
                         <p className="text-xs text-slate-500 mt-0.5">Отметьте, если на кассе Сигма уже оформлен тариф. Мы настроим связь с Честный ЗНАК, ЭДО и ТС ПИоТ.</p>
                       </div>
                     </div>
-                    {!evotorHasSubscription && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-slate-500 font-medium">Нужен новый тариф. Выберите категорию:</p>
-                        <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="marking" id="sigma_trade_marking_old" />
-                            <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                            <Label htmlFor="sigma_trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="alcohol" id="sigma_trade_alcohol_old" />
-                            <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                            <Label htmlFor="sigma_trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="both" id="sigma_trade_both_old" />
-                            <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                            <Label htmlFor="sigma_trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
-                          </div>
-                        </RadioGroup>
+                    {evotorHasSubscription && (
+                      <div className="flex items-center gap-2 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); hintProps.onHintOpen('tspiot') }}
+                          className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-200/60 text-amber-800 text-xs font-bold shrink-0">?</button>
+                        <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера!</span>
                       </div>
                     )}
                   </div>
-                )}
-
-                {!evotorHasSubscription && (
-                <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
-                  <p className="font-medium text-[#1e3a5f] text-sm">Подписка на Сигма оформляется на официальном сайте</p>
-                  <p className="text-sm text-slate-600">Для работы кассы Сигма необходимо оформить один из трёх тарифов на <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline hover:no-underline font-medium">sigma.ru</a>. Подписка оплачивается напрямую у Сигма и включает автообновление.</p>
-                  <div className="flex items-start gap-2 p-2 bg-white rounded-lg border border-[#1e3a5f]/10">
-                    <Checkbox id="sigma_help" checked={sigmaHelpChecked}
-                      onCheckedChange={(c) => setSigmaHelpChecked(c as boolean)}
-                      className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <Label htmlFor="sigma_help" className="cursor-pointer font-medium text-[#1e3a5f] text-sm leading-snug">
-                        Помощь с оформлением тарифа + восстановление доступа к кабинету Сигма
-                      </Label>
-                      <p className="text-xs text-slate-500 mt-0.5">Если нет доступа к личному кабинету Сигма — восстановим логин/пароль и поможем подобрать и оформить подходящий тариф.</p>
-                      <span className="text-sm font-bold text-[#1e3a5f]">500 руб.</span>
-                    </div>
-                  </div>
-                </div>
                 )}
               </>
             )}
 
             {/* ============================================================================ */}
-            {/* ЭВOTOR — чем торгуете + приложения */}
+            {/* ЭВOTOR — подписки + приложения */}
             {/* ============================================================================ */}
             {kkmType === 'evotor' && currentKkmInfo.specialNote?.apps && (
               <>
-                {/* Для новых и б/у — выбор чем торгуете */}
-                {(kkmCondition === 'new' || kkmCondition === 'used') && (
-                  <div className="p-2.5 sm:p-3 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
-                    <div className="flex items-center gap-2">
-                      <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
-                      <p className="font-semibold text-[#1e3a5f] text-sm">Чем Вы планируете торговать?</p>
-                    </div>
-                    <p className="text-xs text-slate-500">Выберите категорию — нужные приложения Эвотор подставятся автоматически. Или выберите приложения вручную ниже.</p>
-                    <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="marking" id="trade_marking" />
-                        <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                        <Label htmlFor="trade_marking" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="alcohol" id="trade_alcohol" />
-                        <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                        <Label htmlFor="trade_alcohol" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="both" id="trade_both" />
-                        <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                        <Label htmlFor="trade_both" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
-                      </div>
-                    </RadioGroup>
-                    {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
-                      <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите категорию или хотя бы одно приложение ниже, чтобы продолжить</p>
-                    )}
-                  </div>
-                )}
-
                 {/* Для действующей — галочка «имеется подписка» */}
                 {kkmCondition === 'old' && (
                   <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
@@ -357,28 +320,6 @@ export function StepBrands({
                         <p className="text-xs text-slate-500 mt-0.5">Отметьте, если на кассе уже установлено и оплачено приложение «Маркировка». Мы настроим связь с Честный ЗНАК, ЭДО и ТС ПИоТ.</p>
                       </div>
                     </div>
-                    {!evotorHasSubscription && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-slate-500 font-medium">Нужна новая подписка. Выберите категорию:</p>
-                        <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="marking" id="trade_marking_old" />
-                            <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                            <Label htmlFor="trade_marking_old" className="cursor-pointer text-sm">Маркированные товары</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="alcohol" id="trade_alcohol_old" />
-                            <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                            <Label htmlFor="trade_alcohol_old" className="cursor-pointer text-sm">Алкоголь</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="both" id="trade_both_old" />
-                            <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
-                            <Label htmlFor="trade_both_old" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                    )}
                     {evotorHasSubscription && (
                       <div className="flex items-center gap-2 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
                         <button type="button" onClick={(e) => { e.stopPropagation(); hintProps.onHintOpen('tspiot') }}
@@ -389,12 +330,13 @@ export function StepBrands({
                   </div>
                 )}
 
+                {/* Список приложений Эвотор (когда нет текущей подписки) */}
                 {!evotorHasSubscription && (
                 <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
                   <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote.title}</p>
                   <p className="text-sm text-slate-600">{currentKkmInfo.specialNote.content}</p>
                   {currentKkmInfo.specialNote.apps.map((app, idx) => {
-                    const appKey = app.name.includes('\u041c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0430') ? 'marking' : app.name.includes('\u0423\u0422\u041c') ? 'utm' : `opt_${idx}`
+                    const appKey = app.name.includes('\u041c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0430') ? 'marking' : app.name.includes('\u0423\u0422\u041c') ? 'utm' : app.name.includes('\u0442\u0430\u0431\u0430\u043a\u0430') ? 'tobacco' : `opt_${idx}`
                     const isSelected = evotorAppsSelected.has(appKey)
                     const canToggle = !evotorHasSubscription
                     return (

@@ -48,7 +48,10 @@ export function StepServices({
   setClientData, setUnsureFnsRegistration,
   hintProps, goToStep, setCurrentStep, mainRef
 }: StepServicesProps) {
-  const isPartialMode = alreadyMarking || kkmCondition === 'old'
+  // partialMode = клиент уже работает с маркировкой (галочка «уже работаю» или текущая касса + подписка)
+  const isPartialMode = alreadyMarking
+  // Для текущей кассы без чекбокса — нужен режим регистрации (не partial)
+  const isRegistrationMode = kkmCondition === 'old' && !alreadyMarking
 
   return (
     <div className="max-w-2xl mx-auto space-y-2">
@@ -87,30 +90,61 @@ export function StepServices({
 
       {/* Активные (доступные для выбора) услуги */}
       {step2Services.filter(s => {
-        if (s.id === 'partial_marketing_setup' && !isPartialMode) return false
-        // Полная настройка недоступна если уже работает с маркировкой
-        if (s.id === 'marking_setup' && isPartialMode) return false
-        // Перерегистрация: полностью скрыта для б/у, недоступна для новых (включена автоматически)
-        if (kkmCondition === 'used' && s.id === 'fns_reregistration') return false
-        const isLocked = kkmCondition === 'new' && s.id === 'fns_reregistration'
-        const isMutuallyDisabled = (
-          (s.id === 'partial_marketing_setup' && step2Selections.includes('marking_setup')) ||
-          (s.id === 'marking_setup' && step2Selections.includes('partial_marketing_setup'))
-        )
-        // Перерегистрация для уже работающей кассы — только при подакцизных или галочке "не уверен"
-        const isFnsBlockedForOld = isPartialMode && s.id === 'fns_reregistration' &&
-          !clientData.sellsExcise && !unsureFnsRegistration
-        return !isLocked && !isMutuallyDisabled && !isFnsBlockedForOld
+        // === НОВАЯ КАССА ===
+        if (kkmCondition === 'new') {
+          // Только регистрация + полная маркировка
+          if (s.id === 'fns_reregistration') return true  // показываем (заблокировано)
+          if (s.id === 'marking_setup') return true
+          if (s.id === 'partial_marketing_setup') return false
+          return false
+        }
+        // === Б/У КАССА ===
+        if (kkmCondition === 'used') {
+          // Регистрация + полная маркировка (same as new)
+          if (s.id === 'marking_setup') return true
+          if (s.id === 'fns_reregistration') return true
+          if (s.id === 'partial_marketing_setup') return false
+          return false
+        }
+        // === ТЕКУЩАЯ КАССА (old) ===
+        if (kkmCondition === 'old') {
+          // Режим «уже работаю с маркировкой» — частичная + перерегистрация
+          if (isPartialMode) {
+            if (s.id === 'partial_marketing_setup') return true
+            if (s.id === 'marking_setup') return false
+            // Перерегистрация: только при подакцизных или галочке «не уверен»
+            if (s.id === 'fns_reregistration') {
+              return clientData.sellsExcise || unsureFnsRegistration
+            }
+            return false
+          }
+          // Режим «нужно подключить маркировку» — полная маркировка + перерегистрация
+          if (isRegistrationMode) {
+            if (s.id === 'marking_setup') return true
+            if (s.id === 'fns_reregistration') return true
+            if (s.id === 'partial_marketing_setup') return false
+            return false
+          }
+        }
+        return true
       }).map((service, idx) => {
-        const desc = service.id === 'marking_setup' ? markingDesc : service.description
+        // Динамические названия: регистрация для новых/б/у, перерегистрация для текущих
+        const serviceDisplayName = service.id === 'fns_reregistration' && (kkmCondition === 'new' || kkmCondition === 'used')
+          ? 'Регистрация ККТ в ФНС'
+          : service.name
+        const desc = service.id === 'fns_reregistration' && (kkmCondition === 'new' || kkmCondition === 'used')
+          ? 'Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение — обязательно для новой кассы'
+          : service.id === 'marking_setup' ? markingDesc : service.description
         const selected = step2Selections.includes(service.id)
         const ServiceIcon = service.id === 'fns_reregistration' ? FileSignature : service.id === 'marking_setup' ? Settings2 : Wrench
+        // Для новых и б/у касс — регистрация заблокирована (включена автоматически)
+        const isLockedFns = (kkmCondition === 'new' || kkmCondition === 'used') && service.id === 'fns_reregistration'
         return (
-          <Card key={service.id} className={selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+          <Card key={service.id} className={selected || isLockedFns ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
             <CardContent className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
               <div className="flex items-start gap-2">
                 {service.hintKey && <HintButton hintKey={service.hintKey} {...hintProps} />}
-                <Checkbox id={service.id} checked={selected}
+                <Checkbox id={service.id} checked={selected || isLockedFns} disabled={isLockedFns}
                   onCheckedChange={() => {
                     const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
                     setStep2Selections((prev: string[]) => {
@@ -129,7 +163,7 @@ export function StepServices({
                   className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor={service.id} className="font-bold text-sm leading-snug cursor-pointer">{service.name}</Label>
+                    <Label htmlFor={service.id} className="font-bold text-sm leading-snug cursor-pointer">{serviceDisplayName}</Label>
                     <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">{service.price.toLocaleString('ru-RU')} руб.</span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
@@ -169,10 +203,10 @@ export function StepServices({
 
       {/* ОФД */}
       {(() => {
-        // Для б/у касс — только Такском, для остальных — все кроме заблокированных для новых
+        // Для б/у касс — только Такском, для остальных — все провайдеры
         const visibleProviders = kkmCondition === 'used'
           ? OFD_PROVIDERS.filter(p => p.id === 'takskom')
-          : OFD_PROVIDERS.filter(p => !p.lockedForNew || kkmCondition !== 'new')
+          : OFD_PROVIDERS
         const selectedProvider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
         return (
           <Card className={ofdEffective ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>

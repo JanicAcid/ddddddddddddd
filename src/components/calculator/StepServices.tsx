@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight, ArrowLeft, FileSignature, Settings2, Wrench, MessageCircle } from 'lucide-react'
+import { ArrowRight, ArrowLeft, FileSignature, Settings2, Wrench } from 'lucide-react'
 import { step2Services } from '@/config/services-step2'
 import { OFD_PROVIDERS } from '@/config/ofd'
 import type { OfdPeriod } from '@/config/ofd'
@@ -38,7 +38,6 @@ interface StepServicesProps {
   goToStep: (step: 1 | 2 | 3 | 4) => void
   setCurrentStep: (v: number) => void
   mainRef: React.RefObject<HTMLDivElement | null>
-  startConsultation: () => void
 }
 
 export function StepServices({
@@ -47,7 +46,7 @@ export function StepServices({
   ofdLocked, ofdEffective, unsureFnsRegistration, alreadyMarking, canGoStep3,
   setStep2Selections, setOfdChecked, setOfdPeriod, setOfdProvider,
   setClientData, setUnsureFnsRegistration,
-  hintProps, goToStep, setCurrentStep, mainRef, startConsultation
+  hintProps, goToStep, setCurrentStep, mainRef
 }: StepServicesProps) {
   // partialMode = клиент уже работает с маркировкой (галочка «уже работаю» или текущая касса + подписка)
   const isPartialMode = alreadyMarking
@@ -281,17 +280,6 @@ export function StepServices({
           </Card>
         )
       })()}
-
-      {/* Кнопка: нужна только консультация */}
-      <button
-        type="button"
-        onClick={startConsultation}
-        className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl border-2 border-dashed border-[#e8a817]/40 hover:border-[#e8a817] bg-[#e8a817]/[0.03] hover:bg-[#e8a817]/[0.06] text-sm font-medium text-[#1e3a5f] transition-all duration-200 cursor-pointer group"
-      >
-        <MessageCircle className="w-4 h-4 shrink-0 group-hover:text-[#e8a817]" />
-        <span>Нужна только консультация по моей кассе</span>
-        <span className="text-xs text-slate-400 group-hover:text-slate-500 hidden sm:inline">— бесплатно</span>
-      </button>
 
       <div className="flex gap-4">
         <Button variant="outline" className="flex-1 py-4 text-base font-bold" size="lg" onClick={() => { setCurrentStep(1); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 mr-2" /> Назад</Button>

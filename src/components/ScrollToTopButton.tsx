@@ -30,7 +30,7 @@ export function ScrollToTopButton() {
       type="button"
       onClick={scrollToTop}
       aria-label="Наверх"
-      className={`fixed bottom-20 right-6 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer group {
+      className={`fixed bottom-24 right-6 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer group {
         visible
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-4 pointer-events-none'

@@ -540,7 +540,6 @@ export default function TellurServiceCalculator() {
                 goToStep={goToStep}
                 setCurrentStep={setCurrentStep}
                 mainRef={mainRef}
-                startConsultation={startConsultation}
               />
             )}
 

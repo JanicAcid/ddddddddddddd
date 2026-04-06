@@ -362,7 +362,10 @@ export default function TellurServiceCalculator() {
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
               >
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
-                <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
+                <div className="truncate">
+                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f]">Калькулятор маркировки</h1>
+                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с Честным ЗНАКом</p>
+                </div>
               </div>
               <button
                 type="button"

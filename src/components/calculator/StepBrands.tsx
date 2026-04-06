@@ -78,39 +78,39 @@ export function StepBrands({
       <div className="max-w-2xl mx-auto space-y-4">
         <Card>
           <CardContent className="space-y-4">
-            <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Состояние кассы</h3>
+            <h3 className="text-sm font-bold text-[#1e3a5f]">Состояние кассы</h3>
             {/* Состояние кассы */}
-            <div ref={conditionRef} id="condition-section" className={`rounded-lg transition-all duration-300 ${conditionFlash ? 'ring-4 ring-red-400/50 ring-offset-2' : ''}`}>
-              <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+            <div ref={conditionRef} id="condition-section" className={`rounded-lg transition-all duration-300 ${conditionFlash ? 'ring-2 ring-red-400/50 ring-offset-1' : ''}`}>
+              <div className="grid grid-cols-3 gap-1.5">
                 <div
                   onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
-                  className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                  className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
-                    <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                    <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                   </div>
-                  <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
-                  <span className="text-[10px] text-slate-400 text-center leading-tight">Работаю на ней</span>
+                  <Label className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
+                  <span className="text-[9px] text-slate-400 text-center leading-tight">Работаю на ней</span>
                 </div>
                 <div
                   onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
-                  className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                  className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#e8a817]/10 shrink-0">
-                    <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8a817]" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-[#e8a817]" />
                   </div>
-                  <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
-                  <span className="text-[10px] text-slate-400 text-center leading-tight">Только что купленная</span>
+                  <Label htmlFor="cond_new" className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
+                  <span className="text-[9px] text-slate-400 text-center leading-tight">Только что купленная</span>
                 </div>
                 <div
                   onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
-                  className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                  className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
-                    <Handshake className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                    <Handshake className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
                   </div>
-                  <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
-                  <span className="text-[10px] text-slate-400 text-center leading-tight">Купил с рук</span>
+                  <Label className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
+                  <span className="text-[9px] text-slate-400 text-center leading-tight">Купил с рук</span>
                 </div>
               </div>
             </div>

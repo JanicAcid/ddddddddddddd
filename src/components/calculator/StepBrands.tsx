@@ -168,7 +168,7 @@ export function StepBrands({
                     <div className={`relative ${isLargeLogo ? 'h-[34px] sm:h-[38px]' : 'h-[17px] sm:h-[19px]'} w-full`}>
                       <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className={`object-contain transition-all duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-30 group-hover:blur-[2px]'}`} quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
-                    <span className={`text-sm font-bold italic leading-none absolute inset-0 flex items-center justify-center ${isSelected ? 'text-[#1e3a5f] opacity-100' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
+                    <span className={`text-2xl font-bold leading-none absolute inset-0 flex items-center justify-center ${isSelected ? 'text-[#1e3a5f] opacity-100' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
                   </button>
                 )
               })}

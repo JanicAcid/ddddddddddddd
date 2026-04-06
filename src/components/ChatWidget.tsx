@@ -13,6 +13,7 @@ import {
   Paperclip,
   FileText,
   Image as ImageIcon,
+  HelpCircle,
 } from 'lucide-react'
 
 interface ChatMessage {
@@ -98,13 +99,15 @@ export function ChatWidget() {
     }
   }, [])
 
-  // Block body scroll when chat is open on mobile
+  // Block body scroll when chat is open on mobile + notify FAQ
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      window.dispatchEvent(new Event('chat-opened'))
     } else {
       document.body.style.overflow = ''
       window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+      window.dispatchEvent(new Event('chat-closed'))
     }
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
@@ -229,8 +232,8 @@ export function ChatWidget() {
       setMessages([
         {
           type: 'text',
-          text: 'Здравствуйте! Чем могу помочь? Напишите ваш вопрос, и наш специалист оперативно ответит.',
-          from: 'Теллур-Интех',
+          text: 'Здравствуйте! Что Вам подсказать?\n\nЭто реальный чат с реальными людьми — напишите, и Татьяна ответит Вам. Иногда ответ может занять более 3 минут, пожалуйста, подождите.',
+          from: 'Татьяна',
           timestamp: Date.now(),
           isMe: false,
         },
@@ -557,7 +560,7 @@ export function ChatWidget() {
             </div>
             <div>
               <h3 className="text-white font-semibold text-sm leading-tight">
-                Теллур-Интех
+                Татьяна
               </h3>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div className="w-2 h-2 rounded-full bg-green-400" />
@@ -565,13 +568,23 @@ export function ChatWidget() {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center transition-colors"
-            aria-label="Закрыть чат"
-          >
-            <X className="w-5 h-5 sm:w-4 sm:h-4 text-white" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setIsOpen(false); window.dispatchEvent(new CustomEvent('scroll-to-faq', { detail: { id: 'faq-1' } })) }}
+              className="w-8 h-8 sm:w-8 sm:h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center transition-colors"
+              aria-label="Частые вопросы"
+              title="Частые вопросы"
+            >
+              <HelpCircle className="w-4 h-4 text-white" />
+            </button>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center transition-colors"
+              aria-label="Закрыть чат"
+            >
+              <X className="w-5 h-5 sm:w-4 sm:h-4 text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Messages Area */}

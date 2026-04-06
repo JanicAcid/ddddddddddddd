@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { HelpCircle, X, ChevronRight } from 'lucide-react'
 
 const FAQ_ITEMS = [
@@ -16,15 +16,32 @@ const FAQ_ITEMS = [
 
 export function FaqWidget() {
   const [isOpen, setIsOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
+
+  // Слушаем открытие/закрытие чата
+  useEffect(() => {
+    const checkChat = () => {
+      const chatEl = document.querySelector('[data-chat-window]')
+      setChatOpen(!!chatEl)
+    }
+    // Используем CustomEvent из чата
+    const openHandler = () => setChatOpen(true)
+    const closeHandler = () => setChatOpen(false)
+    window.addEventListener('chat-opened', openHandler)
+    window.addEventListener('chat-closed', closeHandler)
+    return () => {
+      window.removeEventListener('chat-opened', openHandler)
+      window.removeEventListener('chat-closed', closeHandler)
+    }
+  }, [])
 
   const handleFaqClick = (id: string) => {
     setIsOpen(false)
-    // Раскрываем SEO-блок и скроллим к нужному FAQ
     window.dispatchEvent(new CustomEvent('scroll-to-faq', { detail: { id } }))
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
+    <div className={`fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3 transition-opacity duration-300 ${chatOpen ? 'opacity-0 pointer-events-none' : ''}`}>
       {/* FAQ панель */}
       <div
         className={`relative flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-in-out ${
@@ -34,7 +51,6 @@ export function FaqWidget() {
         }`}
         style={{ boxShadow: isOpen ? '0 25px 60px -12px rgba(0, 0, 0, 0.25)' : undefined }}
       >
-        {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ backgroundColor: '#1e3a5f' }}
@@ -44,22 +60,14 @@ export function FaqWidget() {
               <HelpCircle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-white font-semibold text-sm leading-tight">
-                Частые вопросы
-              </h3>
+              <h3 className="text-white font-semibold text-sm leading-tight">Частые вопросы</h3>
               <p className="text-white/60 text-xs mt-0.5">О маркировке товаров</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
-            aria-label="Закрыть FAQ"
-          >
+          <button onClick={() => setIsOpen(false)} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Закрыть FAQ">
             <X className="w-4 h-4 text-white" />
           </button>
         </div>
-
-        {/* Список вопросов */}
         <div className="flex-1 overflow-y-auto p-2">
           {FAQ_ITEMS.map((item) => (
             <button
@@ -68,9 +76,7 @@ export function FaqWidget() {
               className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-[#1e3a5f]/[0.04] transition-colors text-left group"
             >
               <ChevronRight className="w-4 h-4 text-[#e8a817] shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              <span className="text-sm text-slate-700 group-hover:text-[#1e3a5f] font-medium leading-snug transition-colors">
-                {item.question}
-              </span>
+              <span className="text-sm text-slate-700 group-hover:text-[#1e3a5f] font-medium leading-snug transition-colors">{item.question}</span>
             </button>
           ))}
         </div>
@@ -83,11 +89,7 @@ export function FaqWidget() {
         style={{ backgroundColor: '#e8a817' }}
         aria-label={isOpen ? 'Закрыть FAQ' : 'Открыть FAQ'}
       >
-        {isOpen ? (
-          <X className="w-6 h-6 text-white" />
-        ) : (
-          <HelpCircle className="w-6 h-6 text-white" />
-        )}
+        {isOpen ? <X className="w-6 h-6 text-white" /> : <HelpCircle className="w-6 h-6 text-white" />}
       </button>
     </div>
   )

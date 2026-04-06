@@ -24,78 +24,85 @@ export function generateOrderHtml(params: GenerateOrderHtmlParams): string {
 
   // Generate engineer checklist
   const checklist: string[] = []
-  if (params.kkmCondition === 'new') {
-    checklist.push('Зарегистрировать ККТ в ФНС')
-    checklist.push('Подключить ОФД')
-    checklist.push('Установить ФН')
-  }
-  if (params.step2Selections.includes('fns_reregistration') || params.kkmCondition === 'old') {
-    checklist.push('Перерегистрация в ФНС с признаками маркировки/подакцизные товары')
-    checklist.push('Сменить формат ФФД на 1.2')
-  }
-  if (params.step2Selections.includes('marking_setup')) {
-    checklist.push('Настроить ЭДО')
-    checklist.push('Настроить Честный ЗНАК')
-    checklist.push('Настроить ТС ПИоТ')
-    checklist.push('Пробить тестовый маркированный чек')
-    if (params.kkmType === 'evotor') {
-      checklist.push('Установить приложение «Маркировка» на Эвотор')
-      checklist.push('Настроить личный кабинет Эвотор')
-      if (params.clientData.sellsExcise) {
-        checklist.push('Добавить признак подакцизных товаров')
-        checklist.push('Установить УТМ+ на Эвотор')
-      }
-    }
-    // Add excise goods checklist items for any brand
-    if (params.clientData.sellsExcise) {
-      if (params.kkmType !== 'evotor') {
-        checklist.push('Добавить признак подакцизных товаров')
-      }
-      checklist.push('Настроить УТМ (ЕГАИС) для подакцизных товаров')
-    }
-    if (params.kkmType === 'atol') {
-      checklist.push('Проверить/оформить тариф Сигма (sigma.ru/tarify/)')
-    }
-    if (params.sigmaHelpChecked) {
-      checklist.push('Восстановить доступ к кабинету Сигма')
-      checklist.push('Оформить тариф Сигма')
-    }
-  }
-  if (params.step2Selections.includes('partial_marketing_setup')) {
-    checklist.push('Проверить все подключения (ЭДО, Честный ЗНАК, ТС ПИоТ)')
-    checklist.push('Настроить недостающие модули маркировки')
-  }
-  if (params.unsureFnsRegistration) {
-    checklist.push('Проверить регистрацию ККТ в ФНС — признаки маркировки и ФФД 1.2')
-  }
-  if (params.scannerChecked) {
-    checklist.push('Подключить 2D-сканер')
-    checklist.push('Проверить чтение кодов Data Matrix')
-  }
-  if (params.fnChecked) {
-    checklist.push('Установить ФН')
-    checklist.push('Проверить активацию ФН')
-  }
-  if (params.productCardCount > 0) {
-    checklist.push(`Создать карточки товаров (${params.productCardCount} шт.)`)
-  }
-  if (params.step3Selections.includes('ecp_renewal')) {
-    checklist.push('Продлить ЭЦП на токене клиента')
-  }
-  if (params.step3Selections.includes('training')) {
-    checklist.push('Провести обучение работе с маркировкой')
-  }
-  if (params.evotorRestore) {
-    checklist.push('Восстановить доступ к ЛК Эвотор')
-  }
+
   if (params.isConsultation) {
-    checklist.push('⚠️ ЗАЯВКА НА КОНСУЛЬТАЦИЮ — уточнить у клиента модель кассы и проблему')
-    if (params.clientData.kkmModel) {
-      checklist.push(`Модель кассы клиента: ${params.clientData.kkmModel}`)
+    // Консультация — только контактные данные и описание проблемы
+    checklist.push('📋 ЗАЯВКА НА КОНСУЛЬТАЦИЮ — перезвонить клиенту')
+    if (params.clientData.phone) {
+      checklist.push(`Телефон клиента: ${params.clientData.phone}`)
     }
-  }
-  // ЭЦП — обязательно, уточнить у клиента (не показываем для консультации — не спрашивали)
-  if (!params.isConsultation) {
+    if (params.clientData.kkmModel) {
+      checklist.push(`Модель кассы: ${params.clientData.kkmModel}`)
+    }
+    if (params.clientData.comment) {
+      checklist.push(`Комментарий клиента: ${params.clientData.comment}`)
+    }
+  } else {
+    // Обычный заказ — полный чек-лист
+    if (params.kkmCondition === 'new') {
+      checklist.push('Зарегистрировать ККТ в ФНС')
+      checklist.push('Подключить ОФД')
+      checklist.push('Установить ФН')
+    }
+    if (params.step2Selections.includes('fns_reregistration') || params.kkmCondition === 'old') {
+      checklist.push('Перерегистрация в ФНС с признаками маркировки/подакцизные товары')
+      checklist.push('Сменить формат ФФД на 1.2')
+    }
+    if (params.step2Selections.includes('marking_setup')) {
+      checklist.push('Настроить ЭДО')
+      checklist.push('Настроить Честный ЗНАК')
+      checklist.push('Настроить ТС ПИоТ')
+      checklist.push('Пробить тестовый маркированный чек')
+      if (params.kkmType === 'evotor') {
+        checklist.push('Установить приложение «Маркировка» на Эвотор')
+        checklist.push('Настроить личный кабинет Эвотор')
+        if (params.clientData.sellsExcise) {
+          checklist.push('Добавить признак подакцизных товаров')
+          checklist.push('Установить УТМ+ на Эвотор')
+        }
+      }
+      if (params.clientData.sellsExcise) {
+        if (params.kkmType !== 'evotor') {
+          checklist.push('Добавить признак подакцизных товаров')
+        }
+        checklist.push('Настроить УТМ (ЕГАИС) для подакцизных товаров')
+      }
+      if (params.kkmType === 'atol') {
+        checklist.push('Проверить/оформить тариф Сигма (sigma.ru/tarify/)')
+      }
+      if (params.sigmaHelpChecked) {
+        checklist.push('Восстановить доступ к кабинету Сигма')
+        checklist.push('Оформить тариф Сигма')
+      }
+    }
+    if (params.step2Selections.includes('partial_marketing_setup')) {
+      checklist.push('Проверить все подключения (ЭДО, Честный ЗНАК, ТС ПИоТ)')
+      checklist.push('Настроить недостающие модули маркировки')
+    }
+    if (params.unsureFnsRegistration) {
+      checklist.push('Проверить регистрацию ККТ в ФНС — признаки маркировки и ФФД 1.2')
+    }
+    if (params.scannerChecked) {
+      checklist.push('Подключить 2D-сканер')
+      checklist.push('Проверить чтение кодов Data Matrix')
+    }
+    if (params.fnChecked) {
+      checklist.push('Установить ФН')
+      checklist.push('Проверить активацию ФН')
+    }
+    if (params.productCardCount > 0) {
+      checklist.push(`Создать карточки товаров (${params.productCardCount} шт.)`)
+    }
+    if (params.step3Selections.includes('ecp_renewal')) {
+      checklist.push('Продлить ЭЦП на токене клиента')
+    }
+    if (params.step3Selections.includes('training')) {
+      checklist.push('Провести обучение работе с маркировкой')
+    }
+    if (params.evotorRestore) {
+      checklist.push('Восстановить доступ к ЛК Эвотор')
+    }
+    // ЭЦП — обязательно, уточнить у клиента
     if (!params.clientData.hasEcp) {
       checklist.push('⚠️ КЛИЕНТ БЕЗ ЭЦП — проконсультировать и помочь оформить (обязательное требование для маркировки)')
     } else {

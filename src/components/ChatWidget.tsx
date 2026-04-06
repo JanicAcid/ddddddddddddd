@@ -225,7 +225,7 @@ export function ChatWidget() {
       setMessages([
         {
           type: 'text',
-          text: 'Здравствуйте! Чем могу помочь? Напишите ваш вопрос, и наш специалист ответит в Telegram.',
+          text: 'Здравствуйте! Чем могу помочь? Напишите ваш вопрос, и наш специалист оперативно ответит.',
           from: 'Теллур-Интех',
           timestamp: Date.now(),
           isMe: false,

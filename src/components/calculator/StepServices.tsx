@@ -56,6 +56,15 @@ export function StepServices({
   return (
     <div className="max-w-2xl mx-auto space-y-2">
 
+      {/* Баннер: обязательные услуги для новой и б/у кассы */}
+      {(kkmCondition === 'new' || kkmCondition === 'used') && (
+        <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/15 rounded-xl">
+          <p className="text-xs sm:text-sm text-[#1e3a5f] font-medium">
+            Для {kkmCondition === 'new' ? 'новой' : 'б/у'} кассы обязательны: <strong>регистрация ККТ в ФНС</strong> и <strong>подключение ОФД</strong> — учтены ниже в расчёте
+          </p>
+        </div>
+      )}
+
       {/* Подакцизные товары — выше всех */}
       {(step2Selections.includes('fns_reregistration') || kkmCondition === 'new' || isPartialMode) && (
         <Card className="border-orange-200 bg-orange-50/50">
@@ -133,7 +142,7 @@ export function StepServices({
           ? 'Регистрация ККТ в ФНС'
           : service.name
         const desc = service.id === 'fns_reregistration' && (kkmCondition === 'new' || kkmCondition === 'used')
-          ? 'Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение — обязательно для новой кассы'
+          ? `Подача заявления о регистрации кассы на сайте ФНС, подписание ЭЦП, сопровождение — обязательно для ${kkmCondition === 'new' ? 'новой' : 'б/у'} кассы`
           : service.id === 'marking_setup' ? markingDesc : service.description
         const selected = step2Selections.includes(service.id)
         const ServiceIcon = service.id === 'fns_reregistration' ? FileSignature : service.id === 'marking_setup' ? Settings2 : Wrench
@@ -228,7 +237,7 @@ export function StepServices({
                     </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Обязательное подключение для работы кассы.{ofdLocked && ' Для новой кассы включено автоматически.'}
+                    Обязательное подключение для работы кассы.{ofdLocked && ` Для ${kkmCondition === 'new' ? 'новой' : 'б/у'} кассы включено автоматически.`}
                   </p>
                   {ofdEffective && (
                     <div className="mt-1.5 space-y-1.5">

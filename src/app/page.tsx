@@ -95,7 +95,7 @@ export default function TellurServiceCalculator() {
   const showSigmaSubs = effectiveKkm === 'sigma'
 
   // Новая касса: ОФД обязательно, б/у и старые: по умолчанию включено, можно снять
-  const ofdLocked = kkmCondition === 'new'
+  const ofdLocked = kkmCondition === 'new' || kkmCondition === 'used'
   const ofdEffective = ofdLocked || ofdChecked
 
   // Валидация

@@ -156,6 +156,7 @@ export function StepBrands({
               {visibleKkmTypes.map(([key, kkm]) => {
                 const brand = KKM_BRANDS[key] || { color: '#64748b', bg: '#64748b' }
                 const isSelected = kkmType === key
+                const isLargeLogo = key === 'shuttle' || key === 'mercury'
                 return (
                   <button
                     key={key}
@@ -164,8 +165,8 @@ export function StepBrands({
                     className={`relative flex flex-col items-center justify-start gap-1 rounded-xl border-2 px-1 pt-[11px] pb-[7px] sm:pt-3 sm:pb-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
-                    <span className={`text-xs sm:text-sm font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
-                    <div className="relative h-[17px] sm:h-[19px] w-full">
+                    <span className={`${isLargeLogo ? 'text-[9px] sm:text-[10px]' : 'text-xs sm:text-sm'} font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
+                    <div className={`relative ${isLargeLogo ? 'h-[34px] sm:h-[38px]' : 'h-[17px] sm:h-[19px]'} w-full`}>
                       <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
                   </button>

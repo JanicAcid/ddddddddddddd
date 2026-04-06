@@ -14,12 +14,29 @@ export function SeoContent() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const handler = () => {
+    const handlerContacts = () => {
       if (!open) setOpen(true)
       setTimeout(() => document.getElementById('contacts-section')?.scrollIntoView({ behavior: 'smooth' }), 600)
     }
-    window.addEventListener('scroll-to-contacts', handler)
-    return () => window.removeEventListener('scroll-to-contacts', handler)
+    const handlerFaq = (e: Event) => {
+      const { id } = (e as CustomEvent).detail || {}
+      if (!open) setOpen(true)
+      setTimeout(() => {
+        const el = document.getElementById(id || 'faq-1')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        // Подсветка
+        if (el) {
+          el.classList.add('ring-2', 'ring-[#e8a817]/50', 'rounded-lg')
+          setTimeout(() => el.classList.remove('ring-2', 'ring-[#e8a817]/50', 'rounded-lg'), 3000)
+        }
+      }, 600)
+    }
+    window.addEventListener('scroll-to-contacts', handlerContacts)
+    window.addEventListener('scroll-to-faq', handlerFaq)
+    return () => {
+      window.removeEventListener('scroll-to-contacts', handlerContacts)
+      window.removeEventListener('scroll-to-faq', handlerFaq)
+    }
   }, [open])
 
   return (

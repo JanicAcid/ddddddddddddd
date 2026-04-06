@@ -162,13 +162,13 @@ export function StepBrands({
                     key={key}
                     type="button"
                     onClick={() => setKkmType(key as KkmType)}
-                    className={`relative flex flex-col items-center justify-start gap-1 rounded-xl border-2 px-1 pt-[11px] pb-[7px] sm:pt-3 sm:pb-2 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all duration-200 cursor-pointer group overflow-hidden ${isLargeLogo ? 'px-1 pt-3 pb-2 sm:pt-4 sm:pb-3' : 'px-1 pt-[11px] pb-[7px] sm:pt-3 sm:pb-2'} ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/90'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
-                    <span className={`${isLargeLogo ? 'text-[9px] sm:text-[10px]' : 'text-xs sm:text-sm'} font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
                     <div className={`relative ${isLargeLogo ? 'h-[34px] sm:h-[38px]' : 'h-[17px] sm:h-[19px]'} w-full`}>
-                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
+                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className={`object-contain transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-60'}`} quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
+                    <span className={`${isLargeLogo ? 'text-[9px] sm:text-[10px]' : 'text-xs sm:text-sm'} font-bold leading-none absolute bottom-1.5 left-0 right-0 text-center ${isSelected ? 'text-[#1e3a5f] opacity-100' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
                   </button>
                 )
               })}

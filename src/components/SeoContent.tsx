@@ -62,7 +62,7 @@ export function SeoContent() {
             <div className="flex justify-center mt-4 mb-2">
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 text-white text-sm font-medium transition-colors"
               >
                 <ArrowUp className="w-4 h-4" />

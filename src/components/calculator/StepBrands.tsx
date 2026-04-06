@@ -165,7 +165,7 @@ export function StepBrands({
                     <div className={`relative ${isLargeLogo ? 'h-[34px] sm:h-[38px]' : 'h-[17px] sm:h-[19px]'} w-full`}>
                       <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className={`object-contain transition-all duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-30 group-hover:blur-[2px]'}`} quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
-                    <span className={`text-2xl font-bold leading-none ${isSelected ? 'text-[#1e3a5f] opacity-100 mt-1' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
+                    <span className={`text-2xl font-bold leading-none whitespace-nowrap ${isSelected ? 'text-[#1e3a5f] opacity-100 mt-1' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
                   </button>
                 )
               })}

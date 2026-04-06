@@ -346,7 +346,10 @@ export function StepBrands({
                 <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
                   <p className="font-medium text-[#1e3a5f] text-sm">{currentKkmInfo.specialNote.title}</p>
                   <p className="text-sm text-slate-600">{currentKkmInfo.specialNote.content}</p>
-                  {currentKkmInfo.specialNote.apps.map((app, idx) => {
+                  {currentKkmInfo.specialNote.apps.filter((app) => {
+                    if (alreadyMarking && (app.name.includes('\u041c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0430') || app.name.includes('\u0442\u0430\u0431\u0430\u043a\u0430'))) return false
+                    return true
+                  }).map((app, idx) => {
                     const appKey = app.name.includes('\u041c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0430') ? 'marking' : app.name.includes('\u0423\u0422\u041c') ? 'utm' : app.name.includes('\u0442\u0430\u0431\u0430\u043a\u0430') ? 'tobacco' : `opt_${idx}`
                     const isSelected = evotorAppsSelected.has(appKey)
                     const canToggle = !evotorHasSubscription

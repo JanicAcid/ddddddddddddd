@@ -58,9 +58,9 @@ export function StepServices({
 
       {/* Баннер: обязательные услуги для новой и б/у кассы */}
       {(kkmCondition === 'new' || kkmCondition === 'used') && (
-        <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/15 rounded-xl">
-          <p className="text-xs sm:text-sm text-[#1e3a5f] font-medium">
-            Для {kkmCondition === 'new' ? 'новой' : 'б/у'} кассы обязательны: <strong>регистрация ККТ в ФНС</strong> и <strong>подключение ОФД</strong> — учтены ниже в расчёте
+        <div className="p-2.5 bg-[#e8a817]/10 border border-[#e8a817]/40 rounded-xl">
+          <p className="text-xs sm:text-sm text-[#1e3a5f] font-semibold">
+            Для {kkmCondition === 'new' ? 'новой' : 'б/у'} кассы обязательны: <strong>регистрация ККТ в ФНС</strong> и <strong>подключение ОФД</strong> — учтены ниже в&nbsp;расчёте
           </p>
         </div>
       )}

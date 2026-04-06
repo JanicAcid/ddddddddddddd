@@ -125,7 +125,7 @@ export function StepBrands({
 
             {/* Галочка «Я уже работаю с маркированным товаром» */}
             {kkmCondition === 'old' && (
-              <div className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-colors ${alreadyMarking ? 'bg-green-50 border-green-200' : 'bg-[#1e3a5f]/5 border-[#1e3a5f]/20'}`}>
+              <div className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-colors ${alreadyMarking ? 'bg-green-50 border-green-200' : 'bg-[#1e3a5f]/5 border-[#1e3a5f]/20'}`}>
                 <Checkbox id="already_marking"
                   checked={alreadyMarking}
                   onCheckedChange={(c) => {
@@ -135,13 +135,10 @@ export function StepBrands({
                       setEvotorHasSubscription(false)
                     }
                   }}
-                  className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <Label htmlFor="already_marking" className="cursor-pointer font-medium text-sm leading-snug text-[#1e3a5f]">
-                    Я уже работаю с маркированным товаром
-                  </Label>
-                  <p className="text-xs text-slate-500 mt-0.5">Отметьте, если касса уже настроена для маркировки и Вам нужно подключить дополнительные модули, добавить алкоголь или устранить проблемы.</p>
-                </div>
+                  className="w-6 h-6 shrink-0" />
+                <Label htmlFor="already_marking" className="cursor-pointer text-sm leading-snug text-[#1e3a5f]">
+                  Уже работаю с маркировкой
+                </Label>
               </div>
             )}
 

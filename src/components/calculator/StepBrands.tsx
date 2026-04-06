@@ -203,7 +203,7 @@ export function StepBrands({
                 <div className="flex items-center gap-2">
                   <ScanLine className="w-8 h-8 text-[#e8a817] shrink-0" />
                   <p className="font-semibold text-[#1e3a5f] text-sm">Чем планируете торговать?</p>
-                  <a href="https://chestznaki.gov.ru" target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0" title="Система Честный ЗНАК">
+                  <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0" title="Система Честный ЗНАК">
                     <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-7 h-7 sm:w-8 sm:h-8" />
                   </a>
                 </div>

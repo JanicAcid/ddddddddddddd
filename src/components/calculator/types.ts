@@ -87,6 +87,7 @@ export interface GenerateOrderHtmlParams {
   unsureFnsRegistration: boolean
   includeChecklist?: boolean
   isCorrection?: boolean
+  isConsultation?: boolean
   correctionTime?: string | null
   orderNum?: string
 }

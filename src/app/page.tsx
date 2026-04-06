@@ -318,7 +318,8 @@ export default function TellurServiceCalculator() {
     const printContent = generateOrderHtml({
       effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
       step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-      includeChecklist: false
+      includeChecklist: false,
+      isConsultation
     })
     const printWithScript = printContent.replace('</body>', '<script>window.print();</script></body>')
     const w = window.open('', '_blank')
@@ -327,7 +328,11 @@ export default function TellurServiceCalculator() {
 
   // ---- Готово ----
   const handleDone = () => {
-    if (orderNum) {
+    // Консультация — всегда новая заявка, не корректировка
+    if (isConsultation) {
+      setOrderNum(Date.now().toString().slice(-6))
+      setIsCorrection(false)
+    } else if (orderNum) {
       setIsCorrection(true)
     } else {
       setOrderNum(Date.now().toString().slice(-6))

@@ -51,7 +51,7 @@ export function StepSummary({ totalCalc, effectiveKkm, effectiveKkmInfo, kkmType
           <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-[#e8a817] shrink-0" />Важно знать</h4>
           <div className="space-y-2 text-xs sm:text-sm text-slate-600">
             <p>С <strong>01.07.2026</strong> продажа маркированных товаров без ТС ПИоТ запрещена (<strong>ст. 15.12 КоАП РФ</strong>)</p>
-            <p>Лицензия ТС ПИоТ — на сайте <strong>ao-esp.ru</strong></p>
+            <p>Лицензия ТС ПИоТ — на сайте <a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold text-[#1e3a5f]">ao-esp.ru</a></p>
           </div>
         </CardContent>
       </Card>

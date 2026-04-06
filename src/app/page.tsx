@@ -462,7 +462,7 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {/* ВЫБОР КАССЫ */}
             {/* ============================================================ */}
-            {currentStep === 1 && !isDone && (
+            {currentStep === 1 && !isDone && !isConsultation && (
               <StepBrands
                 kkmType={kkmType}
                 kkmCondition={kkmCondition}
@@ -515,7 +515,7 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {/* УСЛУГИ */}
             {/* ============================================================ */}
-            {currentStep === 2 && !isDone && (
+            {currentStep === 2 && !isDone && !isConsultation && (
               <StepServices
                 kkmCondition={kkmCondition}
                 kkmType={kkmType}
@@ -547,7 +547,7 @@ export default function TellurServiceCalculator() {
             {/* ============================================================ */}
             {/* ДОПОЛНИТЕЛЬНО */}
             {/* ============================================================ */}
-            {currentStep === 3 && !isDone && (
+            {currentStep === 3 && !isDone && !isConsultation && (
               <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
                 <StepExtra
                   kkmType={kkmType}
@@ -596,7 +596,7 @@ export default function TellurServiceCalculator() {
             {/* КОНСУЛЬТАЦИЯ — форма заявки */}
             {/* ============================================================ */}
             {isConsultation && !isDone && (
-              <div className="max-w-lg mx-auto space-y-3">
+              <div className="max-w-2xl mx-auto space-y-3">
                 <Card className="border-[#1e3a5f]/20 overflow-hidden">
                   <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] px-4 sm:px-5 py-4">
                     <div className="flex items-start gap-3">

@@ -4,6 +4,7 @@ import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
 import { YandexMetrika } from "@/components/YandexMetrika";
 import { ChatWidget } from "@/components/ChatWidget";
+import { FaqWidget } from "@/components/FaqWidget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -96,6 +97,7 @@ export default function RootLayout({
           </div>
         </noscript>
         <ChatWidget />
+        <FaqWidget />
       </body>
     </html>
   );

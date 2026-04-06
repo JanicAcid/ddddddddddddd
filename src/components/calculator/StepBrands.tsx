@@ -57,6 +57,7 @@ interface StepBrandsProps {
   handleEvotorAppToggle: (appId: string) => void
   hintProps: HintButtonProps
   goToStep: (step: 1 | 2 | 3 | 4) => void
+  startConsultation: () => void
 }
 
 export function StepBrands({
@@ -70,7 +71,7 @@ export function StepBrands({
   setEvotorTradeType, setEvotorHasSubscription, setEvotorAppsSelected,
   setScannerChecked, setFirmwareChecked, setLicenseChecked,
   handleEvotorTradeType, handleEvotorAppToggle,
-  hintProps, goToStep
+  hintProps, goToStep, startConsultation
 }: StepBrandsProps) {
   return (
     <div className="relative">
@@ -174,7 +175,7 @@ export function StepBrands({
             {/* Кнопка «Другой производитель» */}
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event('open-chat'))}
+              onClick={startConsultation}
               className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#1e3a5f] bg-transparent hover:bg-[#1e3a5f]/[0.02] text-sm font-medium text-slate-500 hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer group"
             >
               <Info className="w-4 h-4 shrink-0 group-hover:text-[#e8a817]" />

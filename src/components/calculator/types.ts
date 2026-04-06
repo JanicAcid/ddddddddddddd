@@ -66,6 +66,7 @@ export interface DoneScreenProps {
   unsureFnsRegistration: boolean
   orderNum: string | null
   isCorrection: boolean
+  isConsultation?: boolean
 }
 
 // generateOrderHtml params

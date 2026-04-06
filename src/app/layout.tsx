@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { YandexMetrika } from "@/components/YandexMetrika";
 import { ChatWidget } from "@/components/ChatWidget";
 import { FaqWidget } from "@/components/FaqWidget";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -99,6 +100,7 @@ export default function RootLayout({
             <p>Для расчёта стоимости включите JavaScript в настройках браузера.</p>
           </div>
         </noscript>
+        <ScrollToTopButton />
         <ChatWidget />
         <FaqWidget />
       </body>

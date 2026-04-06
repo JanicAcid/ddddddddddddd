@@ -528,11 +528,11 @@ export function ChatWidget() {
 
       {/* Chat Window */}
       <div
-        className={`relative flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`flex flex-col bg-white overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen
-            ? 'w-[380px] h-[500px] opacity-100 translate-y-0 scale-100'
+            ? 'fixed inset-0 z-[60] opacity-100 translate-y-0 scale-100 sm:relative sm:inset-auto sm:z-auto sm:w-[380px] sm:h-[500px] sm:rounded-2xl'
             : 'w-0 h-0 opacity-0 translate-y-4 scale-95 pointer-events-none'
-        }`}
+        } ${isOpen ? '' : 'sm:rounded-2xl'}`}
         style={{ boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.25)' }}
       >
         {/* Header */}
@@ -556,10 +556,10 @@ export function ChatWidget() {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+            className="w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center transition-colors"
             aria-label="Закрыть чат"
           >
-            <X className="w-4 h-4 text-white" />
+            <X className="w-5 h-5 sm:w-4 sm:h-4 text-white" />
           </button>
         </div>
 

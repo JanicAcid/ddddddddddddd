@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { ShieldCheck, KeyRound, Info, Check, Phone } from 'lucide-react'
+import { Info, Check, Phone } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
@@ -100,11 +100,10 @@ export default function TellurServiceCalculator() {
 
   // Валидация
   const contactValid = clientData.phone.trim() !== ''
-  const ecpChecked = clientData.hasEcp
   // Для ВСЕХ касс: нужно выбрать вид деятельности (кроме уже работающих с маркировкой)
   const needsActivityType = kkmCondition !== '' && !alreadyMarking
   const activityTypeReady = !needsActivityType || evotorTradeType !== 'none' || evotorAppsSelected.size > 0
-  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && ecpChecked && activityTypeReady
+  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && activityTypeReady
   const canGoStep3 = step2Selections.length > 0
 
   // --- Синхронизация торгового типа и приложений Эвотор ---
@@ -360,30 +359,6 @@ export default function TellurServiceCalculator() {
         <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
 
           <div className="mt-1 sm:mt-2">
-            {/* Уведомление об ЭЦП */}
-            {!ecpChecked && (
-              <div className="animate-fade-in-up p-2.5 sm:p-3 rounded-xl border border-amber-300 bg-amber-50">
-                <div className="flex items-start gap-2">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#1e3a5f]/10 flex items-center justify-center shrink-0">
-                    <KeyRound className="w-5 h-5 sm:w-5 sm:h-5 text-[#1e3a5f]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="ecp_check_top"
-                        checked={false}
-                        onCheckedChange={() => setClientData(prev => ({ ...prev, hasEcp: true }))}
-                        className="shrink-0"
-                      />
-                      <Label htmlFor="ecp_check_top" className="cursor-pointer text-base sm:text-lg font-medium text-amber-800">
-                        У меня есть ЭЦП
-                      </Label>
-                    </div>
-                    <p className="text-xs sm:text-sm text-amber-700 mt-0.5 ml-[22px]">ЭЦП — это электронная подпись, хранящаяся на специальной флэшке (Рутокен, JaCarta). Без неё нельзя войти в ФНС, Честный ЗНАК и подписывать документы.</p>
-                  </div>
-                </div>
-              </div>
-            )}
 
 
             {/* STEP INDICATOR */}
@@ -435,7 +410,6 @@ export default function TellurServiceCalculator() {
                 evotorTradeType={evotorTradeType}
                 evotorAppsSelected={evotorAppsSelected}
                 evotorHasSubscription={evotorHasSubscription}
-                ecpChecked={ecpChecked}
                 conditionFlash={conditionFlash}
                 conditionRef={conditionRef}
                 currentKkmInfo={currentKkmInfo}
@@ -587,15 +561,6 @@ export default function TellurServiceCalculator() {
           <SeoContent />
         </div>
 
-        {/* Напоминалка об ЭЦП — после подтверждения */}
-        {ecpChecked && !isDone && (
-          <div className="border-t border-[#1e3a5f]/10 bg-[#f0fdf4]">
-            <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
-              <span className="text-xs text-green-700">ЭЦП подтверждена — настройка возможна при наличии ЭЦП или доступе к ПК с установленной подписью</span>
-            </div>
-          </div>
-        )}
 
         <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-2 pb-2">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">

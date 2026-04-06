@@ -26,7 +26,6 @@ interface StepBrandsProps {
   evotorTradeType: 'none' | 'marking' | 'alcohol' | 'both'
   evotorAppsSelected: Set<string>
   evotorHasSubscription: boolean
-  ecpChecked: boolean
   conditionFlash: boolean
   conditionRef: React.RefObject<HTMLDivElement | null>
   currentKkmInfo: { name: string; shortName: string; description: string; features: readonly string[]; hidden?: boolean; requiresLkCredentials?: boolean; specialNote?: any }
@@ -63,7 +62,7 @@ interface StepBrandsProps {
 export function StepBrands({
   kkmType, kkmCondition, sigmaSelected,
   evotorTradeType, evotorAppsSelected, evotorHasSubscription,
-  ecpChecked, conditionFlash, conditionRef, currentKkmInfo, visibleKkmTypes,
+  conditionFlash, conditionRef, currentKkmInfo, visibleKkmTypes,
   effectiveKkm, showSigmaSubs, sigmaSubsLocked, needsFirmwareOrLicense, fwPrices,
   canGoStep2, sigmaHelpChecked, firmwareChecked, licenseChecked, effectiveKkmInfo,
   alreadyMarking, setAlreadyMarking,
@@ -74,7 +73,7 @@ export function StepBrands({
   hintProps, goToStep
 }: StepBrandsProps) {
   return (
-    <div className={ecpChecked ? '' : 'opacity-50 pointer-events-none relative'}>
+    <div className="relative">
       <div className="max-w-2xl mx-auto space-y-4">
         <Card>
           <CardContent className="space-y-4">

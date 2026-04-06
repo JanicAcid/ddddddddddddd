@@ -12,7 +12,6 @@ export interface OfdProvider {
   shortName: string
   periods: Record<OfdPeriod, { price: number; originalPrice: number }>
   partner?: boolean
-  lockedForNew?: boolean  // only show for non-new registers
 }
 
 export const OFD_PROVIDERS: OfdProvider[] = [
@@ -34,7 +33,6 @@ export const OFD_PROVIDERS: OfdProvider[] = [
       '15': { price: 4000, originalPrice: 4500 },
       '36': { price: 8500, originalPrice: 9500 }
     },
-    lockedForNew: true
   },
   {
     id: 'first_ofd',
@@ -43,8 +41,7 @@ export const OFD_PROVIDERS: OfdProvider[] = [
     periods: {
       '15': { price: 3100, originalPrice: 3600 },
       '36': { price: 6600, originalPrice: 7600 }
-    },
-    lockedForNew: true
+    }
   },
   {
     id: 'sbis_tensor',
@@ -53,7 +50,6 @@ export const OFD_PROVIDERS: OfdProvider[] = [
     periods: {
       '15': { price: 4000, originalPrice: 4500 },
       '36': { price: 9000, originalPrice: 10000 }
-    },
-    lockedForNew: true
+    }
   }
 ]

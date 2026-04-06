@@ -101,12 +101,10 @@ export default function TellurServiceCalculator() {
   // Валидация
   const contactValid = clientData.phone.trim() !== ''
   const ecpChecked = clientData.hasEcp
-  // Для Эвотор/Сигма (новый/бу): можно идти дальше если выбрано чем торгует ИЛИ выбрано хотя бы одно приложение/подписка
-  const smartTerminalNeedsTrade = (kkmType === 'evotor' || effectiveKkm === 'sigma') && (kkmCondition === 'new' || kkmCondition === 'used')
-  const evotorTradeOrAppsReady = smartTerminalNeedsTrade
-    ? (evotorTradeType !== 'none' || evotorAppsSelected.size > 0)
-    : true
-  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && ecpChecked && evotorTradeOrAppsReady
+  // Для ВСЕХ касс: нужно выбрать вид деятельности (кроме уже работающих с маркировкой)
+  const needsActivityType = kkmCondition !== '' && !alreadyMarking
+  const activityTypeReady = !needsActivityType || evotorTradeType !== 'none' || evotorAppsSelected.size > 0
+  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && ecpChecked && activityTypeReady
   const canGoStep3 = step2Selections.length > 0
 
   // --- Синхронизация торгового типа и приложений Эвотор ---
@@ -115,8 +113,13 @@ export default function TellurServiceCalculator() {
     setEvotorAppsSelected(prev => {
       const next = new Set(prev)
       // Добавляем обязательные приложения по типу торговли
-      if (tradeType === 'marking' || tradeType === 'both') next.add('marking')
-      else next.delete('marking')
+      if (tradeType === 'marking' || tradeType === 'both') {
+        next.add('marking')
+        next.add('tobacco')
+      } else {
+        next.delete('marking')
+        next.delete('tobacco')
+      }
       if (tradeType === 'alcohol' || tradeType === 'both') next.add('utm')
       else next.delete('utm')
       // Опциональные приложения оставляем как были
@@ -130,7 +133,7 @@ export default function TellurServiceCalculator() {
       if (next.has(appId)) next.delete(appId)
       else next.add(appId)
       // Обратная синхронизация типа торговли по выбранным приложениям
-      const hasMarking = next.has('marking')
+      const hasMarking = next.has('marking') || next.has('tobacco')
       const hasUtm = next.has('utm')
       if (hasMarking && hasUtm) setEvotorTradeType('both')
       else if (hasMarking) setEvotorTradeType('marking')
@@ -143,59 +146,66 @@ export default function TellurServiceCalculator() {
   // Автоматическая постановка галочек в step2 на основе состояния
   useEffect(() => {
     const isSmartTerminal = kkmType === 'evotor' || effectiveKkm === 'sigma'
-    const isPartialMode = alreadyMarking || kkmCondition === 'old'
+    const isPartialMode = alreadyMarking  // только если галочка «уже работаю» нажата
+    const isRegistrationMode = kkmCondition === 'old' && !alreadyMarking  // текущая касса, но нужно подключить маркировку
 
     // Определяем наличие маркировки и алкоголя
     let hasMarking = false
     let hasAlcohol = false
     if (isSmartTerminal) {
-      hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking')
+      hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking') || evotorAppsSelected.has('tobacco')
       hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || evotorAppsSelected.has('utm')
-    }
-    // Для не-смарт терминалов (Атол, Меркурий и др.): sellsExcise — единственный показатель алкоголя
-    if (!isSmartTerminal) {
-      hasAlcohol = clientData.sellsExcise
+    } else {
+      // Для не-смарт терминалов: используем выбранный вид деятельности
+      hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both'
+      hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || clientData.sellsExcise
     }
 
-    // Авто-установка sellsExcise при выборе алкоголя на смарт-терминале
-    if (isSmartTerminal && hasAlcohol && !clientData.sellsExcise) {
+    // Авто-установка sellsExcise при выборе алкоголя
+    if (hasAlcohol && !clientData.sellsExcise) {
       setClientData(prev => ({ ...prev, sellsExcise: true }))
     }
 
     // Не-смарт терминал без маркировки/алкоголя — не ставим ничего автоматически
-    if (!isSmartTerminal && !hasMarking && !hasAlcohol && !isPartialMode) return
+    if (!isSmartTerminal && !hasMarking && !hasAlcohol && !isPartialMode && !isRegistrationMode) return
 
     setStep2Selections(prev => {
       const next = new Set(prev)
 
-      // ====== УЖЕ РАБОТАЕТ С МАРКИРОВКОЙ / СТАРАЯ КАССА ======
+      // ====== УЖЕ РАБОТАЕТ С МАРКИРОВКОЙ (галочка нажата) ======
       if (isPartialMode) {
         // Частичная настройка — клиент уже работает с маркировкой
         next.delete('marking_setup')
         if (!next.has('partial_marketing_setup')) next.add('partial_marketing_setup')
 
         if (hasAlcohol) {
-          // Добавление алкоголя → нужна перерегистрация
           if (!next.has('fns_reregistration')) next.add('fns_reregistration')
         } else {
-          // Только маркировка, без алкоголя → перерегистрация не нужна
           if (!unsureFnsRegistration) next.delete('fns_reregistration')
         }
         return [...next]
       }
 
+      // ====== ТЕКУЩАЯ КАССА: НУЖНО ПОДКЛЮЧИТЬ МАРКИРОВКУ ======
+      if (isRegistrationMode) {
+        next.delete('partial_marketing_setup')
+        if (!next.has('marking_setup')) next.add('marking_setup')
+        if (!next.has('fns_reregistration')) next.add('fns_reregistration')
+        return [...next]
+      }
+
       // ====== НОВАЯ / Б/У КАССА ======
-      // Убираем partial если ушли из режима "уже работает"
+      // Убираем partial если ушли из режима «уже работает»
       if (!isPartialMode) {
         next.delete('partial_marketing_setup')
       }
 
-      if (isSmartTerminal) {
+      // Для новой/б/у кассы: регистрация обязательна
+      if (kkmCondition === 'new' || kkmCondition === 'used') {
+        if (!next.has('fns_reregistration')) next.add('fns_reregistration')
+        // Полная маркировка — если выбран вид деятельности с маркировкой
         if (hasMarking) {
           if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
-        }
-        if (hasAlcohol && !next.has('fns_reregistration') && kkmCondition === 'old') {
-          next.add('fns_reregistration')
         }
       }
 
@@ -211,13 +221,13 @@ export default function TellurServiceCalculator() {
   const totalCalc = useMemo((): TotalCalc => {
     const items: { name: string; price: number }[] = []
 
-    // Услуга регистрации ККТ в ФНС для новых касс
-    if (kkmCondition === 'new') {
-      items.push({ name: 'Регистрация ККТ в ФНС', price: 1500 })
-    }
-
     step2Services.forEach(s => {
-      if (step2Selections.includes(s.id)) items.push({ name: s.name, price: s.price })
+      if (step2Selections.includes(s.id)) {
+        const displayName = s.id === 'fns_reregistration' && (kkmCondition === 'new' || kkmCondition === 'used')
+          ? 'Регистрация ККТ в ФНС'
+          : s.name
+        items.push({ name: displayName, price: s.price })
+      }
     })
 
     step3Services.forEach(s => {
@@ -436,7 +446,6 @@ export default function TellurServiceCalculator() {
                 needsFirmwareOrLicense={needsFirmwareOrLicense}
                 fwPrices={fwPrices}
                 canGoStep2={canGoStep2}
-                evotorTradeOrAppsReady={evotorTradeOrAppsReady}
                 sigmaHelpChecked={sigmaHelpChecked}
                 firmwareChecked={firmwareChecked}
                 licenseChecked={licenseChecked}

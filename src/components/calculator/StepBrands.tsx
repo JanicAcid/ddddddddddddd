@@ -107,7 +107,7 @@ export function StepBrands({
                   className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
                   <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                    <Handshake className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
+                    <Handshake className="w-[26px] h-[26px] sm:w-[30px] sm:h-[30px] text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                   <span className="text-[9px] text-slate-400 text-center leading-tight">Купил с рук</span>

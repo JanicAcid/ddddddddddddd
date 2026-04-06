@@ -165,7 +165,7 @@ export function StepBrands({
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
                     <span className={`text-xs sm:text-sm font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
-                    <div className="relative h-[68px] sm:h-[76px] w-full">
+                    <div className="relative h-[52px] sm:h-[58px] w-full">
                       <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
                   </button>

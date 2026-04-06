@@ -225,13 +225,6 @@ export function StepBrands({
                     <Label htmlFor="trade_both_all" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                   </div>
                 </RadioGroup>
-                {kkmType === 'evotor' && (
-                  <a href="https://market.evotor.ru/store/apps/a50741fb-6e03-4e57-93da-00fdc5647a5a" target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-[#1e3a5f] hover:underline font-medium">
-                    <ExternalLink className="w-5 h-5 shrink-0" />
-                    Приложение «Продажа табака» в магазине Эвотор
-                  </a>
-                )}
                 {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
                   <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-5 h-5 shrink-0" />Выберите вид деятельности, чтобы продолжить</p>
                 )}

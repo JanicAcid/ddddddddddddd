@@ -178,9 +178,11 @@ export function StepServices({
                   <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
                   {service.id === 'partial_marketing_setup' && selected && (
                     <div className="mt-1.5 space-y-1.5">
-                      <div className="p-1.5 bg-orange-50 border border-orange-200 rounded">
-                        <p className="text-xs text-orange-700 font-medium">⚠ Перерегистрация кассы в ФНС не включена — ответственность за корректность регистрации на Вас. Если касса уже зарегистрирована с признаками маркировки и форматом ФФД 1.2 — всё в порядке.</p>
-                      </div>
+                      {!unsureFnsRegistration && (
+                        <div className="p-1.5 bg-orange-50 border border-orange-200 rounded">
+                          <p className="text-xs text-orange-700 font-medium">⚠ Перерегистрация кассы в ФНС не включена — ответственность за корректность регистрации на Вас. Если касса уже зарегистрирована с признаками маркировки и форматом ФФД 1.2 — всё в порядке.</p>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 p-1.5 bg-white rounded border border-slate-200">
                         <Checkbox id="unsure_fns_reg"
                           checked={unsureFnsRegistration}
@@ -201,6 +203,11 @@ export function StepServices({
                           Не уверен, верно ли зарегистрирована касса в ФНС
                         </Label>
                       </div>
+                      {unsureFnsRegistration && (
+                        <div className="p-1.5 bg-green-50 border border-green-200 rounded">
+                          <p className="text-xs text-green-700 font-medium">✅ Перерегистрация включена в расчёт. При осмотре кассы инженер проверит необходимость — если перерегистрация не потребуется, мы уберём её из итогового счёта.</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -11,14 +11,12 @@ import {
   X,
   Send,
   Paperclip,
-  Mic,
-  Square,
   FileText,
   Image as ImageIcon,
 } from 'lucide-react'
 
 interface ChatMessage {
-  type: 'text' | 'photo' | 'file' | 'voice' | 'video'
+  type: 'text' | 'photo' | 'file' | 'video'
   text?: string
   from: string
   timestamp: number
@@ -51,11 +49,6 @@ function formatFileSize(bytes: number): string {
   return (bytes / 1048576).toFixed(1) + ' МБ'
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
@@ -75,13 +68,6 @@ export function ChatWidget() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [attachedPreview, setAttachedPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Voice recording state
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingDuration, setRecordingDuration] = useState(0)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
 
   // Fullscreen image state
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null)
@@ -241,18 +227,6 @@ export function ChatWidget() {
     }
   }, [isOpen, nameSubmitted, messages.length])
 
-  // Cleanup recording on unmount
-  useEffect(() => {
-    return () => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop()
-      }
-      if (recordingTimerRef.current) {
-        clearInterval(recordingTimerRef.current)
-      }
-    }
-  }, [])
-
   const handleNameSubmit = () => {
     const trimmed = nameInput.trim()
     if (!trimmed) return
@@ -332,7 +306,6 @@ export function ChatWidget() {
     const mimeType = file.type || 'application/octet-stream'
     let msgType: ChatMessage['type'] = 'file'
     if (mimeType.startsWith('image/')) msgType = 'photo'
-    else if (mimeType.startsWith('audio/')) msgType = 'voice'
 
     const optimisticMsg: ChatMessage = {
       type: msgType,
@@ -381,67 +354,6 @@ export function ChatWidget() {
       setSending(false)
       setTimeout(() => setErrorMessage(null), 4000)
     }
-  }
-
-  // Voice recording
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      
-      // Determine supported MIME type
-      let mimeType = ''
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus'
-      } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
-        mimeType = 'audio/ogg;codecs=opus'
-      }
-      // else use default
-
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
-      audioChunksRef.current = []
-
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
-      }
-
-      recorder.onstop = async () => {
-        // Stop all tracks
-        stream.getTracks().forEach((t) => t.stop())
-
-        const blob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/webm' })
-        const ext = mimeType.includes('ogg') ? 'ogg' : 'webm'
-        const file = new File([blob], `voice_${Date.now()}.${ext}`, { type: mimeType || 'audio/webm' })
-        
-        await sendFileMessage(file)
-      }
-
-      recorder.start()
-      mediaRecorderRef.current = recorder
-      setIsRecording(true)
-      setRecordingDuration(0)
-
-      recordingTimerRef.current = setInterval(() => {
-        setRecordingDuration((prev) => prev + 1)
-      }, 1000)
-    } catch (err) {
-      console.error('Microphone access error:', err)
-      setErrorMessage('Не удалось получить доступ к микрофону')
-      setTimeout(() => setErrorMessage(null), 4000)
-    }
-  }
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
-    }
-    if (recordingTimerRef.current) {
-      clearInterval(recordingTimerRef.current)
-      recordingTimerRef.current = null
-    }
-    setIsRecording(false)
-    setRecordingDuration(0)
   }
 
   // File selection
@@ -555,31 +467,6 @@ export function ChatWidget() {
           </a>
           {msg.text && (
             <p className="text-sm mt-1.5 whitespace-pre-wrap break-words">{msg.text}</p>
-          )}
-        </div>
-      )
-    }
-
-    // Voice message
-    if (msg.type === 'voice') {
-      const src = msg.fileId ? `/api/chat/file/${msg.fileId}` : ''
-      return (
-        <div className="flex flex-col gap-1">
-          {src && (
-            <audio
-              controls
-              src={src}
-              preload="metadata"
-              className="max-w-[220px] h-8"
-            />
-          )}
-          {msg.duration != null && (
-            <p className={`text-[10px] ${msg.isMe ? 'text-white/60' : 'text-gray-400'}`}>
-              {formatDuration(msg.duration)}
-            </p>
-          )}
-          {msg.text && (
-            <p className="text-sm mt-1 whitespace-pre-wrap break-words">{msg.text}</p>
           )}
         </div>
       )
@@ -795,28 +682,13 @@ export function ChatWidget() {
               </div>
             )}
 
-            {/* Recording indicator */}
-            {isRecording && (
-              <div className="px-3 pt-3 pb-1">
-                <div className="flex items-center gap-3 px-2">
-                  <div className="relative flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                    <div className="absolute w-3 h-3 rounded-full bg-red-500 animate-ping opacity-75" />
-                  </div>
-                  <span className="text-sm font-medium text-red-600 tabular-nums">
-                    {formatDuration(recordingDuration)}
-                  </span>
-                </div>
-              </div>
-            )}
-
             {/* Toolbar */}
             <div className="p-3">
               <div className="flex items-end gap-2">
                 {/* Attach button */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isRecording || sending}
+                  disabled={sending}
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Прикрепить файл"
                 >
@@ -825,30 +697,10 @@ export function ChatWidget() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
                   className="hidden"
                   onChange={handleFileSelect}
                 />
-
-                {/* Record / Stop button */}
-                {isRecording ? (
-                  <button
-                    onClick={stopRecording}
-                    className="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors shrink-0"
-                    aria-label="Остановить запись"
-                  >
-                    <Square className="w-4 h-4 text-white fill-white" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={startRecording}
-                    disabled={sending}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-                    aria-label="Записать голосовое сообщение"
-                  >
-                    <Mic className="w-5 h-5" />
-                  </button>
-                )}
 
                 {/* Text input */}
                 <textarea
@@ -858,15 +710,14 @@ export function ChatWidget() {
                   onKeyDown={handleKeyDown}
                   placeholder="Напишите сообщение..."
                   rows={1}
-                  disabled={isRecording}
-                  className="flex-1 resize-none px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors leading-relaxed disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 resize-none px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors leading-relaxed"
                   style={{ maxHeight: '72px' }}
                 />
 
                 {/* Send button */}
                 <button
                   onClick={handleSend}
-                  disabled={(!input.trim() && !attachedFile) || sending || isRecording}
+                  disabled={(!input.trim() && !attachedFile) || sending}
                   className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ backgroundColor: '#1e3a5f' }}
                   aria-label="Отправить"

@@ -395,9 +395,6 @@ export function StepExtra({
             >
               <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Отправить заявку
-              {totalCalc.total > 0 && (
-                <span className="ml-2 opacity-90">— {totalCalc.total.toLocaleString('ru-RU')} ₽</span>
-              )}
             </Button>
             <p className="text-[10px] sm:text-xs text-slate-400 text-center mt-2">
               Нажимая кнопку, вы соглашаетесь на обработку персональных данных

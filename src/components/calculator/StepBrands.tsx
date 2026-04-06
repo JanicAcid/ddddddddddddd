@@ -85,8 +85,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
                   className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
-                    <BadgeCheck className="w-12 h-12 sm:w-14 sm:h-14 text-[#1e3a5f]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
+                    <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
                   <span className="text-[10px] text-slate-400 text-center leading-tight">Работаю на ней</span>
@@ -95,8 +95,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
                   className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-xl bg-[#e8a817]/10 shrink-0">
-                    <Star className="w-12 h-12 sm:w-14 sm:h-14 text-[#e8a817]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#e8a817]/10 shrink-0">
+                    <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8a817]" />
                   </div>
                   <Label htmlFor="cond_new" className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
                   <span className="text-[10px] text-slate-400 text-center leading-tight">Только что купленная</span>
@@ -105,8 +105,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
                   className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
-                    <Handshake className="w-12 h-12 sm:w-14 sm:h-14 text-[#1e3a5f]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#1e3a5f]/5 shrink-0">
+                    <Handshake className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-xs sm:text-sm font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                   <span className="text-[10px] text-slate-400 text-center leading-tight">Купил с рук</span>
@@ -166,9 +166,9 @@ export function StepBrands({
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
                     <div className={`relative ${isLargeLogo ? 'h-[34px] sm:h-[38px]' : 'h-[17px] sm:h-[19px]'} w-full`}>
-                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className={`object-contain transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-60'}`} quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
+                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className={`object-contain transition-all duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-30 group-hover:blur-[2px]'}`} quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
-                    <span className={`${isLargeLogo ? 'text-[9px] sm:text-[10px]' : 'text-xs sm:text-sm'} font-bold leading-none absolute bottom-1.5 left-0 right-0 text-center ${isSelected ? 'text-[#1e3a5f] opacity-100' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
+                    <span className={`text-[13px] sm:text-base font-bold leading-none absolute bottom-1.5 left-0 right-0 text-center ${isSelected ? 'text-[#1e3a5f] opacity-100' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
                   </button>
                 )
               })}

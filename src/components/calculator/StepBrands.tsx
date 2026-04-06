@@ -263,7 +263,7 @@ export function StepBrands({
                 )}
 
                 {/* Для действующей — галочка «имеется подписка» */}
-                {kkmCondition === 'old' && (
+                {kkmCondition === 'old' && !alreadyMarking && (
                   <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
                     <p className="font-medium text-[#1e3a5f] text-sm">Что нужно подключить на действующей кассе?</p>
                     <div className="flex items-start gap-2.5 p-2.5 bg-white rounded border border-[#1e3a5f]/10">
@@ -306,7 +306,7 @@ export function StepBrands({
             {kkmType === 'evotor' && currentKkmInfo.specialNote?.apps && (
               <>
                 {/* Для действующей — галочка «имеется подписка» */}
-                {kkmCondition === 'old' && (
+                {kkmCondition === 'old' && !alreadyMarking && (
                   <div className="p-2.5 sm:p-3 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg space-y-3">
                     <p className="font-medium text-[#1e3a5f] text-sm">Что нужно подключить на действующей кассе?</p>
                     <div className="flex items-start gap-2.5 p-2.5 bg-white rounded border border-[#1e3a5f]/10">

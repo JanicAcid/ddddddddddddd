@@ -114,11 +114,11 @@ export function StepBrands({
               </div>
             </div>
 
-            {kkmCondition === 'new' && (
+            {(kkmCondition === 'new' || kkmCondition === 'used') && (
               <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-[#1e3a5f]">
                   <Info className="w-4 h-4 shrink-0" />
-                  <span className="font-medium">Для новой кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
+                  <span className="font-medium">Для {kkmCondition === 'new' ? 'новой' : 'б/у'} кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
                 </div>
               </div>
             )}

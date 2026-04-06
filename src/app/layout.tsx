@@ -56,6 +56,7 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,

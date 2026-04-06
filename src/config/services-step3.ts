@@ -21,12 +21,5 @@ export const step3Services: StepService[] = [
     hintKey: 'training',
     icon: '/services/training.webp'
   },
-  {
-    id: 'fn_replacement',
-    name: 'Замена фискального накопителя (ФН)',
-    description: 'Замена чипа памяти кассы с перерегистрацией в налоговой',
-    price: 2700,
-    hintKey: 'fn_replacement',
-    icon: '/services/fn_replacement.webp'
-  }
+  // fn_replacement убран — ФНС-зависимая услуга, регистрация/перерегистрация только на шаге 2
 ]

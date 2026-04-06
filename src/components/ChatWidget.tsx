@@ -112,6 +112,13 @@ export function ChatWidget() {
     }
   }, [])
 
+  // Listen for open-chat event from other components
+  useEffect(() => {
+    const handler = () => setIsOpen(true)
+    window.addEventListener('open-chat', handler)
+    return () => window.removeEventListener('open-chat', handler)
+  }, [])
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

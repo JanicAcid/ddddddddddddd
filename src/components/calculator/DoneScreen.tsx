@@ -4,6 +4,8 @@ import { useMemo, useCallback, useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   CheckCheck, CreditCard, AlertCircle, Printer,
   Phone, MessageSquare, Download, X, ArrowLeft, CheckCircle2, Info
@@ -86,6 +88,12 @@ export function generateOrderHtml(params: GenerateOrderHtmlParams): string {
   if (params.evotorRestore) {
     checklist.push('Восстановить доступ к ЛК Эвотор')
   }
+  if (params.isConsultation) {
+    checklist.push('⚠️ ЗАЯВКА НА КОНСУЛЬТАЦИЮ — уточнить у клиента модель кассы и проблему')
+    if (params.clientData.kkmModel) {
+      checklist.push(`Модель кассы клиента: ${params.clientData.kkmModel}`)
+    }
+  }
   // ЭЦП — обязательно, уточнить у клиента
   if (!params.clientData.hasEcp) {
     checklist.push('⚠️ КЛИЕНТ БЕЗ ЭЦП — проконсультировать и помочь оформить (обязательное требование для маркировки)')
@@ -154,7 +162,8 @@ export function DoneScreen({
   onBack, onPrint, onClose, kkmType, effectiveKkm,
   step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked,
   evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-  orderNum, isCorrection
+  orderNum, isCorrection,
+  isConsultation = false
 }: DoneScreenProps) {
   const condLabel = kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : 'Текущая (рабочая)'
   const safeOrderNum = orderNum || Date.now().toString().slice(-6)
@@ -264,8 +273,14 @@ export function DoneScreen({
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1e3a5f]/10 mb-3">
           <CheckCheck className="w-9 h-9 text-[#1e3a5f]" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-[#1e3a5f]">{isCorrection ? 'Заявка скорректирована!' : 'Заявка сформирована!'}</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1e3a5f]">{isConsultation ? 'Заявка на консультацию!' : isCorrection ? 'Заявка скорректирована!' : 'Заявка сформирована!'}</h2>
         <p className="text-sm text-slate-500 mt-0.5">Заказ-наряд №{safeOrderNum} от {orderDate}</p>
+        {isConsultation && (
+          <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full">
+            <MessageSquare className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-700">Менеджер перезвонит для консультации по вашей кассе</span>
+          </div>
+        )}
         {isCorrection && (
           <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-orange-100 border border-orange-300 rounded-full">
             <AlertCircle className="w-4 h-4 text-orange-600" />
@@ -423,7 +438,7 @@ export function DoneScreen({
 
       <Button variant="outline" className="w-full py-4 text-sm sm:text-base" size="lg" onClick={onBack}>
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-        Вернуться к редактированию
+        {isConsultation ? 'Новый расчёт' : 'Вернуться к редактированию'}
       </Button>
     </div>
   )

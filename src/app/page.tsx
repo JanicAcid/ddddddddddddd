@@ -4,9 +4,11 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import React from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Info, Check, Phone } from 'lucide-react'
+import { Info, Check, Phone, Send, MessageSquare } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
@@ -36,6 +38,7 @@ export default function TellurServiceCalculator() {
   const [isDone, setIsDone] = useState(false)
   const [orderNum, setOrderNum] = useState<string | null>(null)
   const [isCorrection, setIsCorrection] = useState(false)
+  const [isConsultation, setIsConsultation] = useState(false)
   const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
   const [kkmCondition, setKkmCondition] = useState<KkmCondition>('' as KkmCondition)
   const [sigmaSelected, setSigmaSelected] = useState(false)
@@ -322,6 +325,15 @@ export default function TellurServiceCalculator() {
     setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
+  // ---- Консультация (без выбора услуг) ----
+  const startConsultation = () => {
+    setIsConsultation(true)
+    setIsDone(false)
+    if (!orderNum) setOrderNum(Date.now().toString().slice(-6))
+    ;(document.activeElement as HTMLElement)?.blur()
+    setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
   // ---- Полный сброс ----
   const handleReset = () => {
     // Шаг 1 — касса
@@ -339,10 +351,16 @@ export default function TellurServiceCalculator() {
     // Клиентские данные
     setClientData({ name: '', inn: '', phone: '', email: '', address: '', kkmModel: '', kkmNumber: '', fnNumber: '', comment: '', evotorLogin: '', evotorPassword: '', hasEcp: false, fnActivityType: '', sellsExcise: false });
     // Общее
-    setCurrentStep(1); setIsDone(false); setOrderNum(null); setIsCorrection(false); window.scrollTo({ top: 0, behavior: 'smooth' })
+    setCurrentStep(1); setIsDone(false); setOrderNum(null); setIsCorrection(false); setIsConsultation(false); window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // ===================================================================
+  // Консультация: подмена totalCalc
+  const consultationCalc = useMemo((): TotalCalc => ({
+    items: [{ name: 'Консультация по вашей кассе', price: 0 }],
+    total: 0
+  }), [])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col">
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
@@ -389,6 +407,7 @@ export default function TellurServiceCalculator() {
 
 
             {/* STEP INDICATOR */}
+            {!isConsultation && (
             <div className="max-w-lg mx-auto mb-3 sm:mb-5">
               <div className="flex items-center">
                 {[
@@ -425,6 +444,7 @@ export default function TellurServiceCalculator() {
                 })}
               </div>
             </div>
+            )}
 
             {/* ============================================================ */}
             {/* ВЫБОР КАССЫ */}
@@ -475,6 +495,7 @@ export default function TellurServiceCalculator() {
                 handleEvotorAppToggle={handleEvotorAppToggle}
                 hintProps={hintProps}
                 goToStep={goToStep}
+                startConsultation={startConsultation}
               />
             )}
 
@@ -506,6 +527,7 @@ export default function TellurServiceCalculator() {
                 goToStep={goToStep}
                 setCurrentStep={setCurrentStep}
                 mainRef={mainRef}
+                startConsultation={startConsultation}
               />
             )}
 
@@ -557,14 +579,65 @@ export default function TellurServiceCalculator() {
               </div>
             )}
 
+            {/* ============================================================ */}
+            {/* КОНСУЛЬТАЦИЯ — форма заявки */}
+            {/* ============================================================ */}
+            {isConsultation && !isDone && (
+              <div className="max-w-lg mx-auto space-y-3">
+                <Card className="border-[#1e3a5f]/20 overflow-hidden">
+                  <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] px-4 sm:px-5 py-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-white font-extrabold text-base sm:text-lg leading-tight">Консультация по вашей кассе</h3>
+                        <p className="text-white/70 text-xs sm:text-sm mt-1">Менеджер перезвонит и поможет подобрать решение</p>
+                      </div>
+                    </div>
+                  </div>
+                  <CardContent className="p-4 sm:p-5 space-y-3">
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700">Как к вам обращаться? <span className="text-red-500">*</span></Label>
+                      <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
+                      <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700">Модель кассы <span className="text-red-500">*</span></Label>
+                      <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} placeholder="Например: Меркурий 185Ф, Атол 90Ф..." className="mt-1.5 text-sm h-11" />
+                      <p className="text-[11px] text-slate-400 mt-1">Найдите на корпусе кассы или в чеке</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-700">Опишите проблему</Label>
+                      <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Что случилось с кассой или что нужно настроить" className="mt-1.5 text-sm h-11" />
+                    </div>
+                    <Button
+                      className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${clientData.name.trim() !== '' && clientData.phone.trim() !== '' && clientData.kkmModel.trim() !== '' ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
+                      size="lg"
+                      disabled={clientData.name.trim() === '' || clientData.phone.trim() === '' || clientData.kkmModel.trim() === ''}
+                      onClick={handleDone}
+                    >
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      Отправить заявку
+                    </Button>
+                    <p className="text-[10px] sm:text-xs text-slate-400 text-center">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+                  </CardContent>
+                </Card>
+                <Button variant="outline" className="w-full text-xs" onClick={handleReset}>Сбросить</Button>
+              </div>
+            )}
+
             {/* ГОТОВО */}
             {isDone && (
               <DoneScreen
                 effectiveKkmInfo={effectiveKkmInfo}
                 kkmCondition={kkmCondition}
                 clientData={clientData}
-                totalCalc={totalCalc}
-                onBack={() => { setIsDone(false); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
+                totalCalc={isConsultation ? consultationCalc : totalCalc}
+                onBack={isConsultation ? handleReset : () => { setIsDone(false); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
                 onPrint={handlePrint}
                 onClose={handleReset}
                 kkmType={kkmType}
@@ -580,6 +653,7 @@ export default function TellurServiceCalculator() {
                 orderNum={orderNum}
                 isCorrection={isCorrection}
                 unsureFnsRegistration={unsureFnsRegistration}
+                isConsultation={isConsultation}
               />
             )}
           </div>

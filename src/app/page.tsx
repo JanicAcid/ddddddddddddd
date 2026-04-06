@@ -384,7 +384,7 @@ export default function TellurServiceCalculator() {
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col relative">
         {/* Полупрозрачный фон с инженером для лояльности */}
         <div className="fixed inset-0 -z-10 pointer-events-none">
-          <img src="/engineer-bg.webp" alt="" className="absolute bottom-0 right-0 w-full sm:w-[50%] md:w-[40%] lg:w-[35%] h-auto object-cover opacity-[0.06]" />
+          <img src="/engineer-bg.webp" alt="" className="absolute bottom-0 right-0 w-full sm:w-[50%] md:w-[40%] lg:w-[35%] h-auto object-cover opacity-[0.12]" />
         </div>
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
 [data-slot=checkbox]{width:34px;height:34px;min-width:34px;min-height:34px;border:2px solid #475569;border-radius:8px;cursor:pointer;transition:all .15s ease;margin-top:0}

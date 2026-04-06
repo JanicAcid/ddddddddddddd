@@ -1,0 +1,21 @@
+{
+  "name": "Калькулятор маркировки — Теллур-Интех",
+  "short_name": "Теллур-Интех",
+  "description": "Подключение маркировки товаров под ключ в Санкт-Петербурге. Калькулятор стоимости.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a5f",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

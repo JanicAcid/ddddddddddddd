@@ -73,6 +73,10 @@ export function ChatWidget() {
   // Fullscreen image state
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null)
 
+  // Info banner auto-dismiss state
+  const [showInfoBanner, setShowInfoBanner] = useState(false)
+  const infoBannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const sessionIdRef = useRef<string>('')
   const sentMsgIdsRef = useRef<number[]>([])
   const offsetRef = useRef<number>(0)
@@ -99,17 +103,25 @@ export function ChatWidget() {
     }
   }, [])
 
-  // Block body scroll when chat is open on mobile + notify FAQ
+  // Block body scroll when chat is open on mobile + notify FAQ + show info banner
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
       window.dispatchEvent(new Event('chat-opened'))
+      // Show info banner on chat open
+      setShowInfoBanner(true)
+      if (infoBannerTimerRef.current) clearTimeout(infoBannerTimerRef.current)
+      infoBannerTimerRef.current = setTimeout(() => setShowInfoBanner(false), 6000)
     } else {
       document.body.style.overflow = ''
       window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
       window.dispatchEvent(new Event('chat-closed'))
+      setShowInfoBanner(false)
     }
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+      if (infoBannerTimerRef.current) clearTimeout(infoBannerTimerRef.current)
+    }
   }, [isOpen])
 
   // Listen for open-chat event from other components
@@ -232,7 +244,7 @@ export function ChatWidget() {
       setMessages([
         {
           type: 'text',
-          text: 'Здравствуйте! Что Вам подсказать?\n\nЭто реальный чат с реальными людьми — напишите, и Татьяна ответит Вам. Иногда ответ может занять более 3 минут, пожалуйста, подождите.',
+          text: 'Здравствуйте! Что Вам подсказать?',
           from: 'Татьяна',
           timestamp: Date.now(),
           isMe: false,
@@ -586,6 +598,22 @@ export function ChatWidget() {
             </button>
           </div>
         </div>
+
+        {/* Info Banner - auto-dismissing */}
+        {showInfoBanner && (
+          <div className="px-4 py-2.5 bg-blue-50/90 backdrop-blur-sm border-b border-blue-100 shrink-0 relative">
+            <p className="text-xs text-blue-700/80 leading-relaxed text-center pr-6">
+              Это чат с реальным оператором. Иногда ответ может занять более 3 минут — пожалуйста, подождите.
+            </p>
+            <button
+              onClick={() => setShowInfoBanner(false)}
+              className="absolute top-1.5 right-2 w-5 h-5 rounded-full hover:bg-blue-200/60 flex items-center justify-center transition-colors"
+              aria-label="Закрыть"
+            >
+              <X className="w-3 h-3 text-blue-400" />
+            </button>
+          </div>
+        )}
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">

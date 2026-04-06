@@ -218,8 +218,9 @@ export default function TellurServiceCalculator() {
   }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition, clientData.sellsExcise, alreadyMarking, unsureFnsRegistration])
 
   const markingDesc = useMemo(() => {
-    if (kkmType === 'evotor') return 'Связываем ЭДО, Честный ЗНАК, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека'
-    return 'Связываем ЭДО, Честный ЗНАК, Вашу кассу и ТС ПИоТ в единую цепочку — от приёмки товара до пробития чека'
+    const chestnyznakLink = <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-slate-600 hover:text-[#1e3a5f] transition-colors">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-3.5 h-3.5" /></a>
+    if (kkmType === 'evotor') return <>Связываем ЭДО, {chestnyznakLink}, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека</>
+    return <>Связываем ЭДО, {chestnyznakLink}, Вашу кассу и ТС ПИоТ в единую цепочку — от приёмки товара до пробития чека</>
   }, [kkmType])
 
   const totalCalc = useMemo((): TotalCalc => {
@@ -402,7 +403,7 @@ export default function TellurServiceCalculator() {
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
                   <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
-                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с<br/><a href="https://chestznaki.gov.ru" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-slate-600 hover:text-[#1e3a5f] transition-colors"><strong className="font-bold">Честным ЗНАКом</strong><img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 sm:w-5 sm:h-5" /></a></p>
+                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с<br/><a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-slate-600 hover:text-[#1e3a5f] transition-colors"><strong className="font-bold">Честным ЗНАКом</strong><img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 sm:w-5 sm:h-5" /></a></p>
                 </div>
               </div>
               <button
@@ -693,7 +694,7 @@ export default function TellurServiceCalculator() {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
             >
               <Image src="/logo.webp" alt="Теллур-Интех" width={56} height={46} className="w-7 h-[23px] sm:w-[56px] sm:h-[46px]" quality={100} />
-              <a href="https://chestznaki.gov.ru" target="_blank" rel="noopener noreferrer" title="Система маркировки Честный ЗНАК">
+              <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" title="Система маркировки Честный ЗНАК">
                 <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-6 h-6 sm:w-8 sm:h-8" />
               </a>
               <p className="text-xs sm:text-sm text-slate-500">ООО &quot;Теллур-Интех&quot; — сервисный центр кассового оборудования</p>

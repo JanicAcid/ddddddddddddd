@@ -17,7 +17,7 @@ interface StepServicesProps {
   kkmCondition: KkmCondition
   kkmType: string
   step2Selections: string[]
-  markingDesc: string
+  markingDesc: React.ReactNode
   clientData: { sellsExcise: boolean }
   ofdChecked: boolean
   ofdPeriod: OfdPeriod
@@ -175,7 +175,7 @@ export function StepServices({
                     <Label htmlFor={service.id} className="font-bold text-sm leading-snug cursor-pointer">{serviceDisplayName}</Label>
                     <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">{service.price.toLocaleString('ru-RU')} руб.</span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{desc}</p>
                   {service.id === 'partial_marketing_setup' && selected && (
                     <div className="mt-1.5 space-y-1.5">
                       {!unsureFnsRegistration && (

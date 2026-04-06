@@ -98,6 +98,17 @@ export function ChatWidget() {
     }
   }, [])
 
+  // Block body scroll when chat is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
+
   // Listen for open-chat event from other components
   useEffect(() => {
     const handler = () => setIsOpen(true)

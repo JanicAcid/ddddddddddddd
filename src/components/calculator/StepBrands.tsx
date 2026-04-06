@@ -174,6 +174,17 @@ export function StepBrands({
               })}
             </div>
 
+            {/* Кнопка «Другой производитель» */}
+            <button
+              type="button"
+              onClick={() => window.open('https://wa.me/79219324163?text=' + encodeURIComponent('Здравствуйте! Моего производителя кассы нет в списке калькулятора. Модель: '), '_blank')}
+              className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#1e3a5f] bg-transparent hover:bg-[#1e3a5f]/[0.02] text-sm font-medium text-slate-500 hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer group"
+            >
+              <Info className="w-4 h-4 shrink-0 group-hover:text-[#e8a817]" />
+              <span>Здесь нет моего производителя</span>
+              <span className="text-xs text-slate-400 group-hover:text-slate-500 hidden sm:inline">— напишите нам</span>
+            </button>
+
             {kkmType === 'atol' && (
               <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
                 <div className="flex items-center gap-3">

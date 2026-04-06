@@ -312,9 +312,24 @@ export default function TellurServiceCalculator() {
     setIsDone(true); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
-  // ---- Сброс ----
+  // ---- Полный сброс ----
   const handleReset = () => {
-    setStep2Selections([]); setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1); setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false); setSigmaHelpChecked(false); setOfdChecked(false); setServiceContractChecked(false); setServiceContractPeriod('month'); setFnChecked(false); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Шаг 1 — касса
+    setKkmType('' as KkmType); setKkmCondition('' as KkmCondition); setSigmaSelected(false);
+    setEvotorTradeType('none'); setEvotorAppsSelected(new Set()); setEvotorHasSubscription(false);
+    setAlreadyMarking(false); setUnsureFnsRegistration(false);
+    // Шаг 2 — услуги
+    setStep2Selections([]); setOfdChecked(false); setOfdPeriod('15'); setOfdProvider('takskom');
+    // Шаг 3 — дополнительно
+    setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1);
+    setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false);
+    setSigmaHelpChecked(false); setOfdChecked(false); setFnChecked(false);
+    setFnPeriod('15'); setFnActivityType('general');
+    setServiceContractChecked(false); setServiceContractPeriod('month');
+    // Клиентские данные
+    setClientData({ name: '', inn: '', phone: '', email: '', address: '', kkmModel: '', kkmNumber: '', fnNumber: '', comment: '', evotorLogin: '', evotorPassword: '', hasEcp: false, fnActivityType: '', sellsExcise: false });
+    // Общее
+    setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // ===================================================================
@@ -538,7 +553,7 @@ export default function TellurServiceCalculator() {
                 totalCalc={totalCalc}
                 onBack={() => { setIsDone(false); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
                 onPrint={handlePrint}
-                onClose={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                onClose={handleReset}
                 kkmType={kkmType}
                 effectiveKkm={effectiveKkm}
                 step2Selections={step2Selections}

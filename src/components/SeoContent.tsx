@@ -47,7 +47,10 @@ export function SeoContent() {
         className="flex items-center justify-between w-full cursor-pointer select-none py-2 max-w-3xl mx-auto px-3 sm:px-4"
         aria-expanded={open}
       >
-        <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] text-left">Сервисный центр кассового оборудования в Санкт-Петербурге и Ленинградской области</h2>
+        <div className="text-left">
+          <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Сервисный центр кассового оборудования в Санкт-Петербурге и Ленинградской области</h2>
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Подробнее о нас</p>
+        </div>
         <ChevronDown className={`w-5 h-5 text-[#1e3a5f]/60 transition-transform shrink-0 ml-2 ${open ? 'rotate-180' : ''}`} />
       </button>
       {/* Контент всегда в DOM для краулеров. max-h-0 + overflow-hidden = свёрнут визуально */}

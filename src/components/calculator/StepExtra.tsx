@@ -259,7 +259,7 @@ export function StepExtra({
         </div>
 
         {/* ПРОДАЮЩАЯ ФОРМА ЗАЯВКИ */}
-        <Card id="contacts-section" className="border-[#1e3a5f]/20 overflow-hidden">
+        <Card id="lead-form-section" className="border-[#1e3a5f]/20 overflow-hidden">
           {/* Верхняя акцентная полоска */}
           <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] px-4 sm:px-5 py-4 sm:py-5">
             <div className="flex items-start gap-3">

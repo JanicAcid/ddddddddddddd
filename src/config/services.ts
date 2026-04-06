@@ -96,13 +96,6 @@ export const kkmTypes: Record<string, KkmTypeConfig> = {
           link: 'https://market.evotor.ru/store/apps/e7e1a9af-d0ad-4dec-97ce-8b27805c145d'
         },
         {
-          name: 'Приложение «Продажа табака»',
-          purpose: 'Для продажи табачной продукции. Обеспечивает учёт и контроль табачных изделий, интеграцию с системой «Честный ЗНАК» для табака.',
-          required: true,
-          condition: 'Только при продаже табака',
-          link: 'https://market.evotor.ru/store/apps/a50741fb-6e03-4e57-93da-00fdc5647a5a'
-        },
-        {
           name: 'Приложение «УТМ+»',
           purpose: 'Для продажи алкоголя. Обеспечивает связь с системой ЕГАИС — автоматическое списание алкоголя при продаже.',
           required: true,

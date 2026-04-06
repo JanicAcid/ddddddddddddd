@@ -384,7 +384,7 @@ export default function TellurServiceCalculator() {
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col relative">
         {/* Полупрозрачный фон с инженером для лояльности */}
         <div className="fixed inset-0 -z-10 pointer-events-none">
-          <img src="/engineer-bg.webp" alt="" className="absolute bottom-0 right-0 w-full sm:w-[50%] md:w-[40%] lg:w-[35%] h-auto object-cover opacity-[0.12]" />
+          <img src="/engineer-bg.webp" alt="" className="absolute bottom-0 right-0 w-full sm:w-[60%] md:w-[50%] lg:w-[45%] h-auto object-cover opacity-[0.18]" />
         </div>
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
 [data-slot=checkbox]{width:34px;height:34px;min-width:34px;min-height:34px;border:2px solid #475569;border-radius:8px;cursor:pointer;transition:all .15s ease;margin-top:0}
@@ -407,7 +407,7 @@ export default function TellurServiceCalculator() {
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
                   <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
-                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с<br/><a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-4 h-4 sm:w-5 sm:h-5" /></a>&thinsp;<a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">ТС ПИоТ<img src="/tspiot-logo.webp" alt="" className="w-5 h-5 sm:w-6 sm:h-6" /></a></p>
+                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с<br/><a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-5 h-5 sm:w-6 sm:h-6" /></a>&thinsp;<a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">ТС ПИоТ<img src="/tspiot-logo.webp" alt="" className="w-7 h-7 sm:w-8 sm:h-8" /></a></p>
                 </div>
               </div>
               <button

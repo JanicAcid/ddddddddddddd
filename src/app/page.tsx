@@ -528,6 +528,7 @@ export default function TellurServiceCalculator() {
                   fnPeriod={fnPeriod}
                   fnActivityType={fnActivityType}
                   clientData={clientData}
+                  totalCalc={totalCalc}
                   setStep3Selections={setStep3Selections}
                   setScannerChecked={setScannerChecked}
                   setFnChecked={setFnChecked}

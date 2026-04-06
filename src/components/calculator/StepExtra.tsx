@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -11,12 +11,13 @@ import { Badge } from '@/components/ui/badge'
 import {
   Info, AlertTriangle,
   GraduationCap, RefreshCw, KeyRound, ClipboardCheck,
-  RotateCcw, Download, ArrowLeft, CheckCheck
+  RotateCcw, Download, ArrowLeft, CheckCheck,
+  Send, Clock, ChevronDown, ChevronUp, Shield
 } from 'lucide-react'
 import { step3Services } from '@/config/services-step3'
 import { getProductCardPrice, getProductCardPriceLabel } from '@/config/product-cards'
 import { scannerPrices } from '@/config/services'
-import type { KkmType, KkmCondition, ClientData, HintButtonProps } from './types'
+import type { KkmType, KkmCondition, ClientData, HintButtonProps, TotalCalc } from './types'
 import { HintButton } from './HintButton'
 
 interface StepExtraProps {
@@ -34,6 +35,7 @@ interface StepExtraProps {
   fnPeriod: string
   fnActivityType: string
   clientData: ClientData
+  totalCalc: TotalCalc
   // Setters
   setStep3Selections: (v: string[] | ((prev: string[]) => string[])) => void
   setScannerChecked: (v: boolean) => void
@@ -58,13 +60,15 @@ export function StepExtra({
   kkmType, kkmCondition, effectiveKkm,
   step3Selections, scannerChecked, fnChecked, productCardCount, trainingHours,
   serviceContractChecked, serviceContractPeriod, evotorRestore,
-  fnPeriod, fnActivityType, clientData,
+  fnPeriod, fnActivityType, clientData, totalCalc,
   setStep3Selections, setScannerChecked, setFnChecked, setFnPeriod, setFnActivityType,
   setProductCardCount, setTrainingHours, setServiceContractChecked, setServiceContractPeriod,
   setEvotorRestore, setClientData,
   hintProps, setCurrentStep, mainRef, setIsDone,
   handleReset, handleDone
 }: StepExtraProps) {
+  const [showDetails, setShowDetails] = useState(false)
+  const canSubmit = clientData.name.trim() !== '' && clientData.phone.trim() !== ''
   return (
     <div className="max-w-3xl mx-auto space-y-2">
 
@@ -254,82 +258,140 @@ export function StepExtra({
           <Button variant="outline" className="flex-1 py-4 text-base font-bold" size="lg" onClick={() => { setCurrentStep(2); setTimeout(() => mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}><ArrowLeft className="w-5 h-5 mr-2" /> Назад</Button>
         </div>
 
-        {/* Контактные данные */}
-        <Card id="contacts-section" className="border-[#1e3a5f]/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg sm:text-xl font-extrabold flex items-center gap-2"><Info className="w-5 h-5 text-[#1e3a5f] shrink-0" />Контактные данные</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            <div>
-              <Label className="text-xs">Наименование (юрлицо / ИП) <span className="text-red-500">*</span></Label>
-              <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ООО «Ромашка»" className="mt-1 text-sm" />
-            </div>
-            <div className="grid sm:grid-cols-2 gap-2.5">
-              <div>
-                <Label className="text-xs">Телефон <span className="text-red-500">*</span></Label>
-                <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: e.target.value })} placeholder="+7" className="mt-1 text-sm" />
+        {/* ПРОДАЮЩАЯ ФОРМА ЗАЯВКИ */}
+        <Card id="contacts-section" className="border-[#1e3a5f]/20 overflow-hidden">
+          {/* Верхняя акцентная полоска */}
+          <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] px-4 sm:px-5 py-4 sm:py-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+                <Send className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <Label className="text-xs">Электронная почта</Label>
-                <Input type="email" value={clientData.email} onChange={(e) => setClientData({ ...clientData, email: e.target.value })} className="mt-1 text-sm" />
+              <div className="min-w-0">
+                <h3 className="text-white font-extrabold text-base sm:text-lg leading-tight">Оставьте заявку — получите расчёт</h3>
+                <p className="text-white/70 text-xs sm:text-sm mt-1">Менеджер перезвонит в течение <span className="text-[#e8a817] font-semibold">15 минут</span> и подготовит точную смету</p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-2.5">
+          </div>
+
+          <CardContent className="p-4 sm:p-5 space-y-4">
+            {/* Основные поля — всегда видны */}
+            <div className="space-y-3">
               <div>
-                <Label className="text-xs">ИНН <span className="text-red-500">*</span></Label>
-                <Input value={clientData.inn} onChange={(e) => setClientData({ ...clientData, inn: e.target.value })} className="mt-1 text-sm" />
+                <Label className="text-xs font-semibold text-slate-700">Как к вам обращаться? <span className="text-red-500">*</span></Label>
+                <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" />
               </div>
               <div>
-                <Label className="text-xs">Адрес установки кассы</Label>
-                <Input list="ru-addresses" value={clientData.address} onChange={(e) => setClientData({ ...clientData, address: e.target.value })} className="mt-1 text-sm" />
-                <datalist id="ru-addresses">
-                  <option value="г. Санкт-Петербург" /><option value="г. Москва" /><option value="г. Новосибирск" /><option value="г. Екатеринбург" /><option value="г. Казань" /><option value="г. Нижний Новгород" /><option value="г. Челябинск" /><option value="г. Самара" /><option value="г. Омск" /><option value="г. Ростов-на-Дону" /><option value="г. Уфа" /><option value="г. Красноярск" /><option value="г. Воронеж" /><option value="г. Пермь" /><option value="г. Волгоград" /><option value="г. Краснодар" /><option value="г. Саратов" /><option value="г. Тюмень" /><option value="г. Тольятти" /><option value="г. Ижевск" />
-                </datalist>
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-2.5">
-              <div>
-                <Label className="text-xs">Модель кассы <span className="text-slate-400 font-normal">(на кассе и в чеке)</span></Label>
-                <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} className="mt-1 text-sm" />
-              </div>
-              <div>
-                <Label className="text-xs">Заводской номер</Label>
-                <Input value={clientData.kkmNumber} onChange={(e) => setClientData({ ...clientData, kkmNumber: e.target.value })} className="mt-1 text-sm" />
+                <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
+                <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" />
               </div>
             </div>
-            {kkmType === 'evotor' && (
-              <div className="p-2.5 bg-[#1e3a5f]/5 rounded-lg space-y-2">
-                <p className="text-xs text-[#1e3a5f] font-medium flex items-center gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />Данные от ЛК Эвотор
-                </p>
-                <div className="grid sm:grid-cols-2 gap-2">
+
+            {/* Раскрывающийся блок доп. сведений */}
+            <button
+              type="button"
+              onClick={() => setShowDetails(!showDetails)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border border-slate-200 hover:border-[#1e3a5f]/30 hover:bg-[#1e3a5f]/[0.02] transition-all text-left group"
+            >
+              <span className="text-xs sm:text-sm font-medium text-slate-600 group-hover:text-[#1e3a5f] transition-colors">
+                Дополнительные сведения
+                {!showDetails && <span className="text-slate-400 font-normal ml-1 hidden sm:inline">— ИНН, адрес, модель кассы</span>}
+              </span>
+              {showDetails
+                ? <ChevronUp className="w-4 h-4 text-slate-400" />
+                : <ChevronDown className="w-4 h-4 text-slate-400" />
+              }
+            </button>
+
+            {showDetails && (
+              <div className="space-y-3 animate-fade-in-up border-l-2 border-[#1e3a5f]/10 pl-3.5 ml-1">
+                <div className="grid sm:grid-cols-2 gap-2.5">
                   <div>
-                    <Label className="text-xs">Логин (телефон)</Label>
-                    <Input type="tel" value={clientData.evotorLogin} onChange={(e) => setClientData({ ...clientData, evotorLogin: e.target.value })} className="mt-1 text-sm" />
+                    <Label className="text-xs">ИНН <span className="text-slate-400 font-normal">(если знаете)</span></Label>
+                    <Input value={clientData.inn} onChange={(e) => setClientData({ ...clientData, inn: e.target.value })} placeholder="0000000000" className="mt-1 text-sm h-10" />
                   </div>
                   <div>
-                    <Label className="text-xs">Пароль</Label>
-                    <Input type="password" value={clientData.evotorPassword} onChange={(e) => setClientData({ ...clientData, evotorPassword: e.target.value })} className="mt-1 text-sm" />
+                    <Label className="text-xs">Электронная почта</Label>
+                    <Input type="email" value={clientData.email} onChange={(e) => setClientData({ ...clientData, email: e.target.value })} placeholder="mail@company.ru" className="mt-1 text-sm h-10" />
                   </div>
                 </div>
-                <div className="flex items-center gap-2 p-1.5 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded">
-                  <Checkbox id="evotor_restore_r" checked={evotorRestore} onCheckedChange={(c) => setEvotorRestore(c as boolean)} className="w-5 h-5 shrink-0" />
-                  <Label htmlFor="evotor_restore_r" className="cursor-pointer text-xs text-[#1e3a5f]">Нет данных ЛК — помощь с восстановлением <span className="font-semibold">500 руб.</span></Label>
+                <div>
+                  <Label className="text-xs">Адрес установки кассы</Label>
+                  <Input list="ru-addresses" value={clientData.address} onChange={(e) => setClientData({ ...clientData, address: e.target.value })} className="mt-1 text-sm h-10" />
+                  <datalist id="ru-addresses">
+                    <option value="г. Санкт-Петербург" /><option value="г. Москва" /><option value="г. Новосибирск" /><option value="г. Екатеринбург" /><option value="г. Казань" /><option value="г. Нижний Новгород" /><option value="г. Челябинск" /><option value="г. Самара" /><option value="г. Омск" /><option value="г. Ростов-на-Дону" /><option value="г. Уфа" /><option value="г. Красноярск" /><option value="г. Воронеж" /><option value="г. Пермь" /><option value="г. Волгоград" /><option value="г. Краснодар" /><option value="г. Саратов" /><option value="г. Тюмень" /><option value="г. Тольятти" /><option value="г. Ижевск" />
+                  </datalist>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <Label className="text-xs">Модель кассы <span className="text-slate-400 font-normal">(на кассе и в чеке)</span></Label>
+                    <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} className="mt-1 text-sm h-10" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Заводской номер</Label>
+                    <Input value={clientData.kkmNumber} onChange={(e) => setClientData({ ...clientData, kkmNumber: e.target.value })} className="mt-1 text-sm h-10" />
+                  </div>
+                </div>
+                {kkmType === 'evotor' && (
+                  <div className="p-2.5 bg-[#1e3a5f]/5 rounded-lg space-y-2">
+                    <p className="text-xs text-[#1e3a5f] font-medium flex items-center gap-2">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />Данные от ЛК Эвотор
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs">Логин (телефон)</Label>
+                        <Input type="tel" value={clientData.evotorLogin} onChange={(e) => setClientData({ ...clientData, evotorLogin: e.target.value })} className="mt-1 text-sm" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Пароль</Label>
+                        <Input type="password" value={clientData.evotorPassword} onChange={(e) => setClientData({ ...clientData, evotorPassword: e.target.value })} className="mt-1 text-sm" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 p-1.5 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded">
+                      <Checkbox id="evotor_restore_r" checked={evotorRestore} onCheckedChange={(c) => setEvotorRestore(c as boolean)} className="w-5 h-5 shrink-0" />
+                      <Label htmlFor="evotor_restore_r" className="cursor-pointer text-xs text-[#1e3a5f]">Нет данных ЛК — помощь с восстановлением <span className="font-semibold">500 руб.</span></Label>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-xs">Примечания</Label>
+                  <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Дополнительная информация" className="mt-1 text-sm h-10" />
                 </div>
               </div>
             )}
-            <div>
-              <Label className="text-xs">Примечания</Label>
-              <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Дополнительная информация" className="mt-1 text-sm" />
-            </div>
-            <p className="text-xs text-red-500 font-medium">* Название, телефон и ИНН обязательны</p>
-          </CardContent>
-        </Card>
 
-        <Button className="w-full bg-[#e8a817] hover:bg-[#d49a12] py-5 sm:py-6 text-lg sm:text-xl font-bold" size="lg" disabled={!clientData.name.trim() || !clientData.phone.trim() || !clientData.inn.trim()} onClick={handleDone}>
-          <CheckCheck className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-          Готово
-        </Button>
+            {/* Траст-блок: время ответа + конфиденциальность */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Clock className="w-3.5 h-3.5 text-[#1e3a5f] shrink-0" />
+                <span>Ответ в течение <strong className="text-slate-700">15 минут</strong> в рабочее время</span>
+              </div>
+              <div className="hidden sm:block w-px bg-slate-200" />
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Shield className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                <span>Данные защищены по <strong className="text-slate-700">152-ФЗ</strong></span>
+              </div>
+            </div>
+          </CardContent>
+
+          {/* CTA кнопка с ценой */}
+          <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+            <Button
+              className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${canSubmit ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
+              size="lg"
+              disabled={!canSubmit}
+              onClick={handleDone}
+            >
+              <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Отправить заявку
+              {totalCalc.total > 0 && (
+                <span className="ml-2 opacity-90">— {totalCalc.total.toLocaleString('ru-RU')} ₽</span>
+              )}
+            </Button>
+            <p className="text-[10px] sm:text-xs text-slate-400 text-center mt-2">
+              Нажимая кнопку, вы соглашаетесь на обработку персональных данных
+            </p>
+          </div>
+        </Card>
         {kkmType === 'atol' && effectiveKkm !== 'sigma' && (
           <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-2">

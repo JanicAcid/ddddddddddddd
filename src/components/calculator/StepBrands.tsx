@@ -86,8 +86,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('old'); setScannerChecked(false) }}
                   className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'old' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                    <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                    <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'old' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Текущая</Label>
                   <span className="text-[9px] text-slate-400 text-center leading-tight">Работаю на ней</span>
@@ -96,8 +96,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('new'); setScannerChecked(true) }}
                   className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'new' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
-                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-[#e8a817]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#e8a817]/10 shrink-0">
+                    <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8a817]" />
                   </div>
                   <Label htmlFor="cond_new" className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'new' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Новая</Label>
                   <span className="text-[9px] text-slate-400 text-center leading-tight">Только что купленная</span>
@@ -106,8 +106,8 @@ export function StepBrands({
                   onClick={() => { setKkmCondition('used'); setScannerChecked(true) }}
                   className={`flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg border cursor-pointer transition-all duration-200 ${kkmCondition === 'used' ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
-                    <Handshake className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-[#1e3a5f]/5 shrink-0">
+                    <Handshake className="w-6 h-6 sm:w-7 sm:h-7 text-[#1e3a5f]" />
                   </div>
                   <Label className={`cursor-pointer text-[11px] sm:text-xs font-bold text-center leading-tight ${kkmCondition === 'used' ? 'text-[#1e3a5f]' : 'text-slate-700'}`}>Б/у</Label>
                   <span className="text-[9px] text-slate-400 text-center leading-tight">Купил с рук</span>
@@ -118,7 +118,7 @@ export function StepBrands({
             {(kkmCondition === 'new' || kkmCondition === 'used') && (
               <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-[#1e3a5f]">
-                  <Info className="w-4 h-4 shrink-0" />
+                  <Info className="w-6 h-6 shrink-0" />
                   <span className="font-medium">Для {kkmCondition === 'new' ? 'новой' : 'б/у'} кассы обязательны: регистрация в ФНС и подключение ОФД — учтены ниже в расчёте</span>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function StepBrands({
               onClick={startConsultation}
               className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#1e3a5f] bg-transparent hover:bg-[#1e3a5f]/[0.02] text-sm font-medium text-slate-500 hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer group"
             >
-              <Info className="w-4 h-4 shrink-0 group-hover:text-[#e8a817]" />
+              <Info className="w-6 h-6 shrink-0 group-hover:text-[#e8a817]" />
               <span>Здесь нет моего производителя</span>
               <span className="text-xs text-slate-400 group-hover:text-slate-500 hidden sm:inline">— напишите нам</span>
             </button>
@@ -201,36 +201,36 @@ export function StepBrands({
             {kkmType !== '' && kkmCondition !== '' && !alreadyMarking && (
               <div className="p-2.5 sm:p-3 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
                 <div className="flex items-center gap-2">
-                  <ScanLine className="w-5 h-5 text-[#e8a817] shrink-0" />
+                  <ScanLine className="w-8 h-8 text-[#e8a817] shrink-0" />
                   <p className="font-semibold text-[#1e3a5f] text-sm">Чем планируете торговать?</p>
                 </div>
                 <p className="text-xs text-slate-500">Выберите категорию — это поможет подобрать нужные услуги и настройки.</p>
                 <RadioGroup value={evotorTradeType === 'none' ? '' : evotorTradeType} onValueChange={(v) => handleEvotorTradeType(v as 'marking' | 'alcohol' | 'both')} className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="marking" id="trade_marking_all" />
-                    <Package className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
+                    <Package className="w-8 h-8 shrink-0 text-[#1e3a5f]" />
                     <Label htmlFor="trade_marking_all" className="cursor-pointer text-sm">Маркированные товары (сигареты, обувь, вода и т.д.)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="alcohol" id="trade_alcohol_all" />
-                    <Wine className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
+                    <Wine className="w-8 h-8 shrink-0 text-[#1e3a5f]" />
                     <Label htmlFor="trade_alcohol_all" className="cursor-pointer text-sm">Алкоголь (пиво, вино, крепкий алкоголь)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="both" id="trade_both_all" />
-                    <PackageOpen className="w-5 h-5 shrink-0 text-[#1e3a5f]" />
+                    <PackageOpen className="w-8 h-8 shrink-0 text-[#1e3a5f]" />
                     <Label htmlFor="trade_both_all" className="cursor-pointer text-sm">Маркированные товары + алкоголь</Label>
                   </div>
                 </RadioGroup>
                 {kkmType === 'evotor' && (
                   <a href="https://market.evotor.ru/store/apps/a50741fb-6e03-4e57-93da-00fdc5647a5a" target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs text-[#1e3a5f] hover:underline font-medium">
-                    <ExternalLink className="w-3 h-3 shrink-0" />
+                    <ExternalLink className="w-5 h-5 shrink-0" />
                     Приложение «Продажа табака» в магазине Эвотор
                   </a>
                 )}
                 {evotorTradeType === 'none' && evotorAppsSelected.size === 0 && (
-                  <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3 shrink-0" />Выберите вид деятельности, чтобы продолжить</p>
+                  <p className="text-xs text-red-500 font-medium flex items-center gap-1"><AlertCircle className="w-5 h-5 shrink-0" />Выберите вид деятельности, чтобы продолжить</p>
                 )}
               </div>
             )}
@@ -371,7 +371,7 @@ export function StepBrands({
                             {app.condition && <p className="text-xs text-slate-500 mt-0.5">({app.condition})</p>}
                             <a href={app.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e3a5f] flex items-center gap-1 mt-1 hover:underline"
                               onClick={(e) => e.stopPropagation()}>
-                              <ExternalLink className="w-3 h-3 shrink-0" /><span className="break-all">Страница приложения в магазине Эвотор</span>
+                              <ExternalLink className="w-5 h-5 shrink-0" /><span className="break-all">Страница приложения в магазине Эвотор</span>
                             </a>
                             {app.price != null && (
                               <p className="text-sm font-semibold text-[#1e3a5f] mt-1">{app.price.toLocaleString('ru-RU')} руб.</p>
@@ -390,7 +390,7 @@ export function StepBrands({
             {kkmType === 'atol' && !sigmaSelected && kkmCondition === 'old' && (
               <div className="p-2.5 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
                 <div className="flex items-start gap-2">
-                  <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                  <Info className="w-8 h-8 text-blue-600 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-blue-800 text-sm">Согласие для добавления в партнёрский кабинет Атол</p>
                     <p className="text-xs text-blue-600 mt-1">Для обслуживания Вашей кассы Атол нам нужно добавить её в наш партнёрский кабинет. Для этого требуется Ваше согласие — скачайте, заполните и подпишите. Укажите наш код партнёра <strong>9331</strong> в заявлении. Можете подготовить заранее или наш инженер поможет при обращении.</p>
@@ -399,7 +399,7 @@ export function StepBrands({
                       download
                       className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-6 h-6" />
                       Скачать согласие (PDF)
                     </a>
                   </div>
@@ -410,7 +410,7 @@ export function StepBrands({
             {needsFirmwareOrLicense && (
               <div className="p-2.5 sm:p-3 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-[#e8a817] shrink-0 mt-0.5" />
+                  <AlertCircle className="w-8 h-8 text-[#e8a817] shrink-0 mt-0.5" />
                   <div className="min-w-0">
                     <p className="font-semibold text-[#1e3a5f] text-sm">Для {kkmCondition === 'used' ? 'б/у' : 'старой'} кассы {effectiveKkmInfo.name} могут потребоваться:</p>
                     <div className="mt-2 space-y-1.5 text-sm text-slate-700">
@@ -440,7 +440,7 @@ export function StepBrands({
         </Card>
 
         <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-lg sm:text-xl font-bold" size="lg" onClick={() => goToStep(2)} disabled={!canGoStep2}>
-          Далее — выбор услуг <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+          Далее — выбор услуг <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 ml-2" />
         </Button>
       </div>
     </div>

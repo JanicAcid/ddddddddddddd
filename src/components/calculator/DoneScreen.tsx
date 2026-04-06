@@ -20,7 +20,7 @@ import type { DoneScreenProps, GenerateOrderHtmlParams } from './types'
 export function generateOrderHtml(params: GenerateOrderHtmlParams): string {
   const condLabel = params.kkmCondition === 'new' ? 'Новая' : params.kkmCondition === 'used' ? 'Б/у' : 'Текущая (работающая)'
   const orderNum = Date.now().toString().slice(-6)
-  const sepText = params.kkmType === 'evotor' || params.kkmType === 'sigma' ? 'ТС ПИоТ и подписка на смарт-терминале — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ — оплачивается отдельно напрямую на сайте ao-esp.ru.'
+  const sepText = params.kkmType === 'evotor' || params.kkmType === 'sigma' ? 'ТС ПИоТ и подписка на смарт-терминале — оплачиваются отдельно напрямую у поставщиков.' : 'ТС ПИоТ — оплачивается отдельно напрямую на сайте ao-esp.ru/#ESM.'
 
   // Generate engineer checklist
   const checklist: string[] = []
@@ -365,8 +365,8 @@ export function DoneScreen({
           <div className="p-3 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded-lg">
             <p className="text-xs text-[#1e3a5f]">
               {kkmType === 'evotor' || effectiveKkm === 'sigma'
-                ? <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>. Подписка на смарт-терминал (Эвотор, Сигма и др.) оплачивается самостоятельно через магазин производителя.</>
-                : <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>.</>
+                ? <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>. Подписка на смарт-терминал (Эвотор, Сигма и др.) оплачивается самостоятельно через магазин производителя.</>
+                : <>ТС ПИоТ — лицензия оплачивается отдельно на сайте <a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline font-semibold">ao-esp.ru</a>.</>
               }
             </p>
           </div>

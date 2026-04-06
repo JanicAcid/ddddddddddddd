@@ -376,16 +376,30 @@ export function StepExtra({
           {/* CTA кнопка с ценой */}
           <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-3">
             {/* Галочка ЭЦП перед отправкой */}
-            <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-              <Checkbox
-                id="ecp_check_form"
-                checked={clientData.hasEcp}
-                onCheckedChange={(c) => setClientData(prev => ({ ...prev, hasEcp: !!c }))}
-                className="w-5 h-5 mt-0.5 shrink-0"
-              />
-              <Label htmlFor="ecp_check_form" className="cursor-pointer text-xs sm:text-sm text-amber-800 leading-snug">
-                У меня есть <strong>ЭЦП</strong> (электронная подпись на Рутокен / JaCarta)
-              </Label>
+            <div className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${clientData.hasEcp ? 'bg-green-50 border-green-300' : 'bg-amber-50 border-amber-200 hover:border-amber-300'}`}
+              onClick={() => setClientData(prev => ({ ...prev, hasEcp: !prev.hasEcp }))}
+              role="checkbox"
+              aria-checked={clientData.hasEcp}
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setClientData(prev => ({ ...prev, hasEcp: !prev.hasEcp })) } }}
+            >
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${clientData.hasEcp ? 'bg-green-500 border-green-500' : 'border-amber-300 bg-white'}`}>
+                {clientData.hasEcp && (
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className={`text-sm sm:text-base font-semibold leading-snug block ${clientData.hasEcp ? 'text-green-800' : 'text-amber-800'}`}>
+                  {clientData.hasEcp ? '✅ У меня есть ЭЦП' : '🔑 У меня есть ЭЦП'}
+                </span>
+                <span className={`text-[11px] sm:text-xs leading-snug block mt-0.5 ${clientData.hasEcp ? 'text-green-600' : 'text-amber-600'}`}>
+                  {clientData.hasEcp
+                    ? 'Отлично! Электронная подпись на Рутокен / JaCarta'
+                    : 'ЭЦП обязательна для маркировки. Менеджер подскажет, как её получить, когда перезвонит.'}
+                </span>
+              </div>
             </div>
             <Button
               className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${canSubmit ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}

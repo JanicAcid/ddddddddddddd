@@ -74,7 +74,7 @@ export function StepExtra({
             <div className="flex items-start gap-2">
               <HintButton hintKey="fn_product" {...hintProps} />
               <Checkbox id="fn_product" checked={fnChecked}
-                onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) { setFnActivityType(fnPeriod === '36' ? 'excise' : 'general'); setStep3Selections((prev: string[]) => prev.includes('fn_replacement') ? prev : [...prev, 'fn_replacement']) } else { setStep3Selections((prev: string[]) => prev.filter(x => x !== 'fn_replacement')) } }}
+                onCheckedChange={(c) => { setFnChecked(c as boolean); if (c) setFnActivityType(fnPeriod === '36' ? 'excise' : 'general') }}
                 className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">

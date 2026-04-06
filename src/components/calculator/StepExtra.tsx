@@ -374,7 +374,19 @@ export function StepExtra({
           </CardContent>
 
           {/* CTA кнопка с ценой */}
-          <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+          <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-3">
+            {/* Галочка ЭЦП перед отправкой */}
+            <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+              <Checkbox
+                id="ecp_check_form"
+                checked={clientData.hasEcp}
+                onCheckedChange={(c) => setClientData(prev => ({ ...prev, hasEcp: !!c }))}
+                className="w-5 h-5 mt-0.5 shrink-0"
+              />
+              <Label htmlFor="ecp_check_form" className="cursor-pointer text-xs sm:text-sm text-amber-800 leading-snug">
+                У меня есть <strong>ЭЦП</strong> (электронная подпись на Рутокен / JaCarta)
+              </Label>
+            </div>
             <Button
               className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${canSubmit ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
               size="lg"

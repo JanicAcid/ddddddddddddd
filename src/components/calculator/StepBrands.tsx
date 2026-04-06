@@ -153,7 +153,7 @@ export function StepBrands({
             <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Выберите Вашу кассу</h3>
 
             {/* Сетка касс */}
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
               {visibleKkmTypes.map(([key, kkm]) => {
                 const brand = KKM_BRANDS[key] || { color: '#64748b', bg: '#64748b' }
                 const isSelected = kkmType === key
@@ -162,11 +162,11 @@ export function StepBrands({
                     key={key}
                     type="button"
                     onClick={() => setKkmType(key as KkmType)}
-                    className={`relative flex flex-col items-center justify-start gap-2 rounded-xl border-2 pt-5 pb-3 sm:pt-6 sm:pb-4 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`relative flex flex-col items-center justify-start gap-3 rounded-xl border-2 pt-8 pb-5 sm:pt-9 sm:pb-6 transition-all duration-200 cursor-pointer group ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                     style={isSelected ? { borderColor: brand.color } : undefined}
                   >
-                    <span className={`text-[10px] sm:text-xs font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
-                    <div className="relative h-11 sm:h-12 w-full">
+                    <span className={`text-xs sm:text-sm font-medium leading-none order-first ${isSelected ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-500'} transition-colors`}>{kkm.shortName}</span>
+                    <div className="relative h-[68px] sm:h-[76px] w-full">
                       <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className="object-contain opacity-85" quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
                     </div>
                   </button>

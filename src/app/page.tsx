@@ -402,8 +402,13 @@ export default function TellurServiceCalculator() {
               >
                 <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
                 <div className="min-w-0">
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f] truncate">Калькулятор маркировки</h1>
-                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">Посчитаем, сколько нужно для работы с<br/><a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-6 h-6 sm:w-6 sm:h-6" /></a>&thinsp;<a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">ТС ПИоТ<img src="/tspiot-dark.png" alt="" style={{width:'auto',height:'20px'}} className="sm:hidden" /><img src="/tspiot-dark.png" alt="" style={{width:'auto',height:'26px'}} className="hidden sm:inline" /></a></p>
+                  <h1 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f]">Калькулятор маркировки</h1>
+                  <p className="text-[11px] sm:text-xs text-slate-500 flex flex-wrap items-center gap-x-1 gap-y-0">
+                    <span>Работа с</span>
+                    <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-6 h-6 sm:w-6 sm:h-6" /></a>
+                    <span className="text-slate-400">·</span>
+                    <a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors">ТС ПИоТ<img src="/tspiot-dark.png" alt="" style={{width:'auto',height:'20px'}} className="sm:hidden" /><img src="/tspiot-dark.png" alt="" style={{width:'auto',height:'26px'}} className="hidden sm:inline" /></a>
+                  </p>
                 </div>
               </div>
               <button

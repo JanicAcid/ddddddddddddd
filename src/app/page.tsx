@@ -473,7 +473,7 @@ export default function TellurServiceCalculator() {
                     (currentStep === 1 && canGoStep2) ||
                     (currentStep === 2 && canGoStep3) ||
                     (currentStep === 3 && step2Selections.length > 0 && contactValid)
-                  const isDisabled = isForward && !(isNextStep && canGoNext)
+                  const isDisabled = isDone || (isForward && !(isNextStep && canGoNext))
                   return (
                     <React.Fragment key={step.num}>
                       <div className="flex flex-col items-center gap-1">

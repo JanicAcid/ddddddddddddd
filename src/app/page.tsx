@@ -307,7 +307,10 @@ export default function TellurServiceCalculator() {
     // Проверяем минимальные требования ТЕКУЩЕГО шага
     if (currentStep === 1 && !canGoStep2) return
     if (currentStep === 2 && !canGoStep3) return
-    if (currentStep === 3 && step2Selections.length === 0) return
+    if (currentStep === 3) {
+      if (step2Selections.length === 0) return
+      if (!contactValid) return
+    }
     setCurrentStep(step)
     setIsDone(false)
     ;(document.activeElement as HTMLElement)?.blur()
@@ -460,7 +463,7 @@ export default function TellurServiceCalculator() {
                   const canGoNext =
                     (currentStep === 1 && canGoStep2) ||
                     (currentStep === 2 && canGoStep3) ||
-                    (currentStep === 3 && step2Selections.length > 0)
+                    (currentStep === 3 && step2Selections.length > 0 && contactValid)
                   const isDisabled = isForward && !(isNextStep && canGoNext)
                   return (
                     <React.Fragment key={step.num}>

@@ -181,7 +181,7 @@ export function StepServices({
                     <Label htmlFor={service.id} className={`font-bold text-sm leading-snug ${isLocked ? 'cursor-default text-[#1e3a5f]/70' : 'cursor-pointer'}`}>{serviceDisplayName}</Label>
                     <div className="flex items-center gap-1.5 shrink-0">
                       {isLockedFns && <Badge className="bg-green-100 text-green-700 text-[10px] px-1.5 py-0">включено</Badge>}
-                      <span className={`font-bold whitespace-nowrap text-sm ${isLocked ? 'text-[#1e3a5f]/50 line-through' : 'text-[#1e3a5f]'}`}>{service.price.toLocaleString('ru-RU')} руб.</span>
+                      <span className={`font-bold whitespace-nowrap text-sm ${isLocked ? 'text-[#1e3a5f]/70' : 'text-[#1e3a5f]'}`}>{service.price.toLocaleString('ru-RU')} руб.</span>
                     </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{desc}</p>

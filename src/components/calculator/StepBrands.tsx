@@ -124,8 +124,8 @@ export function StepBrands({
               </div>
             )}
 
-            {/* Галочка «Я уже работаю с маркированным товаром» */}
-            {kkmCondition === 'old' && (
+            {/* Галочка «Я уже работаю с маркированным товаром» — скрываем для Сигмы (у неё своя галочка) */}
+            {kkmCondition === 'old' && effectiveKkm !== 'sigma' && (
               <div className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-colors ${alreadyMarking ? 'bg-green-50 border-green-200' : 'bg-[#1e3a5f]/5 border-[#1e3a5f]/20'}`}>
                 <Checkbox id="already_marking"
                   checked={alreadyMarking}
@@ -295,6 +295,26 @@ export function StepBrands({
                         <span className="text-xs text-amber-700">Могут потребоваться и другие приложения — уточните у менеджера!</span>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Зелёная анимация подтверждения подписки Сигма */}
+                {kkmCondition === 'old' && alreadyMarking && effectiveKkm === 'sigma' && (
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl space-y-2 animate-green-slide" style={{ animationDelay: '0ms' }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-green-500 flex items-center justify-center shrink-0 shadow-lg shadow-green-500/30 animate-green-pulse">
+                        <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-green-800 text-sm sm:text-base">Подписка Сигма подтверждена ✓</p>
+                        <p className="text-xs sm:text-sm text-green-600 mt-0.5">Мы настроим связь с Честный ЗНАК, ЭДО и ТС ПИоТ</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 p-2 bg-white/60 border border-green-200 rounded-lg">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); hintProps.onHintOpen('tspiot') }}
+                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-200/60 text-green-800 text-xs font-bold shrink-0">?</button>
+                      <span className="text-xs text-green-700">Могут потребоваться и другие приложения — уточните у менеджера!</span>
+                    </div>
                   </div>
                 )}
               </>

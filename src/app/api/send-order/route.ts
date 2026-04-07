@@ -1,23 +1,5 @@
-import { Resend } from 'resend'
-
-function getResend(): Resend {
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY not configured')
-  }
-  return new Resend(process.env.RESEND_API_KEY)
-}
-
-/**
- * Resend-аккаунт в тестовом режиме: отправка возможна только на
- * email владельца аккаунта (janicacid@gmail.com).
- * Когда домен будет верифицирован в Resend, можно будет отправлять
- * на любой адрес — для этого задайте RESEND_ORDER_EMAIL.
- */
-const FALLBACK_TO = 'janicacid@gmail.com'
-const TELLUR_EMAIL = 'push@tellur.spb.ru'
-
 // ============================================================================
-// TELEGRAM — отправка дубликата заказа в чат
+// ОТПРАВКА ЗАКАЗА — только Telegram (без email)
 // ============================================================================
 
 async function sendToTelegram(subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
@@ -34,7 +16,7 @@ async function sendToTelegram(subject: string, html: string): Promise<{ ok: bool
     const textMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
     const rawHtml = textMatch ? textMatch[1] : html
 
-    // Простая конвертация HTML → Telegram-совместимый текст
+    // Конвертация HTML → Telegram-совместимый текст
     let text = rawHtml
       .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<\/p>/gi, '\n')
@@ -97,55 +79,19 @@ async function sendToTelegram(subject: string, html: string): Promise<{ ok: bool
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { to, subject, html, replyTo } = body
+    const { subject, html } = body
 
     if (!subject || !html) {
       return Response.json({ error: 'Missing required fields: subject, html' }, { status: 400 })
     }
 
-    // Отправляем в Telegram (фоновая задача, не блокирует ответ)
-    sendToTelegram(subject, html).catch(err => console.error('Telegram background send error:', err))
+    const result = await sendToTelegram(subject, html)
 
-    // Отправляем email через Resend (если настроен)
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY not configured — email not sent, only Telegram')
-      return Response.json({
-        success: true,
-        telegramSent: true,
-        emailSent: false,
-        message: 'Telegram отправлен, email не настроен (нет RESEND_API_KEY)'
-      })
+    if (!result.ok) {
+      return Response.json({ error: result.error || 'Telegram send failed' }, { status: 500 })
     }
 
-    const resend = getResend()
-
-    // В тестовом режиме Resend позволяет отправлять только на email владельца аккаунта.
-    // Если домен верифицирован и задан RESEND_ORDER_EMAIL — отправляем туда.
-    // Иначе — на FALLBACK_TO (email владельца Resend-аккаунта).
-    const recipient = process.env.RESEND_ORDER_EMAIL || FALLBACK_TO
-
-    const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Теллур-Интех <onboarding@resend.dev>',
-      to: [recipient],
-      subject,
-      html,
-      replyTo: replyTo || undefined,
-    })
-
-    const sentToFallback = !process.env.RESEND_ORDER_EMAIL
-
-    if (error) {
-      console.error('Resend error:', error)
-      return Response.json({ error: error.message, telegramSent: true }, { status: 500 })
-    }
-
-    return Response.json({
-      success: true,
-      messageId: data?.id,
-      sentTo: recipient,
-      sentToFallback,
-      telegramSent: true
-    })
+    return Response.json({ success: true, sentTo: 'telegram' })
   } catch (err) {
     console.error('Send order error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

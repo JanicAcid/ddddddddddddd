@@ -30,7 +30,7 @@ export function ScrollToTopButton() {
       type="button"
       onClick={scrollToTop}
       aria-label="Наверх"
-      className={`fixed bottom-24 right-6 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer group {
+      className={`fixed bottom-28 sm:bottom-24 right-4 sm:right-6 z-40 w-7 h-7 sm:w-12 sm:h-12 rounded-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer group {
         visible
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-4 pointer-events-none'
@@ -63,7 +63,7 @@ export function ScrollToTopButton() {
           className="transition-[stroke-dashoffset] duration-150"
         />
       </svg>
-      <ArrowUp className="w-5 h-5 relative z-10 group-hover:-translate-y-0.5 transition-transform" />
+      <ArrowUp className="w-3.5 h-3.5 sm:w-5 sm:h-5 relative z-10 group-hover:-translate-y-0.5 transition-transform" />
     </button>
   )
 }

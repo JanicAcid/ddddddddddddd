@@ -742,9 +742,9 @@ export default function TellurServiceCalculator() {
             {showConsultSlide && (
               <div className="fixed inset-0 bg-black/25 z-40" onClick={() => setShowConsultSlide(false)} />
             )}
-            <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center px-3 sm:px-4 pb-3 sm:pb-5 pointer-events-none">
+            <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center px-20 sm:px-4 pb-3 sm:pb-5 pointer-events-none">
               <div className={`transition-all duration-300 origin-bottom-center mb-3 pointer-events-auto ${showConsultSlide ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'}`}>
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#e8a817]/30 p-5 sm:p-7 w-[calc(100vw-1.5rem)] max-w-md">
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#e8a817]/30 p-5 sm:p-7 w-full max-w-md">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e8a817] to-[#d49a12] flex items-center justify-center shrink-0 shadow-lg shadow-[#e8a817]/30">
                       <Phone className="w-6 h-6 text-white" />
@@ -767,7 +767,7 @@ export default function TellurServiceCalculator() {
               <button
                 type="button"
                 onClick={() => setShowConsultSlide(v => !v)}
-                className="pointer-events-auto w-full max-w-md flex items-center justify-center gap-2.5 py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#e8a817] to-[#d49a12] hover:from-[#d49a12] hover:to-[#c08b0d] text-white shadow-xl shadow-[#e8a817]/30 hover:shadow-2xl hover:shadow-[#e8a817]/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                className="pointer-events-auto w-full max-w-sm sm:max-w-md flex items-center justify-center gap-2.5 py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#e8a817] to-[#d49a12] hover:from-[#d49a12] hover:to-[#c08b0d] text-white shadow-xl shadow-[#e8a817]/30 hover:shadow-2xl hover:shadow-[#e8a817]/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Phone className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                 <span className="font-bold text-base sm:text-lg">Перезвоните мне!</span>

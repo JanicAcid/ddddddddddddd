@@ -41,7 +41,7 @@ export function FaqWidget() {
   }
 
   return (
-    <div className={`fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3 transition-opacity duration-300 ${chatOpen ? 'opacity-0 pointer-events-none' : ''}`}>
+    <div className={`fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-40 flex flex-col items-start gap-3 transition-opacity duration-300 ${chatOpen ? 'opacity-0 pointer-events-none' : ''}`}>
       {/* FAQ панель */}
       <div
         className={`relative flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-in-out ${

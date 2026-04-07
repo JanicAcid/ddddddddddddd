@@ -101,16 +101,14 @@ export function StepServices({
       {step2Services.filter(s => {
         // === НОВАЯ КАССА ===
         if (kkmCondition === 'new') {
-          // Регистрация включена в полную маркировку — не показываем отдельно
-          if (s.id === 'fns_reregistration') return false
+          if (s.id === 'fns_reregistration') return true  // показываем как включённую в маркировку
           if (s.id === 'marking_setup') return true
           if (s.id === 'partial_marketing_setup') return false
           return false
         }
         // === Б/У КАССА ===
         if (kkmCondition === 'used') {
-          // Регистрация включена в полную маркировку — не показываем отдельно
-          if (s.id === 'fns_reregistration') return false
+          if (s.id === 'fns_reregistration') return true  // показываем как включённую в маркировку
           if (s.id === 'marking_setup') return true
           if (s.id === 'partial_marketing_setup') return false
           return false
@@ -130,7 +128,7 @@ export function StepServices({
           // Режим «нужно подключить маркировку» — полная маркировка + перерегистрация
           if (isRegistrationMode) {
             if (s.id === 'marking_setup') return true
-            if (s.id === 'fns_reregistration') return true
+            if (s.id === 'fns_reregistration') return true  // показываем как включённую
             if (s.id === 'partial_marketing_setup') return false
             return false
           }
@@ -146,8 +144,11 @@ export function StepServices({
           : service.id === 'marking_setup' ? markingDesc : service.description
         const selected = step2Selections.includes(service.id)
         const ServiceIcon = service.id === 'fns_reregistration' ? FileSignature : service.id === 'marking_setup' ? Settings2 : Wrench
-        // Для новых и б/у касс — регистрация заблокирована (включена автоматически, теперь скрыта)
-        const isLockedFns = (kkmCondition === 'new' || kkmCondition === 'used') && service.id === 'fns_reregistration'
+        // Перерегистрация заблокирована при полной маркировке (новая, б/у, текущая-регистрация)
+        const isLockedFns = service.id === 'fns_reregistration' && (
+          (kkmCondition === 'new' || kkmCondition === 'used') ||
+          (kkmCondition === 'old' && isRegistrationMode)
+        )
         // Для новых и б/у касс — полная маркировка заблокирована (включена автоматически)
         const isLockedMarking = (kkmCondition === 'new' || kkmCondition === 'used') && service.id === 'marking_setup'
         // Для текущей кассы в режиме «уже работаю» — частичная настройка заблокирована
@@ -177,8 +178,11 @@ export function StepServices({
                   className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor={service.id} className="font-bold text-sm leading-snug cursor-pointer">{serviceDisplayName}</Label>
-                    <span className="font-bold text-[#1e3a5f] whitespace-nowrap shrink-0 text-sm">{service.price.toLocaleString('ru-RU')} руб.</span>
+                    <Label htmlFor={service.id} className={`font-bold text-sm leading-snug ${isLocked ? 'cursor-default text-[#1e3a5f]/70' : 'cursor-pointer'}`}>{serviceDisplayName}</Label>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isLockedFns && <Badge className="bg-green-100 text-green-700 text-[10px] px-1.5 py-0">включено</Badge>}
+                      <span className={`font-bold whitespace-nowrap text-sm ${isLocked ? 'text-[#1e3a5f]/50 line-through' : 'text-[#1e3a5f]'}`}>{service.price.toLocaleString('ru-RU')} руб.</span>
+                    </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{desc}</p>
                   {service.id === 'partial_marketing_setup' && selected && (

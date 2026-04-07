@@ -105,8 +105,8 @@ export default function TellurServiceCalculator() {
 
   // Валидация
   const contactValid = clientData.phone.trim() !== ''
-  // Для ВСЕХ касс: нужно выбрать вид деятельности (кроме уже работающих с маркировкой)
-  const needsActivityType = kkmCondition !== '' && !alreadyMarking
+  // Для ВСЕХ касс: нужно выбрать вид деятельности (кроме уже работающих с маркировкой и кроме Сигмы)
+  const needsActivityType = kkmCondition !== '' && !alreadyMarking && effectiveKkm !== 'sigma'
   const activityTypeReady = !needsActivityType || evotorTradeType !== 'none' || evotorAppsSelected.size > 0
   const canGoStep2 = kkmType !== '' && kkmCondition !== '' && activityTypeReady
   const canGoStep3 = step2Selections.length > 0

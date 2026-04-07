@@ -163,9 +163,14 @@ export default function TellurServiceCalculator() {
       hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || clientData.sellsExcise
     }
 
-    // Авто-установка sellsExcise при выборе алкоголя
+    // Авто-установка sellsExcise при выборе алкоголя (все типы касс)
     if (hasAlcohol && !clientData.sellsExcise) {
       setClientData(prev => ({ ...prev, sellsExcise: true }))
+    }
+
+    // Авто-установка unsureFnsRegistration при алкоголь/сигареты для текущих касс (partial)
+    if (isPartialMode && hasAlcohol && !unsureFnsRegistration) {
+      setUnsureFnsRegistration(true)
     }
 
     // Не-смарт терминал без маркировки/алкоголя — не ставим ничего автоматически
@@ -399,10 +404,13 @@ export default function TellurServiceCalculator() {
 @keyframes greenSlideIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .animate-green-pulse { animation: greenPulse 1.5s ease-out 2; }
 .animate-green-slide { animation: greenSlideIn 0.4s ease-out forwards; opacity: 0; }
-[data-slot=checkbox]{width:34px;height:34px;min-width:34px;min-height:34px;border:2px solid #475569;border-radius:8px;cursor:pointer;transition:all .15s ease;margin-top:0}
-[data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.12)}
+[data-slot=checkbox]{width:34px;height:34px;min-width:34px;min-height:34px;border:2.5px solid #334155;border-radius:8px;cursor:pointer;transition:all .15s ease;margin-top:0;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+[data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
 [data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
 [data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}
+[data-slot=radio-group-item]{border:2.5px solid #334155;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+[data-slot=radio-group-item]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
+[data-slot=radio-group-item][data-state=checked]{border-color:#1e3a5f;background:#fff}
 .space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
         {/* HEADER */}
         <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">

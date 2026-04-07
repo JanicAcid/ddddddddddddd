@@ -294,8 +294,20 @@ export default function TellurServiceCalculator() {
   }, [])
 
   const goToStep = (step: Step) => {
-    if (step === 2 && !canGoStep2) return
-    if (step === 3 && !canGoStep3) return
+    // Назад — всегда можно на любой предыдущий шаг
+    if (step < currentStep) {
+      setCurrentStep(step)
+      setIsDone(false)
+      ;(document.activeElement as HTMLElement)?.blur()
+      setTimeout(smoothScrollToTop, 50)
+      return
+    }
+    // Вперёд — только на следующий шаг (+1), нельзя перепрыгивать
+    if (step !== currentStep + 1) return
+    // Проверяем минимальные требования ТЕКУЩЕГО шага
+    if (currentStep === 1 && !canGoStep2) return
+    if (currentStep === 2 && !canGoStep3) return
+    if (currentStep === 3 && step2Selections.length === 0) return
     setCurrentStep(step)
     setIsDone(false)
     ;(document.activeElement as HTMLElement)?.blur()
@@ -443,12 +455,13 @@ export default function TellurServiceCalculator() {
                   const isActive = currentStep === step.num || (isDone && step.num === 4)
                   const isVisited = isDone || currentStep > step.num
                   const isForward = step.num > currentStep
-                  // Назад — всегда можно. Вперёд — только при соблюдении минимальных требований
-                  const canGoForward =
-                    (step.num === 2 && canGoStep2) ||
-                    (step.num === 3 && canGoStep3) ||
-                    (step.num === 4 && step2Selections.length > 0)
-                  const isDisabled = isForward && !canGoForward
+                  const isNextStep = step.num === currentStep + 1
+                  // Назад — всегда можно. Вперёд — только на следующий (+1) и только если текущий шаг заполнен
+                  const canGoNext =
+                    (currentStep === 1 && canGoStep2) ||
+                    (currentStep === 2 && canGoStep3) ||
+                    (currentStep === 3 && step2Selections.length > 0)
+                  const isDisabled = isForward && !(isNextStep && canGoNext)
                   return (
                     <React.Fragment key={step.num}>
                       <div className="flex flex-col items-center gap-1">

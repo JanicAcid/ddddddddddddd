@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   ScanLine, Info, AlertCircle,
   Package, Wine, PackageOpen, ExternalLink,
-  Download, BadgeCheck, Star, Handshake, ArrowRight
+  Download, BadgeCheck, Star, Handshake, ArrowRight, Phone
 } from 'lucide-react'
 import { KKM_BRANDS } from '@/config/brands'
 import { sigmaTariffLink } from '@/config/services'
@@ -172,16 +172,24 @@ export function StepBrands({
               })}
             </div>
 
-            {/* Кнопка «Другой производитель» */}
-            <button
-              type="button"
+            {/* Кнопка «Другой производитель / Не хочу разбираться» */}
+            <div
               onClick={startConsultation}
-              className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#1e3a5f] bg-transparent hover:bg-[#1e3a5f]/[0.02] text-sm font-medium text-slate-500 hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer group"
+              className="w-full cursor-pointer rounded-xl overflow-hidden border border-[#e8a817]/30 hover:border-[#e8a817]/50 transition-all group"
             >
-              <Info className="w-6 h-6 shrink-0 group-hover:text-[#e8a817]" />
-              <span>Здесь нет производителя моей кассы</span>
-              <span className="text-xs text-slate-400 group-hover:text-slate-500 hidden sm:inline">— срочная консультация, оставьте заявку</span>
-            </button>
+              <div className="bg-gradient-to-r from-[#e8a817]/10 via-[#e8a817]/5 to-transparent px-4 py-3.5 sm:px-5 sm:py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e8a817]/15 flex items-center justify-center shrink-0 group-hover:bg-[#e8a817]/25 transition-colors">
+                    <Phone className="w-5 h-5 text-[#e8a817]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm sm:text-base text-[#1e3a5f] leading-tight">Оставить заявку и получить консультацию</p>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-0.5 leading-snug">Не хотите разбираться сами или не нашли свою кассу? Менеджер перезвонит за <span className="font-semibold text-[#e8a817]">15 минут</span>, подберёт решение и рассчитает стоимость</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-[#e8a817] shrink-0 transition-colors" />
+                </div>
+              </div>
+            </div>
 
             {kkmType === 'atol' && (
               <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">

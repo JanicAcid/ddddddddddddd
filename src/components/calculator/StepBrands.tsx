@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   ScanLine, Info, AlertCircle,
   Package, Wine, PackageOpen, ExternalLink,
-  Download, BadgeCheck, Star, Handshake, ArrowRight, Phone
+  Download, BadgeCheck, Star, Handshake, ArrowRight, Phone, X
 } from 'lucide-react'
 import { KKM_BRANDS } from '@/config/brands'
 import { sigmaTariffLink } from '@/config/services'
@@ -73,6 +73,7 @@ export function StepBrands({
   handleEvotorTradeType, handleEvotorAppToggle,
   hintProps, goToStep, startConsultation
 }: StepBrandsProps) {
+  const [showConsultSlide, setShowConsultSlide] = useState(false)
   return (
     <div className="relative">
       <div className="max-w-2xl mx-auto space-y-4">
@@ -172,24 +173,7 @@ export function StepBrands({
               })}
             </div>
 
-            {/* Кнопка «Другой производитель / Не хочу разбираться» */}
-            <div
-              onClick={startConsultation}
-              className="w-full cursor-pointer rounded-xl overflow-hidden border border-[#e8a817]/30 hover:border-[#e8a817]/50 transition-all group"
-            >
-              <div className="bg-gradient-to-r from-[#e8a817]/10 via-[#e8a817]/5 to-transparent px-4 py-3.5 sm:px-5 sm:py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e8a817]/15 flex items-center justify-center shrink-0 group-hover:bg-[#e8a817]/25 transition-colors">
-                    <Phone className="w-5 h-5 text-[#e8a817]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm sm:text-base text-[#1e3a5f] leading-tight">Оставить заявку и получить консультацию</p>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-0.5 leading-snug">Не хотите разбираться сами или не нашли свою кассу? Менеджер перезвонит за <span className="font-semibold text-[#e8a817]">15 минут</span>, подберёт решение и рассчитает стоимость</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-[#e8a817] shrink-0 transition-colors" />
-                </div>
-              </div>
-            </div>
+            {/* Плавающая кнопка «Оставить заявку» — FAB */}
 
             {kkmType === 'atol' && (
               <div className="p-2.5 bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg">
@@ -477,6 +461,43 @@ export function StepBrands({
         <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-lg sm:text-xl font-bold" size="lg" onClick={() => goToStep(2)} disabled={!canGoStep2}>
           Далее — выбор услуг <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 ml-2" />
         </Button>
+      </div>
+
+      {/* FAB — плавающая кнопка «Оставить заявку» */}
+      {/* Затемнение фона */}
+      {showConsultSlide && (
+        <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setShowConsultSlide(false)} />
+      )}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2">
+        {/* Выезжающая карточка */}
+        <div className={`transition-all duration-300 origin-bottom-right ${showConsultSlide ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 translate-y-2 pointer-events-none'}`}>
+          <div className="bg-white rounded-2xl shadow-xl border border-[#e8a817]/30 p-4 sm:p-5 w-72 sm:w-80 mb-2">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-9 h-9 rounded-full bg-[#e8a817]/15 flex items-center justify-center shrink-0">
+                <Phone className="w-5 h-5 text-[#e8a817]" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm text-[#1e3a5f] leading-tight">Нужна консультация?</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">Не хотите разбираться сами или не нашли свою кассу? Менеджер перезвонит за <span className="font-semibold text-[#e8a817]">15 минут</span></p>
+            <button
+              type="button"
+              onClick={() => { setShowConsultSlide(false); startConsultation() }}
+              className="w-full py-2.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-colors shadow-md shadow-[#e8a817]/20"
+            >
+              Оставить заявку
+            </button>
+          </div>
+        </div>
+        {/* Кнопка FAB */}
+        <button
+          type="button"
+          onClick={() => setShowConsultSlide(v => !v)}
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#e8a817] hover:bg-[#d49a12] text-white shadow-lg shadow-[#e8a817]/30 hover:shadow-xl hover:shadow-[#e8a817]/40 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 shrink-0"
+        >
+          {showConsultSlide ? <X className="w-6 h-6 sm:w-7 sm:h-7" /> : <Phone className="w-6 h-6 sm:w-7 sm:h-7" />}
+        </button>
       </div>
     </div>
   )

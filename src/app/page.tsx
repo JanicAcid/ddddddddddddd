@@ -437,27 +437,32 @@ export default function TellurServiceCalculator() {
                   { num: 4, label: 'Готово' }
                 ].map((step, idx) => {
                   const isActive = currentStep === step.num || (isDone && step.num === 4)
-                  const isCompleted = isDone || currentStep > step.num
+                  const isVisited = isDone || currentStep > step.num
+                  const isForward = step.num > currentStep
+                  // Назад — всегда можно. Вперёд — только при соблюдении минимальных требований
+                  const canGoForward =
+                    (step.num === 2 && canGoStep2) ||
+                    (step.num === 3 && canGoStep3) ||
+                    (step.num === 4 && step2Selections.length > 0)
+                  const isDisabled = isForward && !canGoForward
                   return (
                     <React.Fragment key={step.num}>
                       <div className="flex flex-col items-center gap-1">
                         <button
                           type="button"
                           onClick={() => {
-                            if (step.num === 2 && !canGoStep2) return
-                            if (step.num === 3 && !canGoStep3) return
-                            if (step.num === 4 && step2Selections.length === 0) return
+                            if (isDisabled) return
                             goToStep(step.num as Step)
                           }}
-                          disabled={step.num === 2 && !canGoStep2 || step.num === 3 && !canGoStep3 || step.num === 4 && step2Selections.length === 0}
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0 ${isCompleted ? 'bg-[#1e3a5f] text-white shadow-md cursor-pointer hover:bg-[#1e3a5f]/90' : isActive ? 'bg-[#e8a817] text-white ring-4 ring-[#e8a817]/20 shadow-md' : (step.num === 2 && !canGoStep2 || step.num === 3 && !canGoStep3 || step.num === 4 && step2Selections.length === 0) ? 'bg-white border-2 border-slate-300 text-slate-300 cursor-not-allowed opacity-60' : 'bg-white border-2 border-slate-300 text-slate-400 cursor-pointer hover:border-slate-400'}`}
+                          disabled={isDisabled}
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0 ${isVisited && !isActive ? 'bg-[#1e3a5f] text-white shadow-md cursor-pointer hover:bg-[#1e3a5f]/90' : isActive ? 'bg-[#e8a817] text-white ring-4 ring-[#e8a817]/20 shadow-md' : isDisabled ? 'bg-white border-2 border-slate-200 text-slate-300 cursor-not-allowed opacity-50' : 'bg-white border-2 border-slate-300 text-slate-500 cursor-pointer hover:border-[#1e3a5f] hover:text-[#1e3a5f]'}`}
                         >
-                          {isCompleted && !isActive ? <Check className="w-4 h-4" /> : step.num}
+                          {isVisited && !isActive ? <Check className="w-4 h-4" /> : step.num}
                         </button>
-                        <span className={`text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${isActive ? 'text-[#1e3a5f] font-bold' : isCompleted ? 'text-[#1e3a5f]/70' : 'text-slate-400'}`}>{step.label}</span>
+                        <span className={`text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${isActive ? 'text-[#1e3a5f] font-bold' : isVisited ? 'text-[#1e3a5f]/70' : isDisabled ? 'text-slate-300' : 'text-slate-500'}`}>{step.label}</span>
                       </div>
                       {idx < 3 && (
-                        <div className={`flex-1 h-1 rounded-full transition-colors duration-300 mx-1 ${currentStep > step.num || isDone ? 'bg-[#1e3a5f]' : 'bg-slate-200'}`} />
+                        <div className={`flex-1 h-1 rounded-full transition-colors duration-300 mx-1 ${isVisited || (step.num === currentStep) ? 'bg-[#1e3a5f]' : 'bg-slate-200'}`} />
                       )}
                     </React.Fragment>
                   )

@@ -116,17 +116,15 @@ export default function TellurServiceCalculator() {
     setEvotorTradeType(tradeType)
     setEvotorAppsSelected(prev => {
       const next = new Set(prev)
-      // Добавляем обязательные приложения по типу торговли (без tobacco — спрашивается отдельно)
+      // Добавляем обязательные приложения по типу торговли
       if (tradeType === 'marking' || tradeType === 'both') {
         next.add('marking')
-        next.delete('tobacco')
       } else {
         next.delete('marking')
-        next.delete('tobacco')
       }
       if (tradeType === 'alcohol' || tradeType === 'both') next.add('utm')
       else next.delete('utm')
-      // Опциональные приложения оставляем как были
+      // Опциональные приложения (tobacco и др.) оставляем как были
       return next
     })
   }, [])

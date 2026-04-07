@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
+import { formatPhone, isPhoneValid } from '@/lib/phone'
 import {
   Info, AlertTriangle,
   GraduationCap, RefreshCw, KeyRound, ClipboardCheck,
@@ -68,7 +69,7 @@ export function StepExtra({
   handleReset, handleDone
 }: StepExtraProps) {
   const [showDetails, setShowDetails] = useState(false)
-  const canSubmit = clientData.name.trim() !== '' && clientData.phone.trim() !== ''
+  const canSubmit = clientData.name.trim() !== '' && isPhoneValid(clientData.phone)
   return (
     <div className="max-w-3xl mx-auto space-y-2">
 
@@ -282,7 +283,8 @@ export function StepExtra({
               </div>
               <div>
                 <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
-                <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" />
+                <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} />
+                {!isPhoneValid(clientData.phone) && clientData.phone.length > 0 && <p className="text-[11px] text-red-500 mt-1">Введите полный номер: +7 (XXX) XXX-XX-XX</p>}
               </div>
             </div>
 

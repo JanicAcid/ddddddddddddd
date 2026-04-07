@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import React from 'react'
 import Image from 'next/image'
+import { formatPhone, isPhoneValid } from '@/lib/phone'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -104,7 +105,7 @@ export default function TellurServiceCalculator() {
   const ofdEffective = ofdLocked || ofdChecked
 
   // Валидация
-  const contactValid = clientData.phone.trim() !== ''
+  const contactValid = isPhoneValid(clientData.phone)
   // Для ВСЕХ касс: нужно выбрать вид деятельности (кроме уже работающих с маркировкой и кроме Сигмы)
   const needsActivityType = kkmCondition !== '' && !alreadyMarking && effectiveKkm !== 'sigma'
   const activityTypeReady = !needsActivityType || evotorTradeType !== 'none' || evotorAppsSelected.size > 0
@@ -655,7 +656,7 @@ export default function TellurServiceCalculator() {
                     </div>
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
-                      <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" />
+                      <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} />
                     </div>
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Модель кассы <span className="text-red-500">*</span></Label>
@@ -667,9 +668,9 @@ export default function TellurServiceCalculator() {
                       <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Что случилось с кассой или что нужно настроить" className="mt-1.5 text-sm h-11" />
                     </div>
                     <Button
-                      className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${clientData.name.trim() !== '' && clientData.phone.trim() !== '' && clientData.kkmModel.trim() !== '' ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
+                      className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${clientData.name.trim() !== '' && isPhoneValid(clientData.phone) && clientData.kkmModel.trim() !== '' ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
                       size="lg"
-                      disabled={clientData.name.trim() === '' || clientData.phone.trim() === '' || clientData.kkmModel.trim() === ''}
+                      disabled={clientData.name.trim() === '' || !isPhoneValid(clientData.phone) || clientData.kkmModel.trim() === ''}
                       onClick={handleDone}
                     >
                       <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />

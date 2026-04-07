@@ -202,10 +202,9 @@ export function DoneScreen({
     URL.revokeObjectURL(url)
   }, [orderHtml, safeOrderNum])
 
-  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'sent_fallback' | 'error'>('idle')
-  const [sentToEmail, setSentToEmail] = useState<string>('')
+  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
-  // Автоотправка письма при появлении экрана
+  // Автоотправка заказа в Telegram при появлении экрана
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -226,25 +225,14 @@ export function DoneScreen({
         const res = await fetch('/api/send-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: process.env.NEXT_PUBLIC_ORDER_EMAIL || 'push@tellur.spb.ru',
-            subject,
-            html: engineerHtml,
-            replyTo: clientData.email || undefined,
-          })
+          body: JSON.stringify({ subject, html: engineerHtml })
         })
         if (cancelled) return
         if (!res.ok) throw new Error('Send failed')
-        const result = await res.json()
-        if (result.sentToFallback) {
-          setSentToEmail(result.sentTo)
-          setSendStatus('sent_fallback')
-        } else {
-          setSendStatus('sent')
-        }
+        setSendStatus('sent')
       } catch (err) {
         if (cancelled) return
-        console.error('Email send error:', err)
+        console.error('Order send error:', err)
         setSendStatus('error')
       }
     })()
@@ -378,16 +366,7 @@ export function DoneScreen({
         <div className="flex items-start gap-2.5 p-3 bg-green-50 border border-green-200 rounded-xl animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-medium text-green-800">Заявка отправлена в Теллур-Интех</p>
-            <p className="text-green-700 mt-0.5">Наш специалист свяжется с Вами для уточнения деталей.</p>
-          </div>
-        </div>
-      )}
-      {sendStatus === 'sent_fallback' && (
-        <div className="flex items-start gap-2.5 p-3 bg-green-50 border border-green-200 rounded-xl animate-fade-in-up">
-          <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-medium text-green-800">Заявка отправлена в Теллур-Интех</p>
+            <p className="font-medium text-green-800">Заявка отправлена менеджеру</p>
             <p className="text-green-700 mt-0.5">Наш специалист свяжется с Вами для уточнения деталей.</p>
           </div>
         </div>
@@ -397,7 +376,7 @@ export function DoneScreen({
           <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="font-medium text-red-800">Не удалось отправить заявку</p>
-            <p className="text-red-700 mt-0.5">Произошёл сбой при автоматической отправке. Сохраните заказ-наряд и отправьте его удобным способом:</p>
+            <p className="text-red-700 mt-0.5">Сбой при отправке. Сохраните заказ-наряд и свяжитесь с нами:</p>
             <div className="flex flex-col sm:flex-row gap-2 mt-2">
               <a href="tel:+78124659457" className="flex items-center gap-1.5 text-red-700 font-medium hover:text-red-900 hover:underline">
                 <Phone className="w-3.5 h-3.5" />Позвонить

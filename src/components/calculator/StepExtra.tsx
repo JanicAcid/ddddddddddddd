@@ -279,11 +279,11 @@ export function StepExtra({
             <div className="space-y-3">
               <div>
                 <Label className="text-xs font-semibold text-slate-700">Как к вам обращаться? <span className="text-red-500">*</span></Label>
-                <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" />
+                <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" autoComplete="name" />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
-                <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} />
+                <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} autoComplete="tel" inputMode="tel" />
                 {!isPhoneValid(clientData.phone) && clientData.phone.length > 0 && <p className="text-[11px] text-red-500 mt-1">Введите полный номер: +7 (XXX) XXX-XX-XX</p>}
               </div>
             </div>
@@ -309,16 +309,16 @@ export function StepExtra({
                 <div className="grid sm:grid-cols-2 gap-2.5">
                   <div>
                     <Label className="text-xs">ИНН <span className="text-slate-400 font-normal">(если знаете)</span></Label>
-                    <Input value={clientData.inn} onChange={(e) => setClientData({ ...clientData, inn: e.target.value })} placeholder="0000000000" className="mt-1 text-sm h-10" />
+                    <Input value={clientData.inn} onChange={(e) => setClientData({ ...clientData, inn: e.target.value })} placeholder="0000000000" className="mt-1 text-sm h-10" autoComplete="off" />
                   </div>
                   <div>
                     <Label className="text-xs">Электронная почта</Label>
-                    <Input type="email" value={clientData.email} onChange={(e) => setClientData({ ...clientData, email: e.target.value })} placeholder="mail@company.ru" className="mt-1 text-sm h-10" />
+                    <Input type="email" value={clientData.email} onChange={(e) => setClientData({ ...clientData, email: e.target.value })} placeholder="mail@company.ru" className="mt-1 text-sm h-10" autoComplete="email" />
                   </div>
                 </div>
                 <div>
                   <Label className="text-xs">Адрес установки кассы</Label>
-                  <Input list="ru-addresses" value={clientData.address} onChange={(e) => setClientData({ ...clientData, address: e.target.value })} className="mt-1 text-sm h-10" />
+                  <Input list="ru-addresses" value={clientData.address} onChange={(e) => setClientData({ ...clientData, address: e.target.value })} className="mt-1 text-sm h-10" autoComplete="street-address" />
                   <datalist id="ru-addresses">
                     <option value="г. Санкт-Петербург" /><option value="г. Москва" /><option value="г. Новосибирск" /><option value="г. Екатеринбург" /><option value="г. Казань" /><option value="г. Нижний Новгород" /><option value="г. Челябинск" /><option value="г. Самара" /><option value="г. Омск" /><option value="г. Ростов-на-Дону" /><option value="г. Уфа" /><option value="г. Красноярск" /><option value="г. Воронеж" /><option value="г. Пермь" /><option value="г. Волгоград" /><option value="г. Краснодар" /><option value="г. Саратов" /><option value="г. Тюмень" /><option value="г. Тольятти" /><option value="г. Ижевск" />
                   </datalist>
@@ -326,11 +326,11 @@ export function StepExtra({
                 <div className="grid sm:grid-cols-2 gap-2.5">
                   <div>
                     <Label className="text-xs">Модель кассы <span className="text-slate-400 font-normal">(на кассе и в чеке)</span></Label>
-                    <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} className="mt-1 text-sm h-10" />
+                    <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} className="mt-1 text-sm h-10" autoComplete="off" />
                   </div>
                   <div>
                     <Label className="text-xs">Заводской номер</Label>
-                    <Input value={clientData.kkmNumber} onChange={(e) => setClientData({ ...clientData, kkmNumber: e.target.value })} className="mt-1 text-sm h-10" />
+                    <Input value={clientData.kkmNumber} onChange={(e) => setClientData({ ...clientData, kkmNumber: e.target.value })} className="mt-1 text-sm h-10" autoComplete="off" />
                   </div>
                 </div>
                 {kkmType === 'evotor' && (
@@ -341,11 +341,11 @@ export function StepExtra({
                     <div className="grid sm:grid-cols-2 gap-2">
                       <div>
                         <Label className="text-xs">Логин (телефон)</Label>
-                        <Input type="tel" value={clientData.evotorLogin} onChange={(e) => setClientData({ ...clientData, evotorLogin: e.target.value })} className="mt-1 text-sm" />
+                        <Input type="tel" value={clientData.evotorLogin} onChange={(e) => setClientData({ ...clientData, evotorLogin: e.target.value })} className="mt-1 text-sm" autoComplete="tel" inputMode="tel" />
                       </div>
                       <div>
                         <Label className="text-xs">Пароль</Label>
-                        <Input type="password" value={clientData.evotorPassword} onChange={(e) => setClientData({ ...clientData, evotorPassword: e.target.value })} className="mt-1 text-sm" />
+                        <Input type="password" value={clientData.evotorPassword} onChange={(e) => setClientData({ ...clientData, evotorPassword: e.target.value })} className="mt-1 text-sm" autoComplete="current-password" />
                       </div>
                     </div>
                     <div className="flex items-center gap-2 p-1.5 bg-[#e8a817]/10 border border-[#e8a817]/30 rounded">
@@ -356,7 +356,7 @@ export function StepExtra({
                 )}
                 <div>
                   <Label className="text-xs">Примечания</Label>
-                  <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Дополнительная информация" className="mt-1 text-sm h-10" />
+                  <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Дополнительная информация" className="mt-1 text-sm h-10" autoComplete="off" />
                 </div>
               </div>
             )}

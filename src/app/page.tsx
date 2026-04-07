@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Info, Check, Phone, Send, MessageSquare } from 'lucide-react'
+import { Info, Check, Phone, Send, MessageSquare, X } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
@@ -75,6 +75,7 @@ export default function TellurServiceCalculator() {
   })
 
   const [showBanner, setShowBanner] = useState(true)
+  const [showConsultSlide, setShowConsultSlide] = useState(false)
   const [activeHint, setActiveHint] = useState<string | null>(null)
   const handleHintOpen = useCallback((key: string) => setActiveHint(key), [])
   const handleHintClose = useCallback(() => setActiveHint(null), [])
@@ -652,20 +653,20 @@ export default function TellurServiceCalculator() {
                   <CardContent className="p-4 sm:p-5 space-y-3">
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Как к вам обращаться? <span className="text-red-500">*</span></Label>
-                      <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" />
+                      <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" autoComplete="name" />
                     </div>
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
-                      <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} />
+                      <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} autoComplete="tel" inputMode="tel" />
                     </div>
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Модель кассы <span className="text-red-500">*</span></Label>
-                      <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} placeholder="Например: Меркурий 185Ф, Атол 90Ф..." className="mt-1.5 text-sm h-11" />
+                      <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} placeholder="Например: Меркурий 185Ф, Атол 90Ф..." className="mt-1.5 text-sm h-11" autoComplete="off" />
                       <p className="text-[11px] text-slate-400 mt-1">Найдите на корпусе кассы или в чеке</p>
                     </div>
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Опишите проблему</Label>
-                      <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Что случилось с кассой или что нужно настроить" className="mt-1.5 text-sm h-11" />
+                      <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Что случилось с кассой или что нужно настроить" className="mt-1.5 text-sm h-11" autoComplete="off" />
                     </div>
                     <Button
                       className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${clientData.name.trim() !== '' && isPhoneValid(clientData.phone) && clientData.kkmModel.trim() !== '' ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
@@ -718,7 +719,7 @@ export default function TellurServiceCalculator() {
         </div>
 
 
-        <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-2 pb-2">
+        <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-20 pb-2">
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div
               className="flex items-center justify-center gap-3 cursor-pointer"
@@ -734,6 +735,47 @@ export default function TellurServiceCalculator() {
           </div>
         </footer>
 
+
+        {/* FAB — «Перезвоните мне!» — нижний центр, на всех шагах */}
+        {!isDone && !isConsultation && (
+          <>
+            {showConsultSlide && (
+              <div className="fixed inset-0 bg-black/25 z-40" onClick={() => setShowConsultSlide(false)} />
+            )}
+            <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center px-3 sm:px-4 pb-3 sm:pb-5 pointer-events-none">
+              <div className={`transition-all duration-300 origin-bottom-center mb-3 pointer-events-auto ${showConsultSlide ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'}`}>
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#e8a817]/30 p-5 sm:p-7 w-[calc(100vw-1.5rem)] max-w-md">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e8a817] to-[#d49a12] flex items-center justify-center shrink-0 shadow-lg shadow-[#e8a817]/30">
+                      <Phone className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-extrabold text-lg sm:text-xl text-[#1e3a5f] leading-tight">Перезвоните мне!</p>
+                      <p className="text-sm text-slate-500 mt-0.5">Оставьте телефон — мы вам поможем</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed mb-4">Не хотите разбираться в калькуляторе или не нашли свою кассу в списке? Менеджер перезвонит за <span className="font-bold text-[#e8a817]">15 минут</span>, поможет подобрать решение и рассчитает стоимость.</p>
+                  <button
+                    type="button"
+                    onClick={() => { setShowConsultSlide(false); startConsultation() }}
+                    className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-[#e8a817] to-[#d49a12] hover:from-[#d49a12] hover:to-[#c08b0d] text-white text-base sm:text-lg font-bold rounded-xl transition-all shadow-lg shadow-[#e8a817]/25 hover:shadow-xl hover:shadow-[#e8a817]/30 active:scale-[0.98]"
+                  >
+                    Оставить телефон
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowConsultSlide(v => !v)}
+                className="pointer-events-auto w-full max-w-md flex items-center justify-center gap-2.5 py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#e8a817] to-[#d49a12] hover:from-[#d49a12] hover:to-[#c08b0d] text-white shadow-xl shadow-[#e8a817]/30 hover:shadow-2xl hover:shadow-[#e8a817]/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Phone className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                <span className="font-bold text-base sm:text-lg">Перезвоните мне!</span>
+                {showConsultSlide ? <X className="w-5 h-5 sm:w-6 sm:h-6 ml-1 shrink-0" /> : null}
+              </button>
+            </div>
+          </>
+        )}
 
       </div>
   )

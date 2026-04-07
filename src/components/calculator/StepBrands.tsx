@@ -198,7 +198,7 @@ export function StepBrands({
             {/* ============================================================================ */}
             {/* ВИД ДЕЯТЕЛЬНОСТИ — для ВСЕХ типов касс (кроме уже работающих с маркировкой) */}
             {/* ============================================================================ */}
-            {kkmType !== '' && kkmCondition !== '' && (!alreadyMarking || effectiveKkm === 'sigma') && (
+            {kkmType !== '' && kkmCondition !== '' && !alreadyMarking && effectiveKkm !== 'sigma' && (
               <div className="p-2.5 sm:p-3 bg-[#e8a817]/5 border border-[#e8a817]/30 rounded-lg space-y-3">
                 <div className="flex items-center gap-2">
                   <ScanLine className="w-8 h-8 text-[#e8a817] shrink-0" />

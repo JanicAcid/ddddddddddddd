@@ -439,10 +439,10 @@ export default function TellurServiceCalculator() {
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new Event('scroll-to-contacts'))}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-semibold rounded-lg transition-colors shrink-0"
+                className="inline-flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-base sm:text-lg font-bold rounded-xl transition-colors shrink-0 shadow-md hover:shadow-lg"
               >
-                <Phone className="w-4 h-4" />
-                <span className="hidden sm:inline">Контакты</span>
+                <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Контакты</span>
               </button>
             </div>
           </div>

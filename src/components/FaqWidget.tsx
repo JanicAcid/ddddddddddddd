@@ -12,6 +12,10 @@ const FAQ_ITEMS = [
   { id: 'faq-6', question: 'Новая / б/у / текущая касса?' },
   { id: 'faq-7', question: 'Что такое ЭДО?' },
   { id: 'faq-8', question: 'Штрафы за отсутствие маркировки?' },
+  { id: 'faq-9', question: 'Что такое Честный ЗНАК?' },
+  { id: 'faq-10', question: 'Что такое ТС ПИоТ?' },
+  { id: 'faq-11', question: 'Бесплатная консультация' },
+  { id: 'faq-12', question: 'Регистрация в Честном ЗНАКе' },
 ]
 
 export function FaqWidget() {

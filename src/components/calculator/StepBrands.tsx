@@ -280,6 +280,11 @@ export function StepBrands({
                           У меня уже есть оплаченный тариф Сигма
                         </Label>
                         <p className="text-xs text-slate-500 mt-0.5">Отметьте, если на кассе Сигма уже оформлен тариф. Мы настроим связь с Честный ЗНАК, ЭДО и ТС ПИоТ.</p>
+                        {!evotorHasSubscription && (
+                          <a href={sigmaTariffLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] font-medium hover:underline mt-1">
+                            Ознакомиться с тарифами Сигма →
+                          </a>
+                        )}
                       </div>
                     </div>
                     {evotorHasSubscription && (

@@ -1,83 +1,14 @@
 // ============================================================================
-// ОТПРАВКА ЗАКАЗА — только Telegram (без email)
+// ОТПРАВКА ЗАКАЗА — Telegram: текстовое резюме + HTML-файл заказ-наряда
 // ============================================================================
 
 import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
 
-async function sendToTelegram(subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
-  const botToken = TELEGRAM_BOT_TOKEN
-  const chatId = OPERATOR_CHAT_ID
+const API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
 
-  if (!botToken || !chatId) {
-    console.warn('Telegram not configured: missing TELEGRAM_BOT_TOKEN or OPERATOR_CHAT_ID')
-    return { ok: false, error: 'Telegram not configured' }
-  }
-
-  try {
-    // Вырезаем текст из HTML — берём содержимое body
-    const textMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
-    const rawHtml = textMatch ? textMatch[1] : html
-
-    // Конвертация HTML → Telegram-совместимый текст
-    let text = rawHtml
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>/gi, '\n')
-      .replace(/<\/div>/gi, '\n')
-      .replace(/<\/tr>/gi, '\n')
-      .replace(/<\/li>/gi, '\n')
-      .replace(/<h[1-6][^>]*>/gi, '🔑 ')
-      .replace(/<\/h[1-6]>/gi, '\n')
-      .replace(/<th[^>]*>/gi, '')
-      .replace(/<td[^>]*>/gi, ' | ')
-      .replace(/<li[^>]*>/gi, '• ')
-      .replace(/<strong[^>]*>/gi, '*')
-      .replace(/<\/strong>/gi, '*')
-      .replace(/<b[^>]*>/gi, '*')
-      .replace(/<\/b>/gi, '*')
-      .replace(/<em[^>]*>/gi, '_')
-      .replace(/<\/em>/gi, '_')
-      .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
-      .replace(/<[^>]+>/g, '')
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&#39;/g, "'")
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-
-    // Ограничение длины сообщения Telegram (4096 символов)
-    const MAX_LEN = 4096
-    if (text.length > MAX_LEN) {
-      text = text.slice(0, MAX_LEN - 50) + '\n\n... (сообщение обрезано)'
-    }
-
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage`
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: `📋 *${subject}*\n\n${text}`,
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true,
-      })
-    })
-
-    if (!res.ok) {
-      const err = await res.text()
-      console.error('Telegram API error:', err)
-      return { ok: false, error: err }
-    }
-
-    return { ok: true }
-  } catch (err) {
-    console.error('Telegram send error:', err)
-    return { ok: false, error: String(err) }
-  }
-}
-
+/**
+ * Отправляет короткое текстовое сообщение + HTML-файл как документ
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -87,15 +18,96 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Missing required fields: subject, html' }, { status: 400 })
     }
 
-    const result = await sendToTelegram(subject, html)
-
-    if (!result.ok) {
-      return Response.json({ error: result.error || 'Telegram send failed' }, { status: 500 })
+    if (!TELEGRAM_BOT_TOKEN || !OPERATOR_CHAT_ID) {
+      console.warn('Telegram not configured')
+      return Response.json({ error: 'Telegram not configured' }, { status: 500 })
     }
 
-    return Response.json({ success: true, sentTo: 'telegram' })
+    // ---- 1. Извлекаем краткий текст из HTML для превью ----
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+    const raw = bodyMatch ? bodyMatch[1] : html
+
+    let summary = raw
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<\/tr>/gi, '\n')
+      .replace(/<\/li>/gi, '\n')
+      .replace(/<h[1-6][^>]*>/gi, '')
+      .replace(/<\/h[1-6]>/gi, '\n')
+      .replace(/<th[^>]*>/gi, '')
+      .replace(/<td[^>]*>/gi, ' | ')
+      .replace(/<li[^>]*>/gi, '• ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&#39;/g, "'")
+      .replace(/\n{3,}/g, '\n')
+      .trim()
+
+    // Берём первые 2000 символов для превью
+    if (summary.length > 2000) {
+      summary = summary.slice(0, 2000) + '\n\n📄 Полный заказ-наряд во вложенном файле'
+    }
+
+    // ---- 2. Отправляем текстовое сообщение (без parse_mode — чистый текст) ----
+    const msgRes = await fetch(`${API}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: OPERATOR_CHAT_ID,
+        text: `📋 ${subject}\n\n${summary}`,
+        disable_web_page_preview: true,
+      })
+    })
+
+    if (!msgRes.ok) {
+      const err = await msgRes.text()
+      console.error('Telegram sendMessage error:', err)
+      return Response.json({ error: `Telegram message failed: ${err}` }, { status: 500 })
+    }
+
+    // ---- 3. Отправляем HTML-файл как документ ----
+    const boundary = 'order_boundary_' + Date.now()
+    const filename = `заказ-наряд-${Date.now().toString().slice(-6)}.html`
+
+    const fileBody = [
+      `--${boundary}`,
+      `Content-Disposition: form-data; name="chat_id"`,
+      '',
+      OPERATOR_CHAT_ID,
+      `--${boundary}`,
+      `Content-Disposition: form-data; name="caption"`,
+      '',
+      `📎 ${subject}`,
+      `--${boundary}`,
+      `Content-Disposition: form-data; name="document"; filename="${filename}"`,
+      'Content-Type: text/html; charset=utf-8',
+      '',
+      html,
+      `--${boundary}--`,
+    ].join('\r\n')
+
+    const docRes = await fetch(`${API}/sendDocument`, {
+      method: 'POST',
+      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+      body: fileBody,
+    })
+
+    if (!docRes.ok) {
+      const err = await docRes.text()
+      console.error('Telegram sendDocument error:', err)
+      // Текст отправлен — это уже успех, файл не критичен
+      return Response.json({ success: true, sentTo: 'telegram', documentSent: false, docError: err })
+    }
+
+    return Response.json({ success: true, sentTo: 'telegram', documentSent: true })
   } catch (err) {
     console.error('Send order error:', err)
-    return Response.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: String(err) }, { status: 500 })
   }
 }

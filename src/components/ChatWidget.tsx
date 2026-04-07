@@ -104,9 +104,13 @@ export function ChatWidget() {
   }, [])
 
   // Block body scroll when chat is open on mobile + notify FAQ + show info banner
+  // On desktop (sm+) chat is a popup — do NOT block body scroll
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      const isMobile = window.matchMedia('(max-width: 639px)').matches
+      if (isMobile) {
+        document.body.style.overflow = 'hidden'
+      }
       window.dispatchEvent(new Event('chat-opened'))
       // Show info banner on chat open
       setShowInfoBanner(true)

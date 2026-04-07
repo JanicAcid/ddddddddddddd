@@ -39,7 +39,7 @@ export function generateOrderHtml(params: GenerateOrderHtmlParams): string {
     }
   } else {
     // Обычный заказ — полный чек-лист
-    if (params.kkmCondition === 'new') {
+    if (params.kkmCondition === 'new' || params.kkmCondition === 'used') {
       checklist.push('Зарегистрировать ККТ в ФНС')
       checklist.push('Подключить ОФД')
       checklist.push('Установить ФН')

@@ -2,12 +2,14 @@
 // ОТПРАВКА ЗАКАЗА — только Telegram (без email)
 // ============================================================================
 
+import { TELEGRAM_BOT_TOKEN, OPERATOR_CHAT_ID } from '@/config/telegram'
+
 async function sendToTelegram(subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
+  const botToken = TELEGRAM_BOT_TOKEN
+  const chatId = OPERATOR_CHAT_ID
 
   if (!botToken || !chatId) {
-    console.warn('Telegram not configured: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID')
+    console.warn('Telegram not configured: missing TELEGRAM_BOT_TOKEN or OPERATOR_CHAT_ID')
     return { ok: false, error: 'Telegram not configured' }
   }
 

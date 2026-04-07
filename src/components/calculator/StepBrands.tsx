@@ -179,8 +179,8 @@ export function StepBrands({
               className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#1e3a5f] bg-transparent hover:bg-[#1e3a5f]/[0.02] text-sm font-medium text-slate-500 hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer group"
             >
               <Info className="w-6 h-6 shrink-0 group-hover:text-[#e8a817]" />
-              <span>Здесь нет моего производителя</span>
-              <span className="text-xs text-slate-400 group-hover:text-slate-500 hidden sm:inline">— напишите нам</span>
+              <span>Здесь нет производителя моей кассы</span>
+              <span className="text-xs text-slate-400 group-hover:text-slate-500 hidden sm:inline">— срочная консультация, оставьте заявку</span>
             </button>
 
             {kkmType === 'atol' && (

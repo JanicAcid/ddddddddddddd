@@ -101,17 +101,17 @@ export function StepServices({
       {step2Services.filter(s => {
         // === НОВАЯ КАССА ===
         if (kkmCondition === 'new') {
-          // Только регистрация + полная маркировка
-          if (s.id === 'fns_reregistration') return true  // показываем (заблокировано)
+          // Регистрация включена в полную маркировку — не показываем отдельно
+          if (s.id === 'fns_reregistration') return false
           if (s.id === 'marking_setup') return true
           if (s.id === 'partial_marketing_setup') return false
           return false
         }
         // === Б/У КАССА ===
         if (kkmCondition === 'used') {
-          // Регистрация + полная маркировка (same as new)
+          // Регистрация включена в полную маркировку — не показываем отдельно
+          if (s.id === 'fns_reregistration') return false
           if (s.id === 'marking_setup') return true
-          if (s.id === 'fns_reregistration') return true
           if (s.id === 'partial_marketing_setup') return false
           return false
         }
@@ -146,14 +146,19 @@ export function StepServices({
           : service.id === 'marking_setup' ? markingDesc : service.description
         const selected = step2Selections.includes(service.id)
         const ServiceIcon = service.id === 'fns_reregistration' ? FileSignature : service.id === 'marking_setup' ? Settings2 : Wrench
-        // Для новых и б/у касс — регистрация заблокирована (включена автоматически)
+        // Для новых и б/у касс — регистрация заблокирована (включена автоматически, теперь скрыта)
         const isLockedFns = (kkmCondition === 'new' || kkmCondition === 'used') && service.id === 'fns_reregistration'
+        // Для новых и б/у касс — полная маркировка заблокирована (включена автоматически)
+        const isLockedMarking = (kkmCondition === 'new' || kkmCondition === 'used') && service.id === 'marking_setup'
+        // Для текущей кассы в режиме «уже работаю» — частичная настройка заблокирована
+        const isLockedPartial = isPartialMode && service.id === 'partial_marketing_setup'
+        const isLocked = isLockedFns || isLockedMarking || isLockedPartial
         return (
-          <Card key={service.id} className={selected || isLockedFns ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
+          <Card key={service.id} className={selected || isLocked ? 'border-[#1e3a5f] bg-[#1e3a5f]/[0.03]' : 'border-slate-200'}>
             <CardContent className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
               <div className="flex items-start gap-2">
                 {service.hintKey && <HintButton hintKey={service.hintKey} {...hintProps} />}
-                <Checkbox id={service.id} checked={selected || isLockedFns} disabled={isLockedFns}
+                <Checkbox id={service.id} checked={selected || isLocked} disabled={isLocked}
                   onCheckedChange={() => {
                     const mutuallyExclusive = service.id === 'marking_setup' ? 'partial_marketing_setup' : service.id === 'partial_marketing_setup' ? 'marking_setup' : null
                     setStep2Selections((prev: string[]) => {

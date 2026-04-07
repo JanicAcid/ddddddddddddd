@@ -202,13 +202,12 @@ export default function TellurServiceCalculator() {
         next.delete('partial_marketing_setup')
       }
 
-      // Для новой/б/у кассы: регистрация обязательна
+      // Для новой/б/у кассы: полная маркировка обязательна (включает регистрацию ККТ в ФНС)
       if (kkmCondition === 'new' || kkmCondition === 'used') {
-        if (!next.has('fns_reregistration')) next.add('fns_reregistration')
-        // Полная маркировка — если выбран вид деятельности с маркировкой
-        if (hasMarking) {
-          if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
-        }
+        // Регистрация ККТ теперь включена в marking_setup — не добавляем отдельно
+        next.delete('fns_reregistration')
+        // Полная маркировка — всегда для новой/б/у кассы
+        if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
       }
 
       return [...next]

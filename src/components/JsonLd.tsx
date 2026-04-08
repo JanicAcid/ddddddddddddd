@@ -287,6 +287,7 @@ const faqPage = {
   mainEntity: [
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#chto-takoe-markirovka`,
       name: 'Что такое подключение маркировки под ключ?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -295,6 +296,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#chto-nuzhno-dlya-podklyucheniya`,
       name: 'Сколько стоит подключение маркировки?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -303,6 +305,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#tspiott`,
       name: 'Что такое ТС ПИоТ и обязательно ли оно?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -311,6 +314,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#kakie-kassy-podhodyat`,
       name: 'Для каких касс вы настраиваете маркировку?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -319,6 +323,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#registratsiya-chestnyznak`,
       name: 'В каких городах вы работаете?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -351,6 +356,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#chto-takoe-edo`,
       name: 'Что такое ЭДО и как оно связано с маркировкой?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -359,6 +365,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#skolko-dlitsya-nastroyka`,
       name: 'Сколько времени занимает подключение маркировки?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -367,6 +374,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#kakie-tovary-podlezhat-markirovke`,
       name: 'Какие товары подлежат обязательной маркировке в 2025-2026 годах?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -375,6 +383,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#novaya-bu-tekuschaya-kassa`,
       name: 'Чем отличается подключение маркировки для новой кассы от старой?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -383,6 +392,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#chestnyznak`,
       name: 'Что такое Честный ЗНАК и как он работает?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -391,6 +401,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#tspiott`,
       name: 'Что такое ТС ПИоТ простыми словами?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -399,6 +410,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#besplatnaya-konsultatsiya`,
       name: 'Предоставляете ли вы бесплатную консультацию по маркировке?',
       acceptedAnswer: {
         '@type': 'Answer',
@@ -407,6 +419,7 @@ const faqPage = {
     },
     {
       '@type': 'Question',
+      '@id': `${SITE_URL}/#registratsiya-chestnyznak`,
       name: 'Как зарегистрироваться в Честном ЗНАКе для ИП и ООО?',
       acceptedAnswer: {
         '@type': 'Answer',

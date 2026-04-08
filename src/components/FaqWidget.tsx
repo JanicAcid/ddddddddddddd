@@ -1,34 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { HelpCircle, X, ChevronRight } from 'lucide-react'
 
 const FAQ_ITEMS = [
-  { id: 'faq-1', question: 'Что такое маркировка товаров?' },
-  { id: 'faq-2', question: 'Что нужно для подключения?' },
-  { id: 'faq-3', question: 'Какие кассы подходят?' },
-  { id: 'faq-4', question: 'Какие товары подлежат маркировке?' },
-  { id: 'faq-5', question: 'Сколько длится настройка?' },
-  { id: 'faq-6', question: 'Новая / б/у / текущая касса?' },
-  { id: 'faq-7', question: 'Что такое ЭДО?' },
-  { id: 'faq-8', question: 'Штрафы за отсутствие маркировки?' },
-  { id: 'faq-9', question: 'Что такое Честный ЗНАК?' },
-  { id: 'faq-10', question: 'Что такое ТС ПИоТ?' },
-  { id: 'faq-11', question: 'Бесплатная консультация' },
-  { id: 'faq-12', question: 'Регистрация в Честном ЗНАКе' },
+  { id: 'faq-1', slug: 'chto-takoe-markirovka', question: 'Что такое маркировка товаров?' },
+  { id: 'faq-2', slug: 'chto-nuzhno-dlya-podklyucheniya', question: 'Что нужно для подключения?' },
+  { id: 'faq-3', slug: 'kakie-kassy-podhodyat', question: 'Какие кассы подходят?' },
+  { id: 'faq-4', slug: 'kakie-tovary-podlezhat-markirovke', question: 'Какие товары подлежат маркировке?' },
+  { id: 'faq-5', slug: 'skolko-dlitsya-nastroyka', question: 'Сколько длится настройка?' },
+  { id: 'faq-6', slug: 'novaya-bu-tekuschaya-kassa', question: 'Новая / б/у / текущая касса?' },
+  { id: 'faq-7', slug: 'chto-takoe-edo', question: 'Что такое ЭДО?' },
+  { id: 'faq-8', slug: 'shtrafy-za-markirovku', question: 'Штрафы за отсутствие маркировки?' },
+  { id: 'faq-9', slug: 'chestnyznak', question: 'Что такое Честный ЗНАК?' },
+  { id: 'faq-10', slug: 'tspiott', question: 'Что такое ТС ПИоТ?' },
+  { id: 'faq-11', slug: 'besplatnaya-konsultatsiya', question: 'Бесплатная консультация' },
+  { id: 'faq-12', slug: 'registratsiya-chestnyznak', question: 'Регистрация в Честном ЗНАКе' },
 ]
 
 export function FaqWidget() {
+  const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
 
   // Слушаем открытие/закрытие чата
   useEffect(() => {
-    const checkChat = () => {
-      const chatEl = document.querySelector('[data-chat-window]')
-      setChatOpen(!!chatEl)
-    }
-    // Используем CustomEvent из чата
     const openHandler = () => setChatOpen(true)
     const closeHandler = () => setChatOpen(false)
     window.addEventListener('chat-opened', openHandler)
@@ -39,9 +37,24 @@ export function FaqWidget() {
     }
   }, [])
 
-  const handleFaqClick = (id: string) => {
+  const handleFaqClick = (item: typeof FAQ_ITEMS[number]) => {
     setIsOpen(false)
-    window.dispatchEvent(new CustomEvent('scroll-to-faq', { detail: { id } }))
+
+    if (pathname === '/faq') {
+      // Уже на странице FAQ — скроллим к вопросу
+      const el = document.getElementById(item.slug)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        el.classList.add('ring-2', 'ring-[#e8a817]/50', 'rounded-lg')
+        setTimeout(() => el.classList.remove('ring-2', 'ring-[#e8a817]/50', 'rounded-lg'), 3000)
+      }
+    } else if (pathname === '/') {
+      // На главной — пробуем скроллить к SEO-секции
+      window.dispatchEvent(new CustomEvent('scroll-to-faq', { detail: { id: item.id } }))
+    } else {
+      // На другой странице — переходим на /faq с якорем
+      router.push(`/faq#${item.slug}`)
+    }
   }
 
   return (
@@ -76,7 +89,7 @@ export function FaqWidget() {
           {FAQ_ITEMS.map((item) => (
             <button
               key={item.id}
-              onClick={() => handleFaqClick(item.id)}
+              onClick={() => handleFaqClick(item)}
               className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-[#1e3a5f]/[0.04] transition-colors text-left group"
             >
               <ChevronRight className="w-4 h-4 text-[#e8a817] shrink-0 group-hover:translate-x-0.5 transition-transform" />

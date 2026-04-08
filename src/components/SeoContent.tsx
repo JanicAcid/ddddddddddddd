@@ -10,9 +10,68 @@ import { useState, useEffect } from 'react'
 import { ChevronDown, ArrowUp } from 'lucide-react'
 import { SeoContentInner } from './SeoContentInner'
 
+// Карта числовых id → семантические слаги для обратной совместимости
+const FAQ_SLUG_MAP: Record<string, string> = {
+  'faq-1': 'chto-takoe-markirovka',
+  'faq-2': 'chto-nuzhno-dlya-podklyucheniya',
+  'faq-3': 'kakie-kassy-podhodyat',
+  'faq-4': 'kakie-tovary-podlezhat-markirovke',
+  'faq-5': 'skolko-dlitsya-nastroyka',
+  'faq-6': 'novaya-bu-tekuschaya-kassa',
+  'faq-7': 'chto-takoe-edo',
+  'faq-8': 'shtrafy-za-markirovku',
+  'faq-9': 'chestnyznak',
+  'faq-10': 'tspiott',
+  'faq-11': 'besplatnaya-konsultatsiya',
+  'faq-12': 'registratsiya-chestnyznak',
+}
+
+// Все возможные FAQ-слаги для обнаружения в URL
+const ALL_FAQ_SLUGS = new Set(Object.values(FAQ_SLUG_MAP))
+const ALL_FAQ_IDS = new Set(Object.keys(FAQ_SLUG_MAP))
+
+function scrollToFaqItem(targetId: string) {
+  window.dispatchEvent(new CustomEvent('open-seo-sections', { detail: { ids: ['faq'] } }))
+  setTimeout(() => {
+    const el = document.getElementById(targetId)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (el) {
+      el.classList.add('ring-2', 'ring-[#e8a817]/50', 'rounded-lg')
+      setTimeout(() => el.classList.remove('ring-2', 'ring-[#e8a817]/50', 'rounded-lg'), 3000)
+    }
+  }, 600)
+}
+
 export function SeoContent() {
   const [open, setOpen] = useState(false)
 
+  useEffect(() => {
+    // === Обработка хеша при загрузке (приход из поисковика) ===
+    const hash = window.location.hash.replace('#', '')
+    if (hash) {
+      // Проверяем семантический слаг напрямую
+      if (ALL_FAQ_SLUGS.has(hash)) {
+        setOpen(true)
+        scrollToFaqItem(hash)
+      }
+      // Проверяем числовой id (обратная совместимость)
+      else if (ALL_FAQ_IDS.has(hash)) {
+        setOpen(true)
+        scrollToFaqItem(FAQ_SLUG_MAP[hash])
+      }
+      // Обработка секций: #contacts, #services, #offices и т.д.
+      else if (['contacts', 'offices', 'services', 'about', 'why-us', 'districts', 'regions', 'repair', 'calculator'].includes(hash)) {
+        setOpen(true)
+        window.dispatchEvent(new CustomEvent('open-seo-sections', { detail: { ids: [hash === 'contacts' ? 'offices' : hash] } }))
+        setTimeout(() => {
+          const el = document.getElementById(hash === 'contacts' ? 'contacts-section' : hash)
+          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 600)
+      }
+    }
+  }, [])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const handlerContacts = () => {
       if (!open) setOpen(true)
@@ -23,16 +82,9 @@ export function SeoContent() {
     const handlerFaq = (e: Event) => {
       const { id } = (e as CustomEvent).detail || {}
       if (!open) setOpen(true)
-      // Открыть секцию FAQ
-      window.dispatchEvent(new CustomEvent('open-seo-sections', { detail: { ids: ['faq'] } }))
-      setTimeout(() => {
-        const el = document.getElementById(id || 'faq-1')
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        if (el) {
-          el.classList.add('ring-2', 'ring-[#e8a817]/50', 'rounded-lg')
-          setTimeout(() => el.classList.remove('ring-2', 'ring-[#e8a817]/50', 'rounded-lg'), 3000)
-        }
-      }, 600)
+      // Маппим числовой id на семантический слаг
+      const targetId = FAQ_SLUG_MAP[id] || id
+      scrollToFaqItem(targetId)
     }
     window.addEventListener('scroll-to-contacts', handlerContacts)
     window.addEventListener('scroll-to-faq', handlerFaq)

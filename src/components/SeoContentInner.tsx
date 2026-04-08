@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
+import Link from 'next/link'
 import { BRANCHES } from '@/config/contacts'
 import { MapPin, Mail, Phone, Clock, CheckCircle, ShieldCheck, Zap, Users } from 'lucide-react'
 
@@ -304,6 +305,9 @@ export function SeoContentInner() {
             <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Как зарегистрироваться в&nbsp;Честном ЗНАКе для ИП&nbsp;и&nbsp;ООО?</h3>
             <p className="leading-relaxed">
               Для регистрации в&nbsp;системе <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a> необходимо: получить усиленную квалифицированную электронную подпись (УКЭП) в&nbsp;аккредитованном удостоверяющем центре, зарегистрировать учётную запись на&nbsp;сайте честныйзнак.рф, подписать электронное соглашение с&nbsp;оператором системы (ЦРПТ). Для ИП&nbsp;и&nbsp;ООО процедура одинаковая. После регистрации вам будет доступен личный кабинет, где можно управлять карточками товаров, отслеживать движение маркированной продукции и&nbsp;связывать кассу с&nbsp;учётной записью. Если вы&nbsp;не&nbsp;уверены в&nbsp;своих силах&nbsp;— наши инженеры помогут зарегистрироваться и&nbsp;настроить все компоненты.
+            </p>
+            <p className="leading-relaxed">
+              <strong>Подробная пошаговая инструкция</strong> с&nbsp;картинками и&nbsp;пояснениями каждого шага доступна в&nbsp;нашем разделе <Link href="/instructions/kak-podklyuchit-kabinet-chestnyznak" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Как подключить кабинет Честный ЗНАК»</Link>. Там описано: как подготовить УКЭП, заполнить данные, подписать соглашение с&nbsp;ЦРПТ и&nbsp;настроить профиль.
             </p>
           </div>
         </div>

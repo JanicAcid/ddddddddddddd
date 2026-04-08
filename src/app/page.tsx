@@ -400,7 +400,7 @@ export default function TellurServiceCalculator() {
   }), [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col relative">
+    <div className="bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col relative">
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
 @keyframes greenPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 70% { box-shadow: 0 0 0 12px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
 @keyframes greenSlideIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -414,42 +414,6 @@ export default function TellurServiceCalculator() {
 [data-slot=radio-group-item]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
 [data-slot=radio-group-item][data-state=checked]{border-color:#1e3a5f;background:#fff}
 .space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
-        {/* HEADER */}
-        <header className="bg-white shadow-sm border-b border-[#1e3a5f]/10">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
-            <div className="flex items-center justify-between">
-              <div
-                className="flex items-center gap-2 sm:gap-3 cursor-pointer"
-                role="button"
-                tabIndex={0}
-                aria-label="Вернуться на главную"
-                onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
-              >
-                <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="w-11 h-9 sm:w-[88px] sm:h-[72px]" quality={100} />
-                <div className="min-w-0">
-                  <h1 className="text-base sm:text-2xl font-extrabold text-[#1e3a5f] whitespace-nowrap overflow-hidden text-ellipsis">Калькулятор маркировки</h1>
-                  <p className="text-[11px] sm:text-xs text-slate-500 flex items-center gap-x-1 whitespace-nowrap overflow-hidden">
-                    <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors shrink-0">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-6 h-6 sm:w-6 sm:h-6" /></a>
-                    <span className="text-slate-300 shrink-0">·</span>
-                    <a href="https://ao-esp.ru/#ESM" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-slate-600 hover:text-[#1e3a5f] transition-colors shrink-0">ТС ПИоТ<img src="/tspiot-dark.png" alt="" style={{width:'auto',height:'20px'}} className="sm:hidden" /><img src="/tspiot-dark.png" alt="" style={{width:'auto',height:'26px'}} className="hidden sm:inline" /></a>
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event('scroll-to-contacts'))}
-                className="inline-flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-base sm:text-lg font-bold rounded-xl transition-colors shrink-0 shadow-md hover:shadow-lg"
-              >
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span>Контакты</span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-
-
         <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
 
           <div className="mt-1 sm:mt-2">
@@ -717,23 +681,6 @@ export default function TellurServiceCalculator() {
         <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-4 sm:pb-6">
           <SeoContent />
         </div>
-
-
-        <footer className="bg-white border-t border-[#1e3a5f]/10 mt-auto mb-20 pb-2">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-            <div
-              className="flex items-center justify-center gap-3 cursor-pointer"
-              role="button"
-              tabIndex={0}
-              aria-label="Вернуться на главную"
-              onClick={() => { setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCurrentStep(1); setIsDone(false); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
-            >
-              <Image src="/logo.webp" alt="Теллур-Интех" width={56} height={46} className="w-7 h-[23px] sm:w-[56px] sm:h-[46px]" quality={100} />
-              <p className="text-xs sm:text-sm text-slate-500">ООО &quot;Теллур-Интех&quot; — сервисный центр кассового оборудования</p>
-            </div>
-          </div>
-        </footer>
 
 
         {/* FAB — «Перезвоните мне!» — нижний центр, на всех шагах */}

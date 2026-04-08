@@ -6,6 +6,8 @@ import { YandexMetrika } from "@/components/YandexMetrika";
 import { ChatWidget } from "@/components/ChatWidget";
 import { FaqWidget } from "@/components/FaqWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
+import { Navbar } from "@/components/Navbar";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -90,7 +92,9 @@ export default function RootLayout({
       >
         <JsonLd />
         <YandexMetrika />
-        {children}
+        <Navbar />
+        <div className="flex-1 flex flex-col">{children}</div>
+        <SiteFooter />
         <noscript>
           <div style={{ padding: '16px', maxWidth: '768px', margin: '0 auto', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.6', color: '#334155' }}>
             <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1e3a5f', marginBottom: '12px' }}>

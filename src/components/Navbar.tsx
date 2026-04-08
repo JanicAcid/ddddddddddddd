@@ -69,11 +69,11 @@ export function Navbar() {
             <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Теллур-Интех — на главную">
               <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-10 w-auto sm:h-9" quality={100} />
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] sm:text-xs text-slate-400 leading-tight">
-                  Центр ТО касс
+                <span className="text-sm sm:text-base font-bold text-[#1e3a5f] leading-tight">
+                  Калькулятор маркировки
                 </span>
-                <span className="text-[9px] text-slate-300 leading-tight hidden sm:inline">
-                  кассового оборудования
+                <span className="text-[9px] sm:text-[10px] text-slate-400 leading-tight">
+                  Центр ТО кассового оборудования
                 </span>
               </div>
             </Link>

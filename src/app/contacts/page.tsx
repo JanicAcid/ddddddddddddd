@@ -10,13 +10,13 @@ import { BRANCHES } from '@/config/contacts'
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
 export const metadata: Metadata = {
-  title: 'Контакты — Теллур-Интех | Сервисный центр касс, Санкт-Петербург',
+  title: 'Контакты — Теллур-Интех | Центр технического обслуживания касс, Санкт-Петербург',
   description: 'Контакты ООО «Теллур-Интех»: телефон, адреса офисов в Санкт-Петербурге, Пушкине и Гатчине. Часы работы, email. Бесплатная консультация по маркировке.',
   keywords: ['контакты теллур-интех', 'адрес теллур спб', 'телефон сервисный центр касс', 'ремонт касс контакты', 'маркировка контакты спб', 'теллур-интех пушкин', 'теллур-интех гатчина'],
   alternates: { canonical: `${SITE_URL}/contacts` },
   openGraph: {
     title: 'Контакты — Теллур-Интех',
-    description: 'Адреса и телефоны сервисного центра касс в Санкт-Петербурге.',
+    description: 'Адреса и телефоны центра технического обслуживания касс в Санкт-Петербурге.',
     url: `${SITE_URL}/contacts`,
     siteName: 'Теллур-Интех',
     locale: 'ru_RU',
@@ -25,9 +25,9 @@ export const metadata: Metadata = {
 }
 
 const YANDEX_MAP_LINKS: Record<string, string> = {
-  'Теллур-Центр': 'https://yandex.ru/maps/-/CDaW6dJ~',
-  'Теллур-Пушкин': 'https://yandex.ru/maps/-/CDaW6kWL',
-  'Теллур-Гатчина': 'https://yandex.ru/maps/-/CDaW6mRB',
+  'Теллур-Центр': 'https://yandex.com/maps/-/CPfpvF1T',
+  'Теллур-Пушкин': 'https://yandex.com/maps/-/CPfprG0R',
+  'Теллур-Гатчина': 'https://yandex.com/maps/-/CPfpnHoK',
 }
 
 export default function ContactsPage() {

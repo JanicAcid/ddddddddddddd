@@ -132,7 +132,7 @@ table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #
 </style></head><body>
 ${params.isCorrection ? `<div class="correction">⚡ КОРРЕКТИРОВКА ЗАКАЗА<br><span class="correction-time">Повторная отправка от ${new Date().toLocaleString('ru-RU')}</span></div>` : ''}
 <div style="text-align:center;margin-bottom:20px"><h1>${params.isCorrection ? 'КОРРЕКТИРОВКА — ЗАКАЗ-НАРЯД' : 'ЗАКАЗ-НАРЯД'}</h1>
-<p style="color:#64748b;font-size:12px;margin:2px 0">ООО &quot;Теллур-Интех&quot; | Сервисный центр кассового оборудования</p>
+<p style="color:#64748b;font-size:12px;margin:2px 0">ООО &quot;Теллур-Интех&quot; | Центр технического обслуживания кассового оборудования</p>
 <p style="font-size:16px;font-weight:bold;margin:6px 0">№ ${params.orderNum || orderNum} от ${new Date().toLocaleDateString('ru-RU')}</p></div>
 <div style="margin:16px 0"><h2>Клиент</h2>
 <p><strong>Наименование:</strong> ${params.clientData.name || 'Не указано'}</p>

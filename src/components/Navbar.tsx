@@ -69,7 +69,7 @@ export function Navbar() {
             <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Теллур-Интех — на главную">
               <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-7 w-auto sm:h-9" quality={100} />
               <span className="hidden sm:inline text-[11px] sm:text-xs text-slate-400 leading-tight max-w-[120px]">
-                Сервисный центр касс
+                Центр ТО касс
               </span>
             </Link>
 
@@ -173,7 +173,7 @@ export function Navbar() {
               {/* Логотип внизу */}
               <div className="pt-4 mt-4 border-t border-slate-100 text-center">
                 <p className="text-[11px] text-slate-400">ООО «Теллур-Интех»</p>
-                <p className="text-[10px] text-slate-300 mt-0.5">Сервисный центр кассового оборудования с 1995 года</p>
+                <p className="text-[10px] text-slate-300 mt-0.5">Центр технического обслуживания кассового оборудования с 1995 года</p>
               </div>
             </div>
           </nav>

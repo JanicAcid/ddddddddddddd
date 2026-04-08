@@ -35,7 +35,7 @@ export function SiteFooter() {
               <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-10 w-auto brightness-0 invert" quality={100} />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed">
-              Сервисный центр кассового оборудования в Санкт-Петербурге с 1995 года.
+              Центр технического обслуживания кассового оборудования в Санкт-Петербурге с 1995 года.
               Подключение маркировки под ключ.
             </p>
           </div>
@@ -95,7 +95,7 @@ export function SiteFooter() {
         {/* Нижняя строка */}
         <div className="mt-8 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
           <p>© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
-          <p>Сервисный центр кассового оборудования</p>
+          <p>Центр технического обслуживания кассового оборудования</p>
         </div>
       </div>
     </footer>

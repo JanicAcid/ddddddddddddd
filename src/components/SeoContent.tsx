@@ -104,7 +104,7 @@ export function SeoContent() {
         aria-expanded={open}
       >
         <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] text-center leading-snug">
-          Сервисный центр кассового оборудования<br className="hidden sm:block" />
+          Центр технического обслуживания кассового оборудования<br className="hidden sm:block" />
           {' '}в&nbsp;Санкт-Петербурге и&nbsp;Ленинградской области
         </h2>
         <p className="text-[11px] sm:text-xs text-slate-400 mt-1">Подробнее о нас</p>

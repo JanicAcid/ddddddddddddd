@@ -64,13 +64,18 @@ export function Navbar() {
         style={{ borderBottom: '1px solid rgba(30,58,95,0.08)' }}
       >
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-between h-12 sm:h-14">
+          <div className="flex items-center justify-between h-14 sm:h-14">
             {/* Лого */}
             <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Теллур-Интех — на главную">
-              <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-7 w-auto sm:h-9" quality={100} />
-              <span className="hidden sm:inline text-[11px] sm:text-xs text-slate-400 leading-tight max-w-[120px]">
-                Центр ТО касс
-              </span>
+              <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-10 w-auto sm:h-9" quality={100} />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] sm:text-xs text-slate-400 leading-tight">
+                  Центр ТО касс
+                </span>
+                <span className="text-[9px] text-slate-300 leading-tight hidden sm:inline">
+                  кассового оборудования
+                </span>
+              </div>
             </Link>
 
             {/* Десктоп: меню */}
@@ -100,20 +105,20 @@ export function Navbar() {
                 {MAIN_PHONE}
               </a>
 
-              {/* Мобильный: иконка телефона (маленькая) */}
+              {/* Мобильный: иконка телефона */}
               <a
                 href={MAIN_PHONE_HREF}
-                className="sm:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#e8a817] hover:bg-[#d49a12] text-white transition-colors"
+                className="sm:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#e8a817] hover:bg-[#d49a12] text-white transition-colors shadow-md"
                 aria-label="Позвонить"
               >
-                <Phone className="w-4 h-4" />
+                <Phone className="w-6 h-6" />
               </a>
 
               {/* Гамбургер (мобильный + планшет) */}
               <button
                 type="button"
                 onClick={() => setMenuOpen(v => !v)}
-                className="lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#1e3a5f] hover:bg-slate-100 transition-colors"
+                className="lg:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl text-[#1e3a5f] hover:bg-slate-100 transition-colors"
                 aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
               >
                 {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -181,7 +186,7 @@ export function Navbar() {
       )}
 
       {/* Spacer для fixed header */}
-      <div className="h-12 sm:h-14" />
+      <div className="h-14" />
     </>
   )
 }

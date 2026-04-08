@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { BRANCHES } from '@/config/contacts'
-import { MapPin, Mail, Phone, Clock, CheckCircle, ShieldCheck, Zap, Users } from 'lucide-react'
+import { MapPin, Mail, Phone, Clock, CheckCircle, ShieldCheck, Zap, Users, ExternalLink } from 'lucide-react'
 
 // Иконки для заголовков секций
 const SECTION_ICONS: Record<string, React.ReactNode> = {
@@ -186,7 +186,7 @@ export function SeoContentInner() {
       </AccordionSection>
 
       {/* ===== 5. Филиалы ===== */}
-      <AccordionSection id="offices" title="Офисы сервисного центра Теллур-Интех">
+      <AccordionSection id="offices" title="Офисы центра технического обслуживания Теллур-Интех">
         <div className="space-y-3" id="contacts-section">
           {BRANCHES.map((branch) => (
             <div key={branch.name} className="p-3.5 bg-[#1e3a5f]/[0.03] rounded-lg border border-[#1e3a5f]/10">
@@ -194,7 +194,24 @@ export function SeoContentInner() {
               <div className="space-y-1.5 text-[15px] sm:text-base text-slate-700">
                 <div className="flex items-start gap-2.5">
                   <MapPin className="w-4 h-4 text-[#e8a817] shrink-0 mt-0.5" />
-                  <span className="leading-snug">{branch.address}</span>
+                  <div>
+                    <span className="leading-snug">{branch.address}</span>
+                    {branch.name === 'Теллур-Центр' && (
+                      <a href="https://yandex.com/maps/-/CPfpvF1T" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-2">
+                        <ExternalLink className="w-3 h-3" />На карте
+                      </a>
+                    )}
+                    {branch.name === 'Теллур-Пушкин' && (
+                      <a href="https://yandex.com/maps/-/CPfprG0R" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-2">
+                        <ExternalLink className="w-3 h-3" />На карте
+                      </a>
+                    )}
+                    {branch.name === 'Теллур-Гатчина' && (
+                      <a href="https://yandex.com/maps/-/CPfpnHoK" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-2">
+                        <ExternalLink className="w-3 h-3" />На карте
+                      </a>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Mail className="w-4 h-4 text-[#e8a817] shrink-0" />

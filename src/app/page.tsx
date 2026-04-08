@@ -683,6 +683,7 @@ export default function TellurServiceCalculator() {
         </div>
 
 
+
         {/* FAB — «Перезвоните мне!» — нижний центр, на всех шагах */}
         {!isDone && !isConsultation && (
           <>

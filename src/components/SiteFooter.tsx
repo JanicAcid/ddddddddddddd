@@ -93,11 +93,11 @@ export function SiteFooter() {
         </div>
 
         {/* Нижняя строка */}
-        <div className="mt-8 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
-          <p>© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
-          <div className="flex items-center gap-4">
-            <p>Центр технического обслуживания кассового оборудования</p>
-            <Link href="/admin/login" className="flex items-center gap-1.5 text-white/40 hover:text-white/80 transition-colors" title="Кабинет менеджера">
+        <div className="mt-8 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
+          <p className="order-2 sm:order-1">© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
+          <div className="flex items-center gap-3 order-1 sm:order-2">
+            <p className="text-center sm:text-right">Центр технического обслуживания кассового оборудования</p>
+            <Link href="/admin/login" className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors" title="Кабинет менеджера">
               <Lock className="w-3.5 h-3.5" />
               <span>Кабинет</span>
             </Link>

@@ -8,3 +8,21 @@ dist/
 search*.json
 
 .env*
+
+# Dev artifacts
+CONTEXT.md
+worklog.md
+page_combined.tsx
+page_part2.tsx
+debug-*.png
+mobile-brand-check.png
+
+# Uploaded user files
+upload/
+
+# Parent repo references
+download/
+
+# IDE
+.vscode/
+.idea/

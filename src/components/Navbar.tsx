@@ -64,9 +64,9 @@ export function Navbar() {
         style={{ borderBottom: '1px solid rgba(30,58,95,0.08)' }}
       >
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-between h-14 sm:h-14">
-            {/* Лого */}
-            <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Теллур-Интех — на главную">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center h-14 sm:h-14">
+            {/* Лого (левая ячейка) */}
+            <Link href="/" className="flex items-center gap-2 justify-self-start" aria-label="Теллур-Интех — на главную">
               <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-10 w-auto sm:h-9" quality={100} />
               <div className="flex flex-col min-w-0">
                 <span className="text-sm sm:text-base font-bold text-[#1e3a5f] leading-tight">
@@ -78,8 +78,8 @@ export function Navbar() {
               </div>
             </Link>
 
-            {/* Десктоп: меню — по центру */}
-            <nav className="hidden lg:flex flex-1 items-center justify-center gap-0.5" aria-label="Основная навигация">
+            {/* Десктоп: меню — точно по центру (средняя ячейка auto) */}
+            <nav className="hidden lg:flex items-center gap-0.5" aria-label="Основная навигация">
               {NAV_ITEMS.map(item => (
                 <Link
                   key={item.href}
@@ -95,8 +95,8 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Телефон + гамбургер */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* Телефон + гамбургер (правая ячейка) */}
+            <div className="flex items-center gap-2 justify-self-end">
               <a
                 href={MAIN_PHONE_HREF}
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-[13px] font-bold rounded-lg transition-colors"

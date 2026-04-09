@@ -38,10 +38,8 @@ export async function POST(request: NextRequest) {
     return handleJson(request)
   } catch (err) {
     console.error('Chat send error:', err)
-    console.error('Error details:', err instanceof Error ? err.message : String(err))
-    console.error('Error stack:', err instanceof Error ? err.stack : 'no stack')
     return Response.json(
-      { error: 'Internal server error', debug: err instanceof Error ? err.message : String(err) },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

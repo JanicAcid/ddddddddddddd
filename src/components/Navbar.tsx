@@ -64,7 +64,7 @@ export function Navbar() {
         style={{ borderBottom: '1px solid rgba(30,58,95,0.08)' }}
       >
         <div className="max-w-6xl mx-auto pl-1 sm:pl-2 pr-3 sm:pr-4">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center h-14 sm:h-14">
+          <div className="grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center h-14 sm:h-14">
             {/* Лого (левая ячейка — вплотную к краю) */}
             <Link href="/" className="flex items-center gap-2" aria-label="Теллур-Интех — на главную">
               <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-10 w-auto sm:h-9" quality={100} />

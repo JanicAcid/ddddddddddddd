@@ -97,8 +97,8 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
           <div className="flex items-center gap-4">
             <p>Центр технического обслуживания кассового оборудования</p>
-            <Link href="/admin/login" className="flex items-center gap-1.5 text-white/25 hover:text-white/60 transition-colors" title="Кабинет менеджера">
-              <Lock className="w-3 h-3" />
+            <Link href="/admin/login" className="flex items-center gap-1.5 text-white/40 hover:text-white/80 transition-colors" title="Кабинет менеджера">
+              <Lock className="w-3.5 h-3.5" />
               <span>Кабинет</span>
             </Link>
           </div>

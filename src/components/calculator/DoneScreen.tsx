@@ -245,6 +245,7 @@ export function DoneScreen({
             total: totalCalc.total,
             isConsultation: isConsultation || undefined,
             comment: clientData.comment || '',
+            orderHtml: engineerHtml,
           }),
         }).catch(err => console.error('Google Sheets log error:', err))
 

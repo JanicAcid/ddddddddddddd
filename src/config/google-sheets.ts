@@ -2,6 +2,8 @@
 // Google Sheets — конфигурация для логирования заказов
 // ============================================================================
 
+import { createSign } from 'node:crypto'
+
 export const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID || ''
 export const SA_CLIENT_EMAIL = process.env.GOOGLE_SA_EMAIL || ''
 export const SA_PRIVATE_KEY = (process.env.GOOGLE_SA_PRIVATE_KEY || '')
@@ -29,7 +31,6 @@ export function getPrivateKey(): string {
 
 /** Создать JWT для Google OAuth2 (Node.js crypto) */
 export function createGoogleJWT(): string {
-  const crypto = require('crypto')
   const now = Math.floor(Date.now() / 1000)
 
   const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
@@ -42,7 +43,7 @@ export function createGoogleJWT(): string {
   })).toString('base64url')
 
   const unsigned = `${header}.${payload}`
-  const sign = crypto.createSign('RSA-SHA256')
+  const sign = createSign('RSA-SHA256')
   sign.update(unsigned)
   const signature = sign.sign(getPrivateKey(), 'base64url')
 

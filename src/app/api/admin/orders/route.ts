@@ -35,12 +35,37 @@ export async function GET(request: NextRequest) {
     const jwt = await createJWT()
     const accessToken = await getAccessToken(jwt)
 
-    // Получаем все данные из Лист1
-    const res = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
+    // Проверяем доступ к таблице и получаем список листов
+    const metaRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    )
+
+    if (!metaRes.ok) {
+      const err = await metaRes.json()
+      const msg = err?.error?.message || JSON.stringify(err)
+      if (msg.includes('403') || msg.includes('Permission') || msg.includes('access')) {
+        throw new Error(`Нет доступа к таблице. Поделитесь таблицей с email: ${GOOGLE_SERVICE_ACCOUNT_KEY?.client_email} (Редактор). Ошибка: ${msg}`)
       }
+      throw new Error(`Ошибка доступа к таблице: ${msg}`)
+    }
+
+    const metaData = await metaRes.json()
+    const sheetNames = (metaData.sheets || []).map((s: { properties: { title: string } }) => s.properties.title)
+
+    // Ищем нужный лист (пробуем Лист1, Sheet1, или первый доступный)
+    let sheetName = sheetNames.find((n: string) => n === 'Лист1')
+      || sheetNames.find((n: string) => n === 'Sheet1')
+      || sheetNames[0]
+
+    if (!sheetName) {
+      throw new Error('В таблице нет ни одного листа')
+    }
+
+    // Получаем все данные из найденного листа
+    const res = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName)}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     )
 
     if (!res.ok) {
@@ -52,32 +77,30 @@ export async function GET(request: NextRequest) {
     const rows = data.values || []
 
     if (rows.length === 0) {
-      return NextResponse.json({ orders: [], total: 0 })
+      return NextResponse.json({ orders: [], total: 0, sheetName, debug: `Лист "${sheetName}" пуст — добавьте заголовки в первую строку` })
     }
 
     // Первая строка — заголовки
     const headers = rows[0]
     const orders = rows.slice(1).map((row: string[], idx: number) => {
-      const order: Record<string, string> = { _row: String(idx + 2) } // +2: 1-based + header
+      const order: Record<string, string> = { _row: String(idx + 2) }
       headers.forEach((h: string, i: number) => {
         order[h] = row[i] || ''
       })
       return order
     })
 
-    // Сортировка по дате (первая колонка) — новые сверху
     orders.reverse()
 
-    return NextResponse.json({ orders, total: orders.length, headers })
+    return NextResponse.json({ orders, total: orders.length, headers, sheetName })
   } catch (err) {
     console.error('Admin get orders error:', err)
-    return NextResponse.json({ error: 'Ошибка получения заказов' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }
 
 // ============================================================================
 // PATCH — Обновить статус заказа
-// Body: { rowIndex, status, managerComment }
 // ============================================================================
 export async function PATCH(request: NextRequest) {
   if (!(await checkAuth(request))) {
@@ -90,7 +113,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { rowIndex, updates } = body // rowIndex — номер строки в таблице (1-based, с учётом заголовка)
+    const { rowIndex, updates, sheetName: sn } = body
 
     if (!rowIndex || !updates) {
       return NextResponse.json({ error: 'Missing rowIndex or updates' }, { status: 400 })
@@ -99,12 +122,18 @@ export async function PATCH(request: NextRequest) {
     const jwt = await createJWT()
     const accessToken = await getAccessToken(jwt)
 
-    // Сначала читаем текущую строку, чтобы обновить только нужные колонки
+    // Определяем имя листа
+    const metaRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    )
+    const metaData = await metaRes.json()
+    const sheetNames = (metaData.sheets || []).map((s: { properties: { title: string } }) => s.properties.title)
+    const sheetName = sn || sheetNames.find((n: string) => n === 'Лист1') || sheetNames.find((n: string) => n === 'Sheet1') || sheetNames[0]
+
     const res = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1!${rowIndex}:${rowIndex}`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName!)}!${rowIndex}:${rowIndex}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     )
 
     if (!res.ok) {
@@ -114,16 +143,13 @@ export async function PATCH(request: NextRequest) {
 
     const data = await res.json()
     const headersRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1!1:1`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName!)}!1:1`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     )
     const headersData = await headersRes.json()
     const headers = headersData.values?.[0] || []
     const currentRow = data.values?.[0] || []
 
-    // Применяем обновления
     for (const [key, value] of Object.entries(updates)) {
       const colIndex = headers.indexOf(key)
       if (colIndex >= 0) {
@@ -132,9 +158,8 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    // Пишем обновлённую строку
     const updateRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1!${rowIndex}:${rowIndex}?valueInputOption=USER_ENTERED`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName!)}!${rowIndex}:${rowIndex}?valueInputOption=USER_ENTERED`,
       {
         method: 'PUT',
         headers: {
@@ -158,7 +183,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 // ============================================================================
-// JWT и Google Sheets API helpers (дублируем из log-order для независимости)
+// JWT и Google Sheets API helpers
 // ============================================================================
 
 function base64url(data: string): string {
@@ -212,5 +237,8 @@ async function getAccessToken(jwt: string): Promise<string> {
     body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
   })
   const data = await res.json()
+  if (!data.access_token) {
+    throw new Error(`Ошибка получения токена: ${data.error_description || data.error || JSON.stringify(data)}. Проверьте GOOGLE_SERVICE_ACCOUNT_KEY.`)
+  }
   return data.access_token
 }

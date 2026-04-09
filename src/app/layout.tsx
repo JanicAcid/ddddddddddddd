@@ -1,0 +1,114 @@
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { JsonLd } from "@/components/JsonLd";
+import { YandexMetrika } from "@/components/YandexMetrika";
+import { ChatWidget } from "@/components/ChatWidget";
+import { FaqWidget } from "@/components/FaqWidget";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
+import { Navbar } from "@/components/Navbar";
+import { SiteFooter } from "@/components/SiteFooter";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "cyrillic"],
+});
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
+const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: 'Калькулятор маркировки: цена под ключ в СПб — Теллур-Интех',
+  description: 'Настройка кассы, маркировка и подключение Честный ЗНАК в СПб. Цена от 3 000 ₽. Настроим за 1 день, без ошибок. Калькулятор и бесплатная консультация.',
+
+  keywords: ['калькулятор маркировки', 'маркировка товаров Санкт-Петербург', 'маркировка СПб', 'подключение маркировки', 'Честный ЗНАК', 'честныйзнак.рф', 'ТС ПИоТ', 'ЭДО подключение', 'ОФД подключение', 'регистрация ККТ', 'ФФД 1.2', 'кассовое оборудование СПб', 'сервисный центр касс', 'Меркурий', 'Атол', 'Сигма', 'Эвотор', 'Штрих-М', 'Пионер', 'маркировка под ключ', 'удалённая настройка маркировки'],
+  authors: [{ name: 'Теллур-Интех' }],
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    title: 'Калькулятор маркировки СПб — цена подключения под ключ',
+    description: 'Настройка кассы, маркировка, подключение Честный ЗНАК в СПб. Цена от 3 000 ₽ — за 1 день и без ошибок. Расчёт за 2 минуты.',
+    url: SITE_URL,
+    siteName: 'Теллур-Интех',
+    locale: 'ru_RU',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Калькулятор маркировки — Теллур-Интех, Санкт-Петербург',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Калькулятор маркировки СПб — цена подключения под ключ',
+    description: 'Настройка кассы, маркировка, подключение Честный ЗНАК в СПб. Цена от 3 000 ₽ — за 1 день и без ошибок. Расчёт за 2 минуты.',
+    images: ['/og-image.png'],
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    yandex: '108406091',
+    google: 'fnOIiIKszugreztjlMIPeYK5C_ZzQT4pIHwEiMDyRz8',
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ru" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
+      >
+        <JsonLd />
+        <YandexMetrika />
+        <Navbar />
+        <div className="flex-1 flex flex-col">{children}</div>
+        <SiteFooter />
+        <noscript>
+          <div style={{ padding: '16px', maxWidth: '768px', margin: '0 auto', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.6', color: '#334155' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1e3a5f', marginBottom: '12px' }}>
+              Калькулятор маркировки — Теллур-Интех
+            </h1>
+            <p>Бесплатный онлайн-калькулятор стоимости подключения маркировки товаров в Санкт-Петербурге и Ленинградской области. Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI. Честный ЗНАК, ЭДО, ТС ПИоТ, ФНС, ОФД.</p>
+            <p>ООО «Теллур-Интех» — центр технического обслуживания кассового оборудования в Санкт-Петербурге с 1995 года. Центральный офис: Санкт-Петербург, ул. Заслонова 32-34 (м. Обводный канал / Лиговский проспект). Также офисы в Пушкине (Октябрьский бульвар 50/30) и Гатчине (ул. Хохлова 6). Подключение маркировки, регистрация ККТ, настройка Честного ЗНАК, ЭДО, ТС ПИоТ. Тел: +7 (812) 321-06-06, +7 (812) 465-94-57, +7 (813) 714-08-95.</p>
+            <p>Для расчёта стоимости включите JavaScript в настройках браузера.</p>
+          </div>
+        </noscript>
+        <ScrollToTopButton />
+        <ChatWidget />
+        <FaqWidget />
+      </body>
+    </html>
+  );
+}

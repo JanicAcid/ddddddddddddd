@@ -1,0 +1,514 @@
+// ============================================================================
+// SEO ТЕКСТОВЫЙ БЛОК — с раскрывающимися главами (аккордеон)
+// Контент ВСЕГДА в HTML для поисковых роботов, сворачивается через max-h
+// ============================================================================
+
+'use client'
+
+import { useState, useEffect } from 'react'
+import { ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { BRANCHES } from '@/config/contacts'
+import { MapPin, Mail, Phone, Clock, CheckCircle, ShieldCheck, Zap, Users, ExternalLink } from 'lucide-react'
+
+// Иконки для заголовков секций
+const SECTION_ICONS: Record<string, React.ReactNode> = {
+  commercial: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  about: <ShieldCheck className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  'why-us': <Zap className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  services: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  districts: <MapPin className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  offices: <MapPin className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  regions: <MapPin className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  faq: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  repair: <Zap className="w-5 h-5 text-[#e8a817] shrink-0" />,
+  calculator: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
+}
+
+function AccordionSection({
+  id, title, icon, children, defaultOpen = false,
+}: {
+  id: string
+  title: string
+  icon?: React.ReactNode
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
+  // Слушаем событие для программного открытия (scroll-to-faq / scroll-to-contacts)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { ids } = (e as CustomEvent).detail || {}
+      if (ids && ids.includes(id)) {
+        setIsOpen(true)
+      }
+    }
+    window.addEventListener('open-seo-sections', handler)
+    return () => window.removeEventListener('open-seo-sections', handler)
+  }, [id])
+
+  return (
+    <div className="bg-white rounded-xl border border-[#1e3a5f]/10 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(v => !v)}
+        className="w-full flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-3.5 sm:py-4 text-left hover:bg-slate-50/50 transition-colors cursor-pointer"
+        aria-expanded={isOpen}
+      >
+        {icon || SECTION_ICONS[id]}
+        <h2 className="flex-1 text-[15px] sm:text-base font-bold text-[#1e3a5f] leading-snug">{title}</h2>
+        <ChevronDown className={`w-4.5 h-4.5 text-[#1e3a5f]/40 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <div className={`transition-[max-height,opacity] duration-300 ease-in-out ${
+        isOpen ? 'max-h-[50000px] opacity-100' : 'max-h-0 overflow-hidden opacity-0'
+      }`}>
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 sm:pt-0">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function SeoContentInner() {
+  return (
+    <section className="mb-6 sm:mb-8 space-y-2.5 sm:space-y-3" aria-label="Информация о компании и услугах маркировки">
+
+      {/* ===== КОММЕРЧЕСКИЙ БЛОК ===== */}
+      <AccordionSection id="commercial" title="Настройка кассы для маркировки — цена и сроки под ключ">
+        <div className="space-y-3 sm:space-y-4 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            <strong className="text-slate-800">Настройка кассы маркировка</strong>&nbsp;— одна из&nbsp;основных услуг сервисного центра Теллур-Интех в&nbsp;Санкт-Петербурге. Мы&nbsp;выполняем <strong>подключение Честный ЗНАК</strong> и&nbsp;настройку всех компонентов цепочки маркировки: ЭДО, ТС&nbsp;ПИоТ, ФНС, ОФД и&nbsp;кассовое оборудование. Работаем с&nbsp;1995 года, обслужили более 5&nbsp;000 касс. Гарантируем настройку <strong>без ошибок</strong>&nbsp;— проверяем каждый этап от&nbsp;приёмки товара до&nbsp;пробития чека.
+          </p>
+          <p className="leading-relaxed">
+            Стоимость <strong>настройки маркировки</strong> зависит от&nbsp;состояния кассы:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-slate-700">
+            <li><strong>Базовая настройка для действующей кассы</strong>&nbsp;— от&nbsp;3&nbsp;000 рублей (ЭДО, Честный ЗНАК, ТС&nbsp;ПИоТ, привязка кассы)</li>
+            <li><strong>Настройка для новой кассы</strong>&nbsp;— от&nbsp;5&nbsp;000 рублей (+регистрация ККТ в&nbsp;ФНС, установка ФН, подключение ОФД)</li>
+            <li><strong>Настройка для б/у&nbsp;кассы</strong>&nbsp;— от&nbsp;4&nbsp;000 рублей (+обновление прошивки, оформление лицензии)</li>
+            <li><strong>Полный пакет «под ключ» с&nbsp;обучением</strong>&nbsp;— от&nbsp;7&nbsp;000 рублей (все услуги + обучение сотрудников)</li>
+          </ul>
+          <p className="leading-relaxed">
+            <strong>Что входит в&nbsp;настройку маркировки:</strong>
+          </p>
+          <ol className="list-decimal pl-5 space-y-1.5 text-slate-700">
+            <li>Регистрация или перерегистрация ККТ в&nbsp;ФНС с&nbsp;переключением на&nbsp;ФФД&nbsp;1.2</li>
+            <li>Подключение оператора фискальных данных (ОФД)</li>
+            <li>Настройка электронного документооборота (ЭДО) для приёмки товаров</li>
+            <li>Регистрация и&nbsp;настройка системы «Честный ЗНАК»</li>
+            <li>Установка и&nbsp;настройка ТС&nbsp;ПИоТ</li>
+            <li>Привязка кассы ко&nbsp;всем системам и&nbsp;проверка работоспособности</li>
+          </ol>
+          <p className="leading-relaxed">
+            <strong className="text-[#1e3a5f]">Как мы&nbsp;работаем:</strong> вы&nbsp;оставляете заявку → менеджер уточняет детали → вы&nbsp;привозите кассу в&nbsp;офис (или подключаетесь удалённо) → инженер настраивает все системы → проверяем цепочку и&nbsp;обучаем сотрудников. Полная настройка выполняется <strong>за&nbsp;1&nbsp;день</strong> при наличии ЭЦП. Никаких скрытых платежей&nbsp;— вы&nbsp;видите полную смету до&nbsp;начала работ.
+          </p>
+          <p className="leading-relaxed">
+            Рассчитайте точную стоимость с&nbsp;помощью нашего <strong>бесплатного калькулятора маркировки</strong>&nbsp;— укажите модель кассы, состояние и&nbsp;необходимые услуги, и&nbsp;получите сумму за&nbsp;2&nbsp;минуты. Или позвоните <strong>+7&nbsp;(812)&nbsp;321-06-06</strong>&nbsp;— консультация бесплатна и&nbsp;не&nbsp;обязывает к&nbsp;заказу. Подробнее о&nbsp;настройке кассы для маркировки читайте в&nbsp;нашей <Link href="/nastroyka-kassy-markirovka" className="text-[#1e3a5f] hover:underline font-semibold">отдельной статье</Link>.
+          </p>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 1. О компании ===== */}
+      <AccordionSection id="about" title="Маркировка товаров в Санкт-Петербурге — подключение под ключ">
+        <div className="space-y-3 sm:space-y-4 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            <strong className="text-slate-800">Компания ТЕЛЛУР</strong>&nbsp;работает на&nbsp;рынке торгового, офисного и&nbsp;банковского оборудования с&nbsp;1995&nbsp;года (более 30 лет). Осуществляем продажу, установку и&nbsp;обслуживание кассового оборудования. Основная деятельность&nbsp;— предоставление комплексных сервисных услуг: ремонт, техническая поддержка и&nbsp;полное решение технических задач «из&nbsp;одних рук». ООО «Теллур-Интех»&nbsp;— официальный центр технического обслуживания кассового оборудования в&nbsp;Санкт-Петербурге с&nbsp;офисами также в&nbsp;Пушкине и&nbsp;Гатчине. Мы&nbsp;помогаем бизнесу Санкт-Петербурга выполнить требования законодательства о&nbsp;маркировке товаров быстро и&nbsp;без лишних затрат.
+          </p>
+          <p className="leading-relaxed">
+            Мы&nbsp;специализируемся на&nbsp;<strong>подключении маркировки в&nbsp;Санкт-Петербурге</strong> для малого и&nbsp;среднего бизнеса: от&nbsp;продуктовых магазинов и&nbsp;аптек до&nbsp;розничных точек продаж сигарет, обуви, одежды, воды, молочной продукции и&nbsp;других маркированных товаров. Наши инженеры обслуживают предпринимателей по&nbsp;всему городу: от&nbsp;центра до&nbsp;красногвардейского и&nbsp;курортного районов. Обслуживаем все основные бренды кассового оборудования: <strong>Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI</strong>. Наша команда инженеров имеет сертификации производителей и&nbsp;опыт настройки сотен касс для работы с&nbsp;системой <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-5 h-5 inline-block" /></a>.
+          </p>
+          <p className="leading-relaxed">
+            Используйте наш <strong>бесплатный калькулятор маркировки</strong> для расчёта стоимости подключения. Укажите модель кассы, её&nbsp;состояние (новая, б/у или действующая) и&nbsp;необходимые услуги&nbsp;— и&nbsp;получите точную сумму за&nbsp;2&nbsp;минуты. Никаких скрытых платежей: вы&nbsp;видите полную смету до&nbsp;обращения к&nbsp;менеджеру. Калькулятор учитывает все компоненты: регистрацию ККТ в&nbsp;ФНС, подключение ОФД, настройку ЭДО, Честного ЗНАК, ТС&nbsp;ПИоТ и&nbsp;дополнительные услуги.
+          </p>
+          <p className="leading-relaxed">
+            Приглашаем клиентов в&nbsp;наш центральный офис в&nbsp;Санкт-Петербурге на&nbsp;улице Заслонова, 32-34 (ближайшие станции метро&nbsp;— Обводный канал и&nbsp;Лиговский проспект). Также можно обратиться в&nbsp;офисы в&nbsp;Пушкине и&nbsp;Гатчине. Настройка маркировки выполняется непосредственно в&nbsp;офисе сервисного центра при&nbsp;личном визите с&nbsp;кассой. Также доступна <strong>удалённая настройка маркировки</strong>&nbsp;— для этого вам понадобится компьютер с&nbsp;подключённым токеном ЭЦП и&nbsp;возможность действовать по&nbsp;инструкции инженера по&nbsp;телефону или видеосвязи.
+          </p>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 2. Почему мы ===== */}
+      <AccordionSection id="why-us" title="Почему выбирают Теллур-Интех для настройки маркировки">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          {[
+            {
+              icon: <ShieldCheck className="w-5 h-5 text-[#e8a817] shrink-0" />,
+              title: 'Опыт с 1995 года',
+              desc: 'Более 30 лет на рынке кассового оборудования. Знаем все нюансы настройки маркировки для разных типов бизнеса и моделей касс.',
+            },
+            {
+              icon: <Zap className="w-5 h-5 text-[#e8a817] shrink-0" />,
+              title: 'Быстрое подключение',
+              desc: 'Полная настройка маркировки под ключ — от 1 до 3 рабочих дней. Регистрация ККТ в ФНС, ЭДО, Честный ЗНАК, ТС ПИоТ за один визит.',
+            },
+            {
+              icon: <Users className="w-5 h-5 text-[#e8a817] shrink-0" />,
+              title: 'Сертифицированные инженеры',
+              desc: 'Наши специалисты имеют сертификаты производителей касс: Меркурий, Атол, Сигма, Эвотор. Регулярное повышение квалификации.',
+            },
+            {
+              icon: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
+              title: 'Гарантия результата',
+              desc: 'Мы отвечаем за работоспособность всей цепочки: от приёмки товара через ЭДО до пробития чека на кассе с кодом Data Matrix.',
+            },
+          ].map((item, i) => (
+            <div key={i} className="flex gap-2.5">
+              <div className="mt-0.5">{item.icon}</div>
+              <div>
+                <p className="font-semibold text-[#1e3a5f] text-sm">{item.title}</p>
+                <p className="text-sm text-slate-700 leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </AccordionSection>
+
+      {/* ===== 3. Услуги маркировки ===== */}
+      <AccordionSection id="services" title="Наши услуги по маркировке и обслуживанию касс">
+        <div className="space-y-4 text-[15px] sm:text-base text-slate-700">
+          <div>
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Подключение маркировки под ключ</h3>
+            <p className="leading-relaxed">
+              Комплексная настройка всех систем для работы с&nbsp;маркированными товарами. Включает: регистрацию или перерегистрацию ККТ в&nbsp;ФНС с&nbsp;переключением на&nbsp;ФФД&nbsp;1.2, подключение оператора фискальных данных (ОФД), настройку электронного документооборота (ЭДО) для приёмки товаров от&nbsp;поставщиков, регистрацию в&nbsp;системе <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a>, установку и&nbsp;настройку ТС&nbsp;ПИоТ, привязку кассы ко&nbsp;всем системам. Подходит для новых, б/у&nbsp;и&nbsp;действующих касс Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Регистрация ККТ в&nbsp;ФНС</h3>
+            <p className="leading-relaxed">
+              Оформление карточки регистрации контрольно-кассовой техники в&nbsp;налоговой инспекции. Включает подачу заявления в&nbsp;личном кабинете налогоплательщика, настройку параметров фискализации, подключение ОФД. Для действующих касс&nbsp;— перерегистрация с&nbsp;добавлением признаков маркировки и&nbsp;смена формата фискальных документов на&nbsp;ФФД&nbsp;1.2.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Настройка ЭДО (электронный документооборот)</h3>
+            <p className="leading-relaxed">
+              Подключение системы электронного документооборота для обмена накладными с&nbsp;поставщиками маркированных товаров. Работаем с&nbsp;операторами: Контур.Диадок, СБИС, Такском. ЭДО необходимо для приёмки товаров&nbsp;— без него коды маркировки не&nbsp;попадут в&nbsp;вашу учётную запись в&nbsp;Честном ЗНАКе и&nbsp;касса не&nbsp;сможет пробить чек.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Подключение ОФД по&nbsp;партнёрской цене</h3>
+            <p className="leading-relaxed">
+              Мы&nbsp;— официальные партнёры ОФД ТАКСКОМ. Подключаем договор ОФД на&nbsp;15&nbsp;или 36&nbsp;месяцев по&nbsp;цене ниже, чем на&nbsp;сайте оператора напрямую. Экономия от&nbsp;500 до&nbsp;1000 рублей. Без ОФД касса не&nbsp;может передавать чеки в&nbsp;ФНС&nbsp;— это обязательное требование закона 54-ФЗ.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Замена фискального накопителя (ФН)</h3>
+            <p className="leading-relaxed">
+              Замена истёкшего фискального накопителя с&nbsp;перерегистрацией кассы в&nbsp;ФНС. ФН&nbsp;— чип внутри кассы, хранящий все чеки. Срок службы: 15&nbsp;месяцев (общая торговля) или 36&nbsp;месяцев (подакцизные товары: алкоголь, сигареты). При истечении срока касса блокируется. Мы&nbsp;подберём подходящий ФН и&nbsp;оформим замену с&nbsp;минимальными простоями.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Обучение работе с&nbsp;кассой и&nbsp;маркировкой</h3>
+            <p className="leading-relaxed">
+              Практическое обучение сотрудников работе с&nbsp;кассовым оборудованием, сканированию кодов Data Matrix, приёмке маркированных товаров через ЭДО, проверке легальности кодов в&nbsp;Честном ЗНАКе, порядку пробития чека с&nbsp;признаками маркировки. Обучение проводится на&nbsp;вашем рабочем месте.
+            </p>
+          </div>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 4. Районы СПб ===== */}
+      <AccordionSection id="districts" title="Подключение маркировки по всем районам Санкт-Петербурга">
+        <div className="space-y-3 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            Наш центр технического обслуживания кассового оборудования в&nbsp;Санкт-Петербурге обслуживает предпринимателей из&nbsp;всех районов города. К&nbsp;нам на&nbsp;ул. Заслонова, 32-34 (м. Обводный канал) регулярно привозят кассы на&nbsp;настройку маркировки клиенты из&nbsp;Адмиралтейского, Василеостровского, Выборгского, Калининского, Кировского, Красногвардейского, Красносельского, Кронштадтского, Курортного, Московского, Невского, Петроградского, Приморского, Пушкинского, Фрунзенского и&nbsp;Центрального районов Санкт-Петербурга.
+          </p>
+          <p className="leading-relaxed">
+            Особенно часто к&nbsp;нам обращаются владельцы магазинов из&nbsp;<strong>Московского района</strong> (близость к&nbsp;офису&nbsp;— 10&nbsp;минут от&nbsp;м. Московская), <strong>Фрунзенского района</strong> (м. Обводный канал, Лиговский проспект, Купчино), <strong>Невского района</strong> (м. Елизаровская, Ломоносовская, Рыбацкое) и&nbsp;<strong>Центрального района</strong> (м. Маяковская, Площадь Восстания, Гостиный двор). Также активно работаем с&nbsp;предпринимателями из&nbsp;Петроградского, Василеостровского и&nbsp;Выборгского районов.
+          </p>
+          <p className="leading-relaxed">
+            Для удобства клиентов из&nbsp;отдалённых районов Санкт-Петербурга (Красносельский, Курортный, Кронштадтский) и&nbsp;пригородов мы&nbsp;предлагаем <strong>удалённую настройку маркировки</strong>&nbsp;— экономия времени на&nbsp;дорогу. Инженер подключится к&nbsp;вашему компьютеру по&nbsp;видеосвязи и&nbsp;пошагово настроит все системы: Честный ЗНАК, ЭДО, ТС&nbsp;ПИоТ, ФНС, ОФД. Вам нужен только компьютер с&nbsp;токеном ЭЦП и&nbsp;интернет.
+          </p>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 5. Филиалы ===== */}
+      <AccordionSection id="offices" title="Офисы центра технического обслуживания Теллур-Интех">
+        <div className="space-y-3" id="contacts-section">
+          {BRANCHES.map((branch) => (
+            <div key={branch.name} className="p-3.5 bg-[#1e3a5f]/[0.03] rounded-lg border border-[#1e3a5f]/10">
+              <p className="font-bold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">&laquo;{branch.name}&raquo;</p>
+              <div className="space-y-1.5 text-[15px] sm:text-base text-slate-700">
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="w-4 h-4 text-[#e8a817] shrink-0 mt-0.5" />
+                  <div>
+                    <span className="leading-snug">{branch.address}</span>
+                    {branch.name === 'Теллур-Центр' && (
+                      <a href="https://yandex.com/maps/-/CPfpvF1T" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-2">
+                        <ExternalLink className="w-3 h-3" />На карте
+                      </a>
+                    )}
+                    {branch.name === 'Теллур-Пушкин' && (
+                      <a href="https://yandex.com/maps/-/CPfprG0R" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-2">
+                        <ExternalLink className="w-3 h-3" />На карте
+                      </a>
+                    )}
+                    {branch.name === 'Теллур-Гатчина' && (
+                      <a href="https://yandex.com/maps/-/CPfpnHoK" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-2">
+                        <ExternalLink className="w-3 h-3" />На карте
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-[#e8a817] shrink-0" />
+                  <a href={`mailto:${branch.email}`} className="text-[#1e3a5f] hover:underline">{branch.email}</a>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-[#e8a817] shrink-0" />
+                  <span className="flex flex-wrap gap-x-1.5">
+                    {branch.phones.map((phone, i) => (
+                      <a key={i} href={'tel:' + phone.replace(/[^0-9+]/g, '')} className="text-[#1e3a5f] hover:underline">
+                        {phone}{i < branch.phones.length - 1 ? ',' : ''}
+                      </a>
+                    ))}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-[#e8a817] shrink-0" />
+                  <span>{branch.schedule}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </AccordionSection>
+
+      {/* ===== 6. Ленинградская область ===== */}
+      <AccordionSection id="regions" title="Маркировка в Санкт-Петербурге и Ленинградской области — приезжайте к нам">
+        <div className="space-y-3 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            Наш центральный офис в&nbsp;Санкт-Петербурге расположен на&nbsp;улице Заслонова, 32-34&nbsp;— рядом с&nbsp;метро Обводный канал и&nbsp;Лиговский проспект. Это удобное расположение для предпринимателей из&nbsp;любого района города. Также у&nbsp;нас офисы в&nbsp;Пушкине и&nbsp;Гатчине. Клиенты привозят кассы к&nbsp;нам&nbsp;— настройка маркировки выполняется на&nbsp;месте в&nbsp;день визита. Нет необходимости ждать выезда инженера: просто запишитесь на&nbsp;удобное время, привезите кассу и&nbsp;заберите её&nbsp;полностью готовой к&nbsp;работе с&nbsp;маркированными товарами.
+          </p>
+          <p className="leading-relaxed">
+            К&nbsp;нам обращаются клиенты из&nbsp;<strong>Санкт-Петербурга</strong> (все районы), а&nbsp;также из&nbsp;Пушкина, Гатчины, Павловска, Колпино, Красного Села, Ломоносова, Петергофа, Всеволожска, Выборга, Тосно, Кировска, Сертолово, Кудрово, Шушар, Мурино, Парголово, Зеленогорска, Сестрорецка, Кронштадта, Волосово, Приозерска, Сланцев, Луги, Подпорожья, Бокситогорска, Отрадного, Никольского, Тихвина и&nbsp;других населённых пунктов Ленинградской области. Для жителей <strong>Санкт-Петербурга</strong> и&nbsp;ближайших пригородов доступна доставка кассы курьером в&nbsp;офис и&nbsp;обратно. Если выезд к&nbsp;нам затруднён&nbsp;— предлагаем <strong>удалённую настройку маркировки</strong>: вам понадобится компьютер с&nbsp;токеном ЭЦП, и&nbsp;наш инженер пошагово проведёт всю конфигурацию по&nbsp;телефону или видеосвязи.
+          </p>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 7. FAQ ===== */}
+      <AccordionSection id="faq" title="Часто задаваемые вопросы о маркировке товаров">
+        <div className="space-y-4 text-[15px] sm:text-base text-slate-700">
+          <div id="chto-takoe-markirovka">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Что такое маркировка товаров?</h3>
+            <p className="leading-relaxed">
+              Маркировка&nbsp;— это система прослеживаемости товаров, при которой каждая единица продукции получает уникальный код Data&nbsp;Matrix. Код наносится на&nbsp;упаковку производителем и&nbsp;заносится в&nbsp;государственную систему <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-5 h-5 inline-block" /></a> (честныйзнак.рф). При продаже кассир сканирует код, и&nbsp;информация о&nbsp;продаже передаётся в&nbsp;ФНС через оператора фискальных данных (ОФД). Маркировка обязательна для сигарет, обуви, одежды, бутилированной воды, пива, молочной продукции, лекарств, парфюмерии, шин и&nbsp;других категорий товаров. Перечень маркируемых товаров утверждён Постановлениями Правительства РФ&nbsp;и&nbsp;расширяется ежегодно.
+            </p>
+          </div>
+          <div id="chto-nuzhno-dlya-podklyucheniya">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Что нужно для подключения маркировки?</h3>
+            <p className="leading-relaxed">
+              Для подключения маркировки потребуется: кассовое оборудование с&nbsp;поддержкой ФФД&nbsp;1.2 (Меркурий, Атол, Эвотор, Штрих-М и&nbsp;др.), электронная цифровая подпись (ЭЦП) на&nbsp;Рутокене или JaCarta, учётная запись в&nbsp;системе «Честный ЗНАК», подключённый оператор фискальных данных (ОФД), лицензия ТС&nbsp;ПИоТ, а&nbsp;также настроенный электронный документооборот (ЭДО) для приёмки накладных от&nbsp;поставщиков. Все компоненты связаны между собой&nbsp;— без одного из&nbsp;них цепочка не&nbsp;работает. Наш калькулятор поможет рассчитать точную стоимость всех услуг с&nbsp;учётом вашей ситуации.
+            </p>
+          </div>
+          <div id="kakie-kassy-podhodyat">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Какие кассы подходят для маркировки?</h3>
+            <p className="leading-relaxed">
+              Для маркировки подойдёт любая касса, поддерживающая формат фискальных документов ФФД&nbsp;1.2. Это все современные модели <strong>Меркурий, Атол (включая Сигма), Эвотор, Штрих-М, Пионер, AQSI</strong>. Если у&nbsp;Вас старая касса&nbsp;— мы&nbsp;обновим прошивку и&nbsp;при необходимости заменим фискальный накопитель. Для старых касс, не&nbsp;поддерживающих ФФД&nbsp;1.2, рекомендуем замену на&nbsp;современную модель. Подберём оптимальный вариант с&nbsp;учётом вашего бюджета и&nbsp;типа торговли.
+            </p>
+          </div>
+          <div id="kakie-tovary-podlezhat-markirovke">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Какие товары подлежат маркировке в&nbsp;2025–2026 годах?</h3>
+            <p className="leading-relaxed">
+              Обязательная маркировка действует для следующих категорий: табачная продукция (сигареты, сигары), обувь, одежда и&nbsp;текстильные изделия, бутилированная вода, пиво и&nbsp;слабоалкогольные напитки, молочная продукция, лекарственные препараты, парфюмерная продукция, фотоплёнка, шины, антисептики, витамины и&nbsp;БАД, подгузники, мотоциклы и&nbsp;велосипеды. С&nbsp;2025–2026&nbsp;годов перечень расширяется: добавляются чулочно-носочные изделия, бытовая химия, пиво и&nbsp;пивные напитки в&nbsp;кегах, conserves и&nbsp;другие категории. Актуальный список всегда доступен на&nbsp;официальном сайте честныйзнак.рф.
+            </p>
+          </div>
+          <div id="skolko-dlitsya-nastroyka">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Как долго длится настройка маркировки?</h3>
+            <p className="leading-relaxed">
+              Полная настройка маркировки под ключ занимает от&nbsp;1 до&nbsp;3&nbsp;рабочих дней в&nbsp;зависимости от&nbsp;сложности. Регистрация в&nbsp;ФНС занимает 1-2&nbsp;дня. Настройка всех систем (ЭДО, Честный ЗНАК, ТС&nbsp;ПИоТ, касса)&nbsp;— 1&nbsp;день при наличии ЭЦП и&nbsp;доступов. Для б/у&nbsp;касс может потребоваться обновление прошивки и&nbsp;оформление лицензии&nbsp;— это добавляет ещё 1&nbsp;день. Мы&nbsp;работаем быстро и&nbsp;гарантируем результат. В&nbsp;ряде случаев возможна настройка в&nbsp;день обращения.
+            </p>
+          </div>
+          <div id="novaya-bu-tekuschaya-kassa">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Чем отличается подключение маркировки для новой, б/у и&nbsp;действующей кассы?</h3>
+            <p className="leading-relaxed">
+              Для <strong>новой кассы</strong> требуется полная регистрация ККТ в&nbsp;ФНС, подключение ОФД, установка фискального накопителя и&nbsp;полная настройка маркировки с&nbsp;нуля (ЭДО, Честный ЗНАК, ТС&nbsp;ПИоТ, касса). Для <strong>действующей кассы</strong>, которая уже работает&nbsp;— частичная настройка: добавление признаков маркировки, перерегистрация в&nbsp;ФНС со&nbsp;сменой ФФД на&nbsp;1.2, настройка связей с&nbsp;Честным ЗНАКом. Для <strong>б/у&nbsp;касс</strong> дополнительно может понадобиться обновление прошивки, оформление лицензии на&nbsp;ПО и&nbsp;замена ФН. Укажите состояние кассы в&nbsp;нашем калькуляторе для точного расчёта стоимости.
+            </p>
+          </div>
+          <div id="chto-takoe-edo">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Что такое ЭДО и&nbsp;нужно ли оно для маркировки?</h3>
+            <p className="leading-relaxed">
+              ЭДО (электронный документооборот)&nbsp;— это система обмена электронными документами (накладными, УПД, ТОРГ-12) между поставщиками и&nbsp;розничными точками продаж. Для работы с&nbsp;маркированными товарами ЭДО обязательно: при приёмке товара через ЭДО коды маркировки автоматически попадают в&nbsp;вашу учётную запись в&nbsp;системе «Честный ЗНАК». Без ЭДО касса не&nbsp;сможет пробить чек по&nbsp;маркированному товару. Мы&nbsp;подключаем операторов ЭДО: Контур.Диадок, СБИС, Такском.
+            </p>
+          </div>
+          <div id="shtrafy-za-markirovku">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Что будет, если не&nbsp;подключить маркировку вовремя?</h3>
+            <p className="leading-relaxed">
+              Продажа маркированных товаров без подключения к&nbsp;системе <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a> влечёт административную ответственность по&nbsp;статье 15.12 КоАП РФ: штраф для ИП&nbsp;— от&nbsp;5&nbsp;000 до&nbsp;10&nbsp;000 рублей, для юридических лиц&nbsp;— от&nbsp;50&nbsp;000 до&nbsp;100&nbsp;000 рублей. При повторном нарушении штрафы увеличиваются. Также возможна конфискация немаркированного товара. Рекомендуем подключить маркировку заранее, чтобы избежать штрафов и&nbsp;простоев в&nbsp;работе.
+            </p>
+          </div>
+          <div id="chestnyznak">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Что такое Честный ЗНАК и&nbsp;как он&nbsp;работает?</h3>
+            <p className="leading-relaxed">
+              <strong>Честный ЗНАК</strong> (официальный сайт: честныйзнак.рф)&nbsp;— это государственная информационная система прослеживаемости товаров, созданная в&nbsp;Российской Федерации. Её цель&nbsp;— защитить потребителей от&nbsp;контрафактной продукции и&nbsp;обеспечить контроль оборота товаров на&nbsp;всех этапах: от&nbsp;производства до&nbsp;розничной продажи. Каждая единица маркированного товара получает уникальный идентификационный код Data&nbsp;Matrix, который заносится в&nbsp;базу данных системы. Для работы с&nbsp;Честным ЗНАКом предпринимателю необходимо зарегистрировать учётную запись, получить усиленную квалифицированную электронную подпись (УКЭП), подключить оператора электронного документооборота (ЭДО) и&nbsp;настроить кассовое оборудование для считывания и&nbsp;передачи кодов маркировки. Регистрация в&nbsp;системе бесплатная. Наш сервисный центр помогает выполнить все шаги быстро и&nbsp;без ошибок.
+            </p>
+          </div>
+          <div id="tspiott">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Что такое ТС ПИоТ и&nbsp;зачем она&nbsp;нужна?</h3>
+            <p className="leading-relaxed">
+              <strong>ТС ПИоТ</strong> (Тренажёро-Сервер Программно-Информационный Оператор Торговли)&nbsp;— это программное обеспечение, которое обеспечивает защищённый обмен данными между кассовым оборудованием и&nbsp;государственной системой <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a>. Проще говоря, ТС&nbsp;ПИоТ&nbsp;— это «переводчик» между вашей кассой и&nbsp;Честным ЗНАКом. Без ТС&nbsp;ПИоТ касса не&nbsp;сможет проверять подлинность кодов маркировки при сканировании Data&nbsp;Matrix и&nbsp;пробивать чеки по&nbsp;маркированным товарам. Лицензия ТС&nbsp;ПИоТ приобретается на&nbsp;официальном портале ao-esp.ru и&nbsp;устанавливается на&nbsp;компьютер, к&nbsp;которому подключена касса. Обязательна для всех касс, работающих с&nbsp;маркированными товарами. Стоимость зависит от&nbsp;тарифного плана и&nbsp;срока лицензии.
+            </p>
+          </div>
+          <div id="besplatnaya-konsultatsiya">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Бесплатная консультация по&nbsp;маркировке&nbsp;— как получить?</h3>
+            <p className="leading-relaxed">
+              Мы&nbsp;предоставляем <strong>бесплатную консультацию</strong> по&nbsp;всем вопросам маркировки товаров. Вы&nbsp;можете получить консультацию несколькими способами: позвонить нам по&nbsp;телефону +7&nbsp;(812)&nbsp;321-06-06 или +7&nbsp;(812)&nbsp;465-94-57, написать в&nbsp;чат на&nbsp;нашем сайте, нажать кнопку «Перезвоните мне!» внизу страницы, или&nbsp;приехать лично в&nbsp;один из&nbsp;наших офисов (СПб, Пушкин, Гатчина). Менеджер ответит на&nbsp;ваши вопросы: какая касса подходит для маркировки, сколько стоит подключение, какие документы нужны, как долго занимает настройка. Консультация не&nbsp;обязывает к&nbsp;заказу услуг. Мы&nbsp;поможем подобрать оптимальное решение для вашего бизнеса&nbsp;— от&nbsp;бюджетного варианта до&nbsp;полной настройки под ключ.
+            </p>
+          </div>
+          <div id="registratsiya-chestnyznak">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Как зарегистрироваться в&nbsp;Честном ЗНАКе для ИП&nbsp;и&nbsp;ООО?</h3>
+            <p className="leading-relaxed">
+              Для регистрации в&nbsp;системе <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a> необходимо: получить усиленную квалифицированную электронную подпись (УКЭП) в&nbsp;аккредитованном удостоверяющем центре, зарегистрировать учётную запись на&nbsp;сайте честныйзнак.рф, подписать электронное соглашение с&nbsp;оператором системы (ЦРПТ). Для ИП&nbsp;и&nbsp;ООО процедура одинаковая. После регистрации вам будет доступен личный кабинет, где можно управлять карточками товаров, отслеживать движение маркированной продукции и&nbsp;связывать кассу с&nbsp;учётной записью. Если вы&nbsp;не&nbsp;уверены в&nbsp;своих силах&nbsp;— наши инженеры помогут зарегистрироваться и&nbsp;настроить все компоненты.
+            </p>
+            <p className="leading-relaxed">
+              <strong>Подробная пошаговая инструкция</strong> с&nbsp;картинками и&nbsp;пояснениями каждого шага доступна в&nbsp;нашем разделе <Link href="/instructions/kak-podklyuchit-kabinet-chestnyznak" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Как подключить кабинет Честный ЗНАК»</Link>. Там описано: как подготовить УКЭП, заполнить данные, подписать соглашение с&nbsp;ЦРПТ и&nbsp;настроить профиль. Также рекомендуем нашу статью <Link href="/podklyuchenie-chestnyy-znak" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Подключение Честного ЗНАК под ключ»</Link>.
+            </p>
+          </div>
+          <div id="stoimost-nastroyki-markirovki">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Сколько стоит настройка маркировки?</h3>
+            <p className="leading-relaxed">
+              Стоимость настройки маркировки зависит от&nbsp;состояния кассы и&nbsp;набора услуг. Базовая <strong>настройка кассы маркировка</strong> для действующей кассы начинается <strong>от&nbsp;3&nbsp;000 рублей</strong>&nbsp;— подключение ЭДО, регистрация в&nbsp;Честном ЗНАКе, настройка ТС&nbsp;ПИоТ и&nbsp;привязка кассы. Для новой кассы&nbsp;— от&nbsp;5&nbsp;000 рублей (дополнительно: регистрация ККТ в&nbsp;ФНС, установка ФН, подключение ОФД). Для б/у&nbsp;касс&nbsp;— от&nbsp;4&nbsp;000 рублей (обновление прошивки, оформление лицензии). Полный пакет «под ключ» с&nbsp;обучением сотрудников&nbsp;— от&nbsp;7&nbsp;000 рублей. Используйте наш <strong>калькулятор маркировки</strong> для точного расчёта за&nbsp;2&nbsp;минуты&nbsp;— без скрытых платежей.
+            </p>
+          </div>
+          <div id="nastroyka-markirovki-poshagovo">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Как проходит настройка маркировки — пошагово?</h3>
+            <p className="leading-relaxed">
+              Процесс настройки маркировки состоит из&nbsp;5&nbsp;шагов: <strong>1)</strong> Вы&nbsp;оставляете заявку по&nbsp;телефону или через калькулятор на&nbsp;сайте. <strong>2)</strong> Менеджер уточняет детали: модель кассы, категории товаров, текущее состояние оборудования. <strong>3)</strong> Вы&nbsp;привозите кассу в&nbsp;наш офис (СПб, ул. Заслонова, 32-34) или подключаетесь удалённо. <strong>4)</strong> Инженер выполняет <strong>настройку кассы маркировка</strong>: регистрация в&nbsp;ФНС, <strong>подключение Честный ЗНАК</strong>, настройка ЭДО, установка ТС&nbsp;ПИоТ, привязка всех систем. <strong>5)</strong> Проверяем работоспособность цепочки «приёмка&nbsp;— продажа» и&nbsp;обучаем сотрудников. Вся настройка выполняется <strong>за&nbsp;1&nbsp;день</strong> при наличии ЭЦП.
+            </p>
+          </div>
+          <div id="nuzhna-li-1s-dlya-markirovki">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Нужна ли 1С для работы с&nbsp;маркировкой?</h3>
+            <p className="leading-relaxed">
+              <strong>Нет, 1С не&nbsp;является обязательной</strong> для работы с&nbsp;маркировкой. Касса (Меркурий, Атол, Эвотор, Штрих-М) способна работать с&nbsp;кодами Data&nbsp;Matrix самостоятельно через ТС&nbsp;ПИоТ. Однако интеграция с&nbsp;1С рекомендуется для среднего и&nbsp;крупного бизнеса: она позволяет автоматизировать учёт маркированных товаров, синхронизировать остатки с&nbsp;кассой и&nbsp;формировать электронные накладные через ЭДО. Подробнее об&nbsp;интеграции читайте в&nbsp;нашей статье <Link href="/integraciya-1c" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Интеграция 1С с маркировкой»</Link>.
+            </p>
+          </div>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 8. Ремонт касс ===== */}
+      <AccordionSection id="repair" title="Ремонт кассового оборудования в Санкт-Петербурге">
+        <div className="space-y-3 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            <strong className="text-slate-800">Ремонт касс</strong>&nbsp;— одно из&nbsp;основных направлений работы сервисного центра Теллур-Интех. Мы&nbsp;ремонтируем контрольно-кассовую технику всех основных производителей: <strong>Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI</strong>. Наши инженеры имеют сертификаты производителей и&nbsp;опыт работы с&nbsp;кассовым оборудованием более 30 лет. Диагностика неисправности проводится бесплатно при последующем ремонте в&nbsp;нашем сервисном центре. Ремонт касс выполняется в&nbsp;кратчайшие сроки&nbsp;— большинство неисправностей устраняется в&nbsp;день обращения.
+          </p>
+          <p className="leading-relaxed">
+            Мы&nbsp;осуществляем <strong>ремонт касс в&nbsp;Санкт-Петербурге</strong> как в&nbsp;нашем сервисном центре на&nbsp;ул. Заслонова, 32-34, так и&nbsp;с выездом к&nbsp;клиенту. Ремонт касс Меркурий, ремонт касс Атол, ремонт касс Эвотор, ремонт касс Штрих-М&nbsp;— все бренды обслуживаются квалифицированными специалистами. Частые причины обращения: замена фискального накопителя, обновление прошивки, ремонт клавиатуры, замена принтера чеков, настройка после сбоя, восстановление работы со&nbsp;сканером штрих-кодов. Также выполняем ремонт касс с&nbsp;подключением маркировки и&nbsp;настройкой Честного ЗНАК.
+          </p>
+          <p className="leading-relaxed">
+            Ремонт кассового оборудования включает диагностику, замену неисправных компонентов, обновление программного обеспечения, настройку параметров фискализации и&nbsp;тестирование. Используем только оригинальные запчасти и&nbsp;комплектующие. На все виды работ предоставляем гарантию. Если ремонт кассы экономически нецелесообразен&nbsp;— предложим обмен на&nbsp;современную модель по&nbsp;выгодной цене. Обращайтесь в&nbsp;Теллур-Интех: ремонт касс спб, ремонт касс Санкт-Петербург, ремонт кассового оборудования с&nbsp;выездом.
+          </p>
+        </div>
+      </AccordionSection>
+
+      {/* ===== 9. SEO: поисковые запросы (видимый блок) ===== */}
+      <AccordionSection id="calculator" title="Калькулятор стоимости маркировки, кассы, Честный ЗНАК, ТС ПИоТ">
+        <div className="space-y-3 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            Наш калькулятор маркировки поможет рассчитать стоимость подключения кассы к&nbsp;системе <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">Честный ЗНАК <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a> с&nbsp;учётом всех компонентов: ТС&nbsp;ПИоТ, ЭДО, ОФД, регистрация ККТ, фискальный накопитель. Расчёт подходит для касс Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI. Калькулятор учитывает состояние кассы: новая касса, б/у&nbsp;касса или действующая касса. Подключение маркировки под ключ в&nbsp;Санкт-Петербурге. Бесплатный расчёт стоимости за&nbsp;2&nbsp;минуты. Маркировка кассы, настройка кассы маркировка, касса честный знак, ремонт касс спб.
+          </p>
+          <p className="leading-relaxed">
+            ТС&nbsp;ПИоТ (тспиот)&nbsp;— это технические средства поддержки интероперабельности, необходимые для работы с&nbsp;маркированными товарами. Без ТС&nbsp;ПИоТ касса не&nbsp;сможет проверять и&nbsp;пробивать коды маркировки Data Matrix. Честный ЗНАК (честныйзнак)&nbsp;— государственная система маркировки товаров Российской Федерации. Калькулятор автоматически учитывает стоимость лицензии ТС&nbsp;ПИоТ при расчёте. Ремонт касс Меркурий, ремонт касс Атол, ремонт касс Эвотор, ремонт касс Штрих-М в&nbsp;Санкт-Петербурге. Центр технического обслуживания кассового оборудования Теллур-Интех.
+          </p>
+        </div>
+      </AccordionSection>
+
+      {/* ===== SEO: скрытый блок с комбинациями поисковых запросов и опечатками ===== */}
+      <div aria-hidden="true" className="hidden">
+        {[
+          'касса маркировка', 'маркировка кассы', 'касса маркировка честный знак',
+          'касса честный знак', 'честный знак касса', 'касса честный знак маркировка',
+          'маркировка честный знак касса', 'касса тспиот', 'тспиот касса',
+          'касса тспиот маркировка', 'тспиот маркировка касса', 'маркировка тспиот',
+          'тспиот честный знак', 'честный знак тспиот', 'касса маркировка тспиот честный знак',
+          'маркировка кассы честный знак', 'подключение кассы маркировка',
+          'настройка кассы честный знак', 'касса маркировка настройка',
+          'ремонт касс', 'ремонт касс спб', 'ремонт касс санкт-петербург',
+          'ремонт касс меркурий', 'ремонт касс атол', 'ремонт касс эвотор',
+          'ремонт касс штрих', 'ремонт касс сигма', 'ремонт касс пионер',
+          'ремонт кксы', 'ремнот касс', 'ремонт кассового оборудования',
+          'ремонт касс маркировка', 'ремонт касс честный знак',
+          'калькулятор маркировки', 'калькулятор честный знак',
+          'калькулятор кассы маркировка', 'расчет маркировки кассы',
+          'стоимость подключения маркировки', 'стоимость честный знак касса',
+          'подключить кассу маркировку', 'настроить кассу честный знак',
+          'подключение честный знак', 'подключение тспиот',
+          'настройка тспиот касса', 'тс пиот касса', 'тспиот настройка',
+          'ккса маркировка', 'каса маркировка', 'ккса честный знак',
+          'маркеровка кассы', 'маркирвка кассы', 'маркирование касс',
+          'чесный знак касса', 'честной знак касса', 'честный занак касса',
+          'честныйзнак касса', 'честный знак ккса', 'честный знак каса',
+          'тспиот касса', 'тспиот касса', 'тспит касса', 'тс пиот касса',
+          'ккса тспиот', 'каса тспиот', 'ккса маркировка честный знак',
+          'каса маркировка честный знак', 'ккса маркировка чесный знак',
+          'каса маркировка чесный знак', 'касса маркеровка честный знак',
+          'касса маркирвка честный знак', 'касса маркировка чесный знак',
+          'касса маркировка честной знак', 'касса маркировка честный занак',
+          'ремонт кксы спб', 'ремонт касс питер', 'ремнот касс спб',
+          'ремонт касс спб маркировка', 'ремонт касс честныйзнак',
+          'ремонт касс меркурий спб', 'ремонт касс атол спб',
+          'ремонт касс эвотор спб', 'ремонт касс штрих спб',
+          'сервисный центр касс', 'сервис центр касс спб',
+          'обслуживание касс', 'обслуживание касс спб',
+          'сервисный центр кассового оборудования спб',
+          'касса маркировка спб', 'касса маркировка санкт-петербург',
+          'касса честный знак спб', 'маркировка кассы спб',
+          'подключение маркировки спб', 'подключение маркировки кассы спб',
+          'настройка маркировки кассы', 'настройка честного знака касса',
+          'что такое честный знак', 'что такое честныйзнак', 'что такое маркировка',
+          'что такое тспиот', 'что такое тс пиот', 'что такое эдо',
+          'что такое маркировка товаров', 'как работает честный знак',
+          'бесплатная консультация маркировка', 'бесплатная консультация касса',
+          'консультация по маркировке спб', 'консультация честный знак',
+          'как подключить маркировку', 'как настроить маркировку',
+          'цена подключения маркировки', 'стоимость маркировки кассы',
+          'подключить кассу к честному знаку', 'настроить кассу для маркировки',
+          'маркировка алкоголя касса', 'маркировка пива касса',
+          'маркировка бутилированной воды', 'маркировка лекарств',
+          'маркировка парфюмерии', 'маркировка шин',
+          'система честный знак регистрация', 'личный кабинет честный знак',
+          'честный знак для ип', 'честный знак для ооо',
+          'калькулятор честного знака', 'расчёт стоимости маркировки онлайн',
+          'маркировка товаров 2025', 'маркировка товаров 2026',
+          'удалённая настройка кассы', 'удалённая настройка маркировки',
+          'подключение маркировки под ключ цена', 'подключение маркировки отзывы',
+          'касса для маркировки', 'какая касса для маркировки',
+          'касса маркировка товаров', 'касса для честного знака',
+          'тспиот маркировка честный знак', 'тспиот честный знак касса маркировка',
+          'касса тспиот честный знак маркировка',
+          'подключение тспиот кассы', 'лицензия тспиот касса',
+          'тс пиот честный знак', 'тспиот честный знак настройка',
+          'тц пиот честный знак', 'тц пиот касса маркировка',
+          'тс пеот честный знак касса', 'тс пёот касса маркировка',
+          'тс пюот честный знак', 'тс пыот касса маркировка',
+          'тс пиёт касса маркировка', 'тс пиат касса',
+          'тс пиут честный знак', 'тс пиет касса',
+          'тс пйот касса', 'тс пьот касса',
+          'тс пивот касса маркировка', 'тс пилот касса',
+          'тс пирот касса', 'тс пит касса',
+          'тс пииот касса', 'тс пиотт касса',
+          'тс-пиот касса', 'тс.пиот касса',
+          'тспиот настройка кассы', 'тц пиот настройка кассы',
+          'tc piot cassa честный знак', 'TC PIOT честный знак',
+          'что такое тц пиот', 'что такое тс пеот', 'что такое тс пёот',
+          'что такое тспиот', 'тс пиот что это', 'тц пиот что это',
+          'тспиот что это', 'настройка тц пиот кассы',
+          'подключение тц пиот', 'лицензия тц пиот',
+          'тс пиот настройка кассы', 'тс-пиот настройка кассы',
+          'тспиот подключение кассы', 'тц пиот подключение кассы',
+          'тс пиот честный знак настройка', 'тс пиот для маркировки',
+          'тц пиот для маркировки', 'тспиот для маркировки',
+          'замена фискального накопителя', 'замена фн касса',
+          'перерегистрация ккт', 'регистрация ккт фнс',
+          'подключение офд', 'подключение эдо касса',
+          'подключение кассы к честному знаку', 'подключить кассу к честному знаку',
+          'настройка кассы для маркировки', 'настроить кассу для маркировки',
+          'подключение маркировки под ключ', 'маркировка под ключ спб',
+          'касса маркировка стоимость', 'касса честный знак цена',
+          'калькулятор маркировки касс', 'калькулятор честного знака',
+          'ремонт касс быстрый', 'ремонт касс недорого',
+          'ремонт контрольно кассовой техники', 'ремонт ккт спб',
+          'ремонт ккт санкт-петербург', 'ремонт фискального накопителя',
+        ].join(', ')}
+      </div>
+    </section>
+  )
+}

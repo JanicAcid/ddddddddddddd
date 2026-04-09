@@ -1,0 +1,31 @@
+node_modules/
+.next/
+out/
+dist/
+.vercel
+.ym-token
+.gsc-api-key
+search*.json
+
+.env*
+
+# Dev artifacts
+CONTEXT.md
+worklog.md
+page_combined.tsx
+page_part2.tsx
+debug-*.png
+mobile-brand-check.png
+
+# Uploaded user files
+upload/
+
+# AI agent skills (not part of project)
+skills/
+
+# Parent repo references
+download/
+
+# IDE
+.vscode/
+.idea/

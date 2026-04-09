@@ -3,7 +3,7 @@
 // POST /api/log-order
 // ============================================================================
 
-import { isGoogleSheetsConfigured, SPREADSHEET_ID, GOOGLE_SERVICE_ACCOUNT_KEY } from '@/config/google-sheets'
+import { isGoogleSheetsConfigured, SPREADSHEET_ID, getClientEmail, getPrivateKey } from '@/config/google-sheets'
 
 interface LogOrderBody {
   orderNum: string
@@ -40,11 +40,9 @@ export async function POST(request: Request) {
       body.comment || '',
     ]
 
-    // Попытка записи в Google Sheets
     if (isGoogleSheetsConfigured()) {
       try {
-        const jwt = await createJWT()
-        const accessToken = await getAccessToken(jwt)
+        const accessToken = await getAccessToken()
         await appendRow(accessToken, row)
         return Response.json({ success: true, loggedTo: 'google-sheets' })
       } catch (err) {
@@ -54,7 +52,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Google Sheets не настроен — сохраняем в лог
     console.log('ORDER_LOG:', JSON.stringify(row))
     return Response.json({ success: true, loggedTo: 'log', message: 'Google Sheets not configured' })
   } catch (err) {
@@ -64,7 +61,7 @@ export async function POST(request: Request) {
 }
 
 // ============================================================================
-// JWT и Google Sheets API helpers
+// JWT helpers
 // ============================================================================
 
 function base64url(data: string): string {
@@ -75,7 +72,7 @@ async function createJWT(): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
   const header = { alg: 'RS256', typ: 'JWT' }
   const payload = {
-    iss: GOOGLE_SERVICE_ACCOUNT_KEY!.client_email,
+    iss: getClientEmail(),
     scope: 'https://www.googleapis.com/auth/spreadsheets',
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
@@ -86,32 +83,25 @@ async function createJWT(): Promise<string> {
   const payloadB64 = base64url(JSON.stringify(payload))
   const unsigned = `${headerB64}.${payloadB64}`
 
-  const sign = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    await importKey(),
-    new TextEncoder().encode(unsigned)
-  )
-  const signature = base64url(String.fromCharCode(...new Uint8Array(sign)))
-  return `${unsigned}.${signature}`
-}
-
-async function importKey(): Promise<CryptoKey> {
-  const pem = GOOGLE_SERVICE_ACCOUNT_KEY!.private_key
-  const pemContents = pem
+  const privateKey = getPrivateKey()
+  const pemContents = privateKey
     .replace(/-----BEGIN PRIVATE KEY-----/, '')
     .replace(/-----END PRIVATE KEY-----/, '')
     .replace(/\s/g, '')
   const binaryDer = Buffer.from(pemContents, 'base64')
-  return crypto.subtle.importKey(
-    'pkcs8',
-    binaryDer,
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8', binaryDer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['sign']
+    false, ['sign']
   )
+
+  const sign = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(unsigned))
+  const signature = base64url(String.fromCharCode(...new Uint8Array(sign)))
+  return `${unsigned}.${signature}`
 }
 
-async function getAccessToken(jwt: string): Promise<string> {
+async function getAccessToken(): Promise<string> {
+  const jwt = await createJWT()
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -133,8 +123,5 @@ async function appendRow(accessToken: string, values: unknown[]): Promise<void> 
       body: JSON.stringify({ values: [values] }),
     }
   )
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Sheets API error: ${err}`)
-  }
+  if (!res.ok) throw new Error(`Sheets API error: ${await res.text()}`)
 }

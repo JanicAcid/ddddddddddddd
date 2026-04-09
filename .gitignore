@@ -20,6 +20,9 @@ mobile-brand-check.png
 # Uploaded user files
 upload/
 
+# AI agent skills (not part of project)
+skills/
+
 # Parent repo references
 download/
 

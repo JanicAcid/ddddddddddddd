@@ -7,16 +7,15 @@ import Link from 'next/link'
 import { Phone, Mail, MapPin, Lock } from 'lucide-react'
 
 const NAV_LINKS = [
-  { label: 'Калькулятор маркировки', href: '/' },
-  { label: 'FAQ', href: '/faq' },
-  { label: 'Инструкции', href: '/instructions' },
+  { label: 'Главная', href: '/' },
+  { label: 'Калькуляторы', href: '/kalkulyatory' },
+  { label: 'База знаний', href: '/instructions' },
   { label: 'Услуги', href: '/services' },
-  { label: 'О компании', href: '/about' },
   { label: 'Контакты', href: '/contacts' },
 ]
 
 const SERVICE_LINKS = [
-  { label: 'Подключение маркировки под ключ', href: '/' },
+  { label: 'Подключение маркировки под ключ', href: '/kalkulyatory/markirovka' },
   { label: 'Регистрация ККТ в ФНС', href: '/services' },
   { label: 'Настройка ЭДО', href: '/services' },
   { label: 'Подключение ОФД', href: '/services' },

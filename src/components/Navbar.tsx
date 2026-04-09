@@ -13,11 +13,10 @@ import { usePathname } from 'next/navigation'
 import { Phone, Menu, X, ChevronRight, MessageCircle } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { label: 'Калькулятор', href: '/' },
-  { label: 'FAQ', href: '/faq' },
-  { label: 'Инструкции', href: '/instructions' },
+  { label: 'Главная', href: '/' },
+  { label: 'Калькуляторы', href: '/kalkulyatory' },
+  { label: 'База знаний', href: '/instructions' },
   { label: 'Услуги', href: '/services' },
-  { label: 'О нас', href: '/about' },
   { label: 'Контакты', href: '/contacts' },
 ]
 
@@ -70,10 +69,10 @@ export function Navbar() {
               <Image src="/logo.webp" alt="Теллур-Интех" width={88} height={72} className="h-10 w-auto sm:h-9" quality={100} />
               <div className="flex flex-col min-w-0">
                 <span className="text-sm sm:text-base font-bold text-[#1e3a5f] leading-tight">
-                  Калькулятор маркировки
+                  Теллур-Интех
                 </span>
                 <span className="text-[9px] sm:text-[10px] text-slate-400 leading-tight">
-                  Центр ТО кассового оборудования
+                  Поддержка пользователей ККТ
                 </span>
               </div>
             </Link>
@@ -178,7 +177,7 @@ export function Navbar() {
               {/* Логотип внизу */}
               <div className="pt-4 mt-4 border-t border-slate-100 text-center">
                 <p className="text-[11px] text-slate-400">ООО «Теллур-Интех»</p>
-                <p className="text-[10px] text-slate-300 mt-0.5">Центр технического обслуживания кассового оборудования с 1995 года</p>
+                <p className="text-[10px] text-slate-300 mt-0.5">Поддержка пользователей ККТ с 1995 года</p>
               </div>
             </div>
           </nav>

@@ -32,9 +32,12 @@ export async function POST(request: Request) {
 
     const timestamp = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })
     const status = body.isConsultation ? 'консультация' : 'новый'
+    // Телефон: экранируем ' для Sheets — без этого Google воспринимает +7 как формулу → #ERROR!
+    const safePhone = body.phone ? `'${body.phone}` : ''
+    const safeEmail = body.email ? `'${body.email}` : ''
     const row = [
-      timestamp, body.orderNum, body.clientName, body.phone,
-      body.email || '', body.kkmType || '', body.kkmCondition || '',
+      timestamp, body.orderNum, body.clientName, safePhone,
+      safeEmail, body.kkmType || '', body.kkmCondition || '',
       body.isConsultation ? 'Консультация' : (body.services || []).join(', '),
       body.total || 0, body.comment || '',
       status, '',

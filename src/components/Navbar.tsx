@@ -78,8 +78,8 @@ export function Navbar() {
               </div>
             </Link>
 
-            {/* Десктоп: меню */}
-            <nav className="hidden lg:flex items-center gap-0.5" aria-label="Основная навигация">
+            {/* Десктоп: меню — по центру */}
+            <nav className="hidden lg:flex flex-1 items-center justify-center gap-0.5" aria-label="Основная навигация">
               {NAV_ITEMS.map(item => (
                 <Link
                   key={item.href}
@@ -96,7 +96,7 @@ export function Navbar() {
             </nav>
 
             {/* Телефон + гамбургер */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <a
                 href={MAIN_PHONE_HREF}
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-[13px] font-bold rounded-lg transition-colors"

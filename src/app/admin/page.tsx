@@ -5,7 +5,7 @@ import {
   LogOut, RefreshCw, Search, ChevronDown, ChevronUp,
   Filter, X, Loader2, AlertTriangle, Building2,
   Phone, Mail, ClipboardList, Download, FileText,
-  CheckCircle2, Clock, Ban, MessageSquare
+  CheckCircle2, Clock, Ban, MessageSquare, Printer
 } from 'lucide-react'
 
 interface Order {
@@ -161,6 +161,88 @@ export default function AdminDashboard() {
   ]
 
   const getStatusFromOrder = (o: Order) => o['Статус'] || ''
+
+  const handlePrintOrder = (order: Order) => {
+    const phone = order['Телефон'] || order['Телефон '] || ''
+    const clientName = order['Клиент'] || ''
+    const email = order['Email'] || order['Email '] || ''
+    const kkm = order['ККМ'] || ''
+    const services = order['Услуги'] || ''
+    const total = order['Сумма'] || order['Итого'] || '0'
+    const orderNum = order['Заказ №'] || order['Дата/время']?.slice(0, 10) || ''
+    const timestamp = order['Дата/время'] || ''
+    const status = order['Статус'] || ''
+    const inn = order['ИНН'] || ''
+    const clientComment = order['Комментарий'] || order['Примечание'] || ''
+    const managerComment = order['Комментарий менеджера'] || ''
+    const condition = order['Состояние'] || ''
+
+    const printHtml = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Заказ №${orderNum}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #222; padding: 30px; max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 12px; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
+  th { background: #f5f5f5; font-weight: 600; width: 140px; }
+  .section-title { font-weight: 700; font-size: 14px; margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1e3a5f; }
+  .comment-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 14px; margin-top: 10px; font-size: 12px; }
+  .comment-box strong { display: block; margin-bottom: 4px; }
+  .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 11px; color: #999; }
+  .signatures { display: flex; justify-content: space-between; margin-top: 40px; }
+  .sig-line { width: 200px; text-align: center; }
+  .sig-line .line { border-top: 1px solid #333; margin-bottom: 4px; padding-top: 30px; }
+  @media print { body { padding: 15px; } }
+</style>
+</head>
+<body>
+  <h1>Заказ-наряд №${orderNum}</h1>
+  <p class="subtitle">${timestamp}${status ? ' · Статус: ' + status : ''}</p>
+
+  <div class="section-title">Информация о клиенте</div>
+  <table>
+    <tr><th>Клиент</th><td>${clientName}</td></tr>
+    ${inn ? `<tr><th>ИНН</th><td>${inn}</td></tr>` : ''}
+    ${phone ? `<tr><th>Телефон</th><td>${phone}</td></tr>` : ''}
+    ${email ? `<tr><th>Email</th><td>${email}</td></tr>` : ''}
+  </table>
+
+  <div class="section-title">Информация о кассе</div>
+  <table>
+    <tr><th>Тип ККМ</th><td>${kkm || '—'}</td></tr>
+    ${condition ? `<tr><th>Состояние</th><td>${condition}</td></tr>` : ''}
+  </table>
+
+  <div class="section-title">Услуги</div>
+  <table>
+    <tr><th>Перечень</th><td>${services || '—'}</td></tr>
+    <tr><th>Сумма</th><td><strong>${total} ₽</strong></td></tr>
+  </table>
+
+  ${clientComment ? `<div class="comment-box"><strong>Комментарий клиента:</strong>${clientComment}</div>` : ''}
+  ${managerComment ? `<div class="comment-box"><strong>Заметки менеджера:</strong>${managerComment}</div>` : ''}
+
+  <div class="signatures">
+    <div class="sig-line"><div class="line"></div>Исполнитель</div>
+    <div class="sig-line"><div class="line"></div>Клиент</div>
+  </div>
+
+  <div class="footer">ООО «Теллур-Интех» · +7 (812) 465-94-57 · push@tellur.spb.ru</div>
+</body>
+</html>`
+
+    const win = window.open('', '_blank')
+    if (win) {
+      win.document.write(printHtml)
+      win.document.close()
+      setTimeout(() => { win.print() }, 300)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -356,6 +438,7 @@ export default function AdminDashboard() {
                     <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Заказ</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Дата</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Клиент</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Телефон</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">ККМ</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Услуги</th>
                     <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Сумма</th>
@@ -366,7 +449,7 @@ export default function AdminDashboard() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredOrders.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
+                      <td colSpan={9} className="px-4 py-12 text-center text-slate-400">
                         {search || statusFilter ? 'Заказы не найдены' : 'Нет заказов'}
                       </td>
                     </tr>
@@ -398,9 +481,11 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-4 py-3">
                               <p className="font-medium text-slate-800 truncate max-w-[180px]">{clientName || '—'}</p>
-                              <div className="flex items-center gap-2 mt-0.5 sm:hidden">
-                                {phone && <span className="text-xs text-slate-500">{phone}</span>}
-                              </div>
+                            </td>
+                            <td className="px-4 py-3 hidden sm:table-cell">
+                              {phone ? (
+                                <a href={`tel:${phone.replace(/[\s()-]/g, '')}`} className="text-xs text-[#1e3a5f] hover:underline whitespace-nowrap">{phone}</a>
+                              ) : <span className="text-xs text-slate-400">—</span>}
                             </td>
                             <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell whitespace-nowrap max-w-[120px] truncate">
                               {kkm || '—'}
@@ -440,7 +525,7 @@ export default function AdminDashboard() {
                           {/* Расширенная карточка */}
                           {isExpanded && (
                             <tr key={`${order._row}-expanded`}>
-                              <td colSpan={8} className="px-4 py-0">
+                              <td colSpan={9} className="px-4 py-0">
                                 <div className="bg-slate-50/80 border-t border-b border-slate-100 p-5 space-y-4">
                                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {/* Клиент */}
@@ -519,6 +604,12 @@ export default function AdminDashboard() {
                                         <Phone className="w-3.5 h-3.5" />Позвонить
                                       </a>
                                     )}
+                                    <button
+                                      onClick={() => handlePrintOrder(order)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1e3a5f] bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg hover:bg-[#1e3a5f]/10 transition-colors"
+                                    >
+                                      <Printer className="w-3.5 h-3.5" />Печать
+                                    </button>
                                     <button
                                       onClick={() => {
                                         navigator.clipboard.writeText(`${clientName}\n${phone}\n${email}\n\nУслуги: ${services}\nСумма: ${total} ₽`)

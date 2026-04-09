@@ -176,9 +176,9 @@ export default function AdminDashboard() {
       }
     } else {
       // Фоллбэк — генерируем из данных таблицы
-      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^#.*$/, '')
+      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^['#]/, '')
       const clientName = order['Клиент'] || ''
-      const email = (order['Email'] || order['_col4'] || '').replace(/^#.*$/, '')
+      const email = (order['Email'] || order['_col4'] || '').replace(/^['#]/, '')
       const kkm = order['ККМ'] || ''
       const services = order['Услуги'] || ''
       const total = order['Сумма'] || order['Итого'] || '0'
@@ -425,14 +425,15 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                       const status = getStatusFromOrder(order)
                       const badge = getStatusBadge(status)
                       // Берём данные по заголовку, а если пусто — по индексу колонки
-                      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^#.*$/, '')
+                      // Телефон: убираем лидирующую кавычку (экранирование Sheets) и #ERROR
+                      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^['#]/, '')
                       const clientName = order['Клиент'] || order['_col2'] || ''
                       const kkm = order['ККМ'] || order['_col5'] || ''
                       const services = order['Услуги'] || order['_col7'] || ''
                       const total = order['Сумма'] || order['_col8'] || order['Итого'] || '0'
                       const orderNum = order['Заказ №'] || order['_col1'] || order['Дата/время']?.slice(0, 10) || ''
                       const timestamp = order['Дата/время'] || order['_col0'] || ''
-                      const email = (order['Email'] || order['_col4'] || '').replace(/^#.*$/, '')
+                      const email = (order['Email'] || order['_col4'] || '').replace(/^['#]/, '')
                       const clientComment = order['Комментарий'] || order['_col9'] || order['Примечание'] || ''
                       const managerComment = order['Комментарий менеджера'] || order['_col11'] || ''
                       const inn = order['ИНН'] || ''

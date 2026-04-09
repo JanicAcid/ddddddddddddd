@@ -13,6 +13,7 @@ import { MapPin, Mail, Phone, Clock, CheckCircle, ShieldCheck, Zap, Users, Exter
 
 // Иконки для заголовков секций
 const SECTION_ICONS: Record<string, React.ReactNode> = {
+  commercial: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
   about: <ShieldCheck className="w-5 h-5 text-[#e8a817] shrink-0" />,
   'why-us': <Zap className="w-5 h-5 text-[#e8a817] shrink-0" />,
   services: <CheckCircle className="w-5 h-5 text-[#e8a817] shrink-0" />,
@@ -73,6 +74,41 @@ function AccordionSection({
 export function SeoContentInner() {
   return (
     <section className="mb-6 sm:mb-8 space-y-2.5 sm:space-y-3" aria-label="Информация о компании и услугах маркировки">
+
+      {/* ===== КОММЕРЧЕСКИЙ БЛОК ===== */}
+      <AccordionSection id="commercial" title="Настройка кассы для маркировки — цена и сроки под ключ">
+        <div className="space-y-3 sm:space-y-4 text-[15px] sm:text-base text-slate-700">
+          <p className="leading-relaxed">
+            <strong className="text-slate-800">Настройка кассы маркировка</strong>&nbsp;— одна из&nbsp;основных услуг сервисного центра Теллур-Интех в&nbsp;Санкт-Петербурге. Мы&nbsp;выполняем <strong>подключение Честный ЗНАК</strong> и&nbsp;настройку всех компонентов цепочки маркировки: ЭДО, ТС&nbsp;ПИоТ, ФНС, ОФД и&nbsp;кассовое оборудование. Работаем с&nbsp;1995 года, обслужили более 5&nbsp;000 касс. Гарантируем настройку <strong>без ошибок</strong>&nbsp;— проверяем каждый этап от&nbsp;приёмки товара до&nbsp;пробития чека.
+          </p>
+          <p className="leading-relaxed">
+            Стоимость <strong>настройки маркировки</strong> зависит от&nbsp;состояния кассы:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-slate-700">
+            <li><strong>Базовая настройка для действующей кассы</strong>&nbsp;— от&nbsp;3&nbsp;000 рублей (ЭДО, Честный ЗНАК, ТС&nbsp;ПИоТ, привязка кассы)</li>
+            <li><strong>Настройка для новой кассы</strong>&nbsp;— от&nbsp;5&nbsp;000 рублей (+регистрация ККТ в&nbsp;ФНС, установка ФН, подключение ОФД)</li>
+            <li><strong>Настройка для б/у&nbsp;кассы</strong>&nbsp;— от&nbsp;4&nbsp;000 рублей (+обновление прошивки, оформление лицензии)</li>
+            <li><strong>Полный пакет «под ключ» с&nbsp;обучением</strong>&nbsp;— от&nbsp;7&nbsp;000 рублей (все услуги + обучение сотрудников)</li>
+          </ul>
+          <p className="leading-relaxed">
+            <strong>Что входит в&nbsp;настройку маркировки:</strong>
+          </p>
+          <ol className="list-decimal pl-5 space-y-1.5 text-slate-700">
+            <li>Регистрация или перерегистрация ККТ в&nbsp;ФНС с&nbsp;переключением на&nbsp;ФФД&nbsp;1.2</li>
+            <li>Подключение оператора фискальных данных (ОФД)</li>
+            <li>Настройка электронного документооборота (ЭДО) для приёмки товаров</li>
+            <li>Регистрация и&nbsp;настройка системы «Честный ЗНАК»</li>
+            <li>Установка и&nbsp;настройка ТС&nbsp;ПИоТ</li>
+            <li>Привязка кассы ко&nbsp;всем системам и&nbsp;проверка работоспособности</li>
+          </ol>
+          <p className="leading-relaxed">
+            <strong className="text-[#1e3a5f]">Как мы&nbsp;работаем:</strong> вы&nbsp;оставляете заявку → менеджер уточняет детали → вы&nbsp;привозите кассу в&nbsp;офис (или подключаетесь удалённо) → инженер настраивает все системы → проверяем цепочку и&nbsp;обучаем сотрудников. Полная настройка выполняется <strong>за&nbsp;1&nbsp;день</strong> при наличии ЭЦП. Никаких скрытых платежей&nbsp;— вы&nbsp;видите полную смету до&nbsp;начала работ.
+          </p>
+          <p className="leading-relaxed">
+            Рассчитайте точную стоимость с&nbsp;помощью нашего <strong>бесплатного калькулятора маркировки</strong>&nbsp;— укажите модель кассы, состояние и&nbsp;необходимые услуги, и&nbsp;получите сумму за&nbsp;2&nbsp;минуты. Или позвоните <strong>+7&nbsp;(812)&nbsp;321-06-06</strong>&nbsp;— консультация бесплатна и&nbsp;не&nbsp;обязывает к&nbsp;заказу. Подробнее о&nbsp;настройке кассы для маркировки читайте в&nbsp;нашей <Link href="/nastroyka-kassy-markirovka" className="text-[#1e3a5f] hover:underline font-semibold">отдельной статье</Link>.
+          </p>
+        </div>
+      </AccordionSection>
 
       {/* ===== 1. О компании ===== */}
       <AccordionSection id="about" title="Маркировка товаров в Санкт-Петербурге — подключение под ключ">
@@ -324,7 +360,25 @@ export function SeoContentInner() {
               Для регистрации в&nbsp;системе <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Честный ЗНАК» <img src="/chestnyznak.png" alt="Честный ЗНАК" className="w-4 h-4 inline-block" /></a> необходимо: получить усиленную квалифицированную электронную подпись (УКЭП) в&nbsp;аккредитованном удостоверяющем центре, зарегистрировать учётную запись на&nbsp;сайте честныйзнак.рф, подписать электронное соглашение с&nbsp;оператором системы (ЦРПТ). Для ИП&nbsp;и&nbsp;ООО процедура одинаковая. После регистрации вам будет доступен личный кабинет, где можно управлять карточками товаров, отслеживать движение маркированной продукции и&nbsp;связывать кассу с&nbsp;учётной записью. Если вы&nbsp;не&nbsp;уверены в&nbsp;своих силах&nbsp;— наши инженеры помогут зарегистрироваться и&nbsp;настроить все компоненты.
             </p>
             <p className="leading-relaxed">
-              <strong>Подробная пошаговая инструкция</strong> с&nbsp;картинками и&nbsp;пояснениями каждого шага доступна в&nbsp;нашем разделе <Link href="/instructions/kak-podklyuchit-kabinet-chestnyznak" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Как подключить кабинет Честный ЗНАК»</Link>. Там описано: как подготовить УКЭП, заполнить данные, подписать соглашение с&nbsp;ЦРПТ и&nbsp;настроить профиль.
+              <strong>Подробная пошаговая инструкция</strong> с&nbsp;картинками и&nbsp;пояснениями каждого шага доступна в&nbsp;нашем разделе <Link href="/instructions/kak-podklyuchit-kabinet-chestnyznak" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Как подключить кабинет Честный ЗНАК»</Link>. Там описано: как подготовить УКЭП, заполнить данные, подписать соглашение с&nbsp;ЦРПТ и&nbsp;настроить профиль. Также рекомендуем нашу статью <Link href="/podklyuchenie-chestnyy-znak" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Подключение Честного ЗНАК под ключ»</Link>.
+            </p>
+          </div>
+          <div id="stoimost-nastroyki-markirovki">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Сколько стоит настройка маркировки?</h3>
+            <p className="leading-relaxed">
+              Стоимость настройки маркировки зависит от&nbsp;состояния кассы и&nbsp;набора услуг. Базовая <strong>настройка кассы маркировка</strong> для действующей кассы начинается <strong>от&nbsp;3&nbsp;000 рублей</strong>&nbsp;— подключение ЭДО, регистрация в&nbsp;Честном ЗНАКе, настройка ТС&nbsp;ПИоТ и&nbsp;привязка кассы. Для новой кассы&nbsp;— от&nbsp;5&nbsp;000 рублей (дополнительно: регистрация ККТ в&nbsp;ФНС, установка ФН, подключение ОФД). Для б/у&nbsp;касс&nbsp;— от&nbsp;4&nbsp;000 рублей (обновление прошивки, оформление лицензии). Полный пакет «под ключ» с&nbsp;обучением сотрудников&nbsp;— от&nbsp;7&nbsp;000 рублей. Используйте наш <strong>калькулятор маркировки</strong> для точного расчёта за&nbsp;2&nbsp;минуты&nbsp;— без скрытых платежей.
+            </p>
+          </div>
+          <div id="nastroyka-markirovki-poshagovo">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Как проходит настройка маркировки — пошагово?</h3>
+            <p className="leading-relaxed">
+              Процесс настройки маркировки состоит из&nbsp;5&nbsp;шагов: <strong>1)</strong> Вы&nbsp;оставляете заявку по&nbsp;телефону или через калькулятор на&nbsp;сайте. <strong>2)</strong> Менеджер уточняет детали: модель кассы, категории товаров, текущее состояние оборудования. <strong>3)</strong> Вы&nbsp;привозите кассу в&nbsp;наш офис (СПб, ул. Заслонова, 32-34) или подключаетесь удалённо. <strong>4)</strong> Инженер выполняет <strong>настройку кассы маркировка</strong>: регистрация в&nbsp;ФНС, <strong>подключение Честный ЗНАК</strong>, настройка ЭДО, установка ТС&nbsp;ПИоТ, привязка всех систем. <strong>5)</strong> Проверяем работоспособность цепочки «приёмка&nbsp;— продажа» и&nbsp;обучаем сотрудников. Вся настройка выполняется <strong>за&nbsp;1&nbsp;день</strong> при наличии ЭЦП.
+            </p>
+          </div>
+          <div id="nuzhna-li-1s-dlya-markirovki">
+            <h3 className="font-semibold text-[#1e3a5f] text-[15px] sm:text-base mb-1.5">Нужна ли 1С для работы с&nbsp;маркировкой?</h3>
+            <p className="leading-relaxed">
+              <strong>Нет, 1С не&nbsp;является обязательной</strong> для работы с&nbsp;маркировкой. Касса (Меркурий, Атол, Эвотор, Штрих-М) способна работать с&nbsp;кодами Data&nbsp;Matrix самостоятельно через ТС&nbsp;ПИоТ. Однако интеграция с&nbsp;1С рекомендуется для среднего и&nbsp;крупного бизнеса: она позволяет автоматизировать учёт маркированных товаров, синхронизировать остатки с&nbsp;кассой и&nbsp;формировать электронные накладные через ЭДО. Подробнее об&nbsp;интеграции читайте в&nbsp;нашей статье <Link href="/integraciya-1c" className="inline-flex items-center gap-1 text-[#1e3a5f] hover:underline font-semibold">«Интеграция 1С с маркировкой»</Link>.
             </p>
           </div>
         </div>

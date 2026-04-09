@@ -24,6 +24,9 @@ const FAQ_SLUG_MAP: Record<string, string> = {
   'faq-10': 'tspiott',
   'faq-11': 'besplatnaya-konsultatsiya',
   'faq-12': 'registratsiya-chestnyznak',
+  'faq-13': 'stoimost-nastroyki-markirovki',
+  'faq-14': 'nastroyka-markirovki-poshagovo',
+  'faq-15': 'nuzhna-li-1s-dlya-markirovki',
 }
 
 // Все возможные FAQ-слаги для обнаружения в URL
@@ -60,7 +63,7 @@ export function SeoContent() {
         scrollToFaqItem(FAQ_SLUG_MAP[hash])
       }
       // Обработка секций: #contacts, #services, #offices и т.д.
-      else if (['contacts', 'offices', 'services', 'about', 'why-us', 'districts', 'regions', 'repair', 'calculator'].includes(hash)) {
+      else if (['contacts', 'offices', 'services', 'about', 'why-us', 'districts', 'regions', 'repair', 'calculator', 'commercial'].includes(hash)) {
         setOpen(true)
         window.dispatchEvent(new CustomEvent('open-seo-sections', { detail: { ids: [hash === 'contacts' ? 'offices' : hash] } }))
         setTimeout(() => {

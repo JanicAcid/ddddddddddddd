@@ -163,84 +163,49 @@ export default function AdminDashboard() {
   const getStatusFromOrder = (o: Order) => o['Статус'] || ''
 
   const handlePrintOrder = (order: Order) => {
-    const phone = order['Телефон'] || order['Телефон '] || ''
-    const clientName = order['Клиент'] || ''
-    const email = order['Email'] || order['Email '] || ''
-    const kkm = order['ККМ'] || ''
-    const services = order['Услуги'] || ''
-    const total = order['Сумма'] || order['Итого'] || '0'
-    const orderNum = order['Заказ №'] || order['Дата/время']?.slice(0, 10) || ''
-    const timestamp = order['Дата/время'] || ''
-    const status = order['Статус'] || ''
-    const inn = order['ИНН'] || ''
-    const clientComment = order['Комментарий'] || order['Примечание'] || ''
-    const managerComment = order['Комментарий менеджера'] || ''
-    const condition = order['Состояние'] || ''
+    const savedHtml = order['Файл заказа'] || order['orderHtml'] || ''
 
-    const printHtml = `<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<title>Заказ №${orderNum}</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; font-size: 13px; color: #222; padding: 30px; max-width: 700px; margin: 0 auto; }
-  h1 { font-size: 18px; margin-bottom: 4px; }
-  .subtitle { color: #666; font-size: 12px; margin-bottom: 20px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-  th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
-  th { background: #f5f5f5; font-weight: 600; width: 140px; }
-  .section-title { font-weight: 700; font-size: 14px; margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1e3a5f; }
-  .comment-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 14px; margin-top: 10px; font-size: 12px; }
-  .comment-box strong { display: block; margin-bottom: 4px; }
-  .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 11px; color: #999; }
-  .signatures { display: flex; justify-content: space-between; margin-top: 40px; }
-  .sig-line { width: 200px; text-align: center; }
-  .sig-line .line { border-top: 1px solid #333; margin-bottom: 4px; padding-top: 30px; }
-  @media print { body { padding: 15px; } }
-</style>
-</head>
-<body>
-  <h1>Заказ-наряд №${orderNum}</h1>
-  <p class="subtitle">${timestamp}${status ? ' · Статус: ' + status : ''}</p>
+    if (savedHtml && savedHtml.includes('<html')) {
+      // Печатаем сохранённый HTML (тот же что ушёл в ТГ)
+      const win = window.open('', '_blank')
+      if (win) {
+        win.document.write(savedHtml)
+        win.document.close()
+        setTimeout(() => { win.print() }, 500)
+      }
+    } else {
+      // Фоллбэк — генерируем из данных таблицы
+      const phone = (order['Телефон'] || '').replace(/^#.*$/, '')
+      const clientName = order['Клиент'] || ''
+      const email = (order['Email'] || '').replace(/^#.*$/, '')
+      const kkm = order['ККМ'] || ''
+      const services = order['Услуги'] || ''
+      const total = order['Сумма'] || order['Итого'] || '0'
+      const orderNum = order['Заказ №'] || ''
+      const timestamp = order['Дата/время'] || ''
+      const status = order['Статус'] || ''
+      const inn = order['ИНН'] || ''
+      const clientComment = order['Комментарий'] || ''
+      const managerComment = order['Комментарий менеджера'] || ''
+      const condition = order['Состояние'] || ''
 
-  <div class="section-title">Информация о клиенте</div>
-  <table>
-    <tr><th>Клиент</th><td>${clientName}</td></tr>
-    ${inn ? `<tr><th>ИНН</th><td>${inn}</td></tr>` : ''}
-    ${phone ? `<tr><th>Телефон</th><td>${phone}</td></tr>` : ''}
-    ${email ? `<tr><th>Email</th><td>${email}</td></tr>` : ''}
-  </table>
-
-  <div class="section-title">Информация о кассе</div>
-  <table>
-    <tr><th>Тип ККМ</th><td>${kkm || '—'}</td></tr>
-    ${condition ? `<tr><th>Состояние</th><td>${condition}</td></tr>` : ''}
-  </table>
-
-  <div class="section-title">Услуги</div>
-  <table>
-    <tr><th>Перечень</th><td>${services || '—'}</td></tr>
-    <tr><th>Сумма</th><td><strong>${total} ₽</strong></td></tr>
-  </table>
-
-  ${clientComment ? `<div class="comment-box"><strong>Комментарий клиента:</strong>${clientComment}</div>` : ''}
-  ${managerComment ? `<div class="comment-box"><strong>Заметки менеджера:</strong>${managerComment}</div>` : ''}
-
-  <div class="signatures">
-    <div class="sig-line"><div class="line"></div>Исполнитель</div>
-    <div class="sig-line"><div class="line"></div>Клиент</div>
-  </div>
-
-  <div class="footer">ООО «Теллур-Интех» · +7 (812) 465-94-57 · push@tellur.spb.ru</div>
-</body>
-</html>`
-
-    const win = window.open('', '_blank')
-    if (win) {
-      win.document.write(printHtml)
-      win.document.close()
-      setTimeout(() => { win.print() }, 300)
+      const printHtml = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Заказ №${orderNum}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:13px;color:#222;padding:30px;max-width:700px;margin:0 auto}
+h1{font-size:18px;margin-bottom:4px}.sub{color:#666;font-size:12px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin-bottom:16px}th,td{border:1px solid #ddd;padding:8px 10px;text-align:left;font-size:13px}
+th{background:#f5f5f5;font-weight:600;width:140px}.st{font-weight:700;font-size:14px;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #1e3a5f}
+.cb{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 14px;margin-top:10px;font-size:12px}.cb strong{display:block;margin-bottom:4px}
+.sig{display:flex;justify-content:space-between;margin-top:40px}.sig div{width:200px;text-align:center}.sig .l{border-top:1px solid #333;margin-bottom:4px;padding-top:30px}
+.ft{margin-top:30px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999}@media print{body{padding:15px}}</style>
+</head><body><h1>Заказ-наряд №${orderNum}</h1><p class="sub">${timestamp}${status ? ' · Статус: ' + status : ''}</p>
+<div class="st">Клиент</div><table><tr><th>Клиент</th><td>${clientName}</td></tr>${inn ? `<tr><th>ИНН</th><td>${inn}</td></tr>` : ''}${phone ? `<tr><th>Телефон</th><td>${phone}</td></tr>` : ''}${email ? `<tr><th>Email</th><td>${email}</td></tr>` : ''}</table>
+<div class="st">Касса</div><table><tr><th>Тип ККМ</th><td>${kkm || '—'}</td></tr>${condition ? `<tr><th>Состояние</th><td>${condition}</td></tr>` : ''}</table>
+<div class="st">Услуги</div><table><tr><th>Перечень</th><td>${services || '—'}</td></tr><tr><th>Сумма</th><td><strong>${total} ₽</strong></td></tr></table>
+${clientComment ? `<div class="cb"><strong>Комментарий клиента:</strong>${clientComment}</div>` : ''}${managerComment ? `<div class="cb"><strong>Заметки менеджера:</strong>${managerComment}</div>` : ''}
+<div class="sig"><div><div class="l"></div>Исполнитель</div><div><div class="l"></div>Клиент</div></div>
+<div class="ft">ООО «Теллур-Интех» · +7 (812) 465-94-57 · push@tellur.spb.ru</div></body></html>`
+      const win = window.open('', '_blank')
+      if (win) { win.document.write(printHtml); win.document.close(); setTimeout(() => { win.print() }, 300) }
     }
   }
 
@@ -458,7 +423,7 @@ export default function AdminDashboard() {
                       const isExpanded = expandedRow === order._row
                       const status = getStatusFromOrder(order)
                       const badge = getStatusBadge(status)
-                      const phone = order['Телефон'] || order['Телефон '] || ''
+                      const phone = (order['Телефон'] || order['Телефон '] || '').replace(/^#.*$/, '')
                       const clientName = order['Клиент'] || ''
                       const kkm = order['ККМ'] || ''
                       const services = order['Услуги'] || ''

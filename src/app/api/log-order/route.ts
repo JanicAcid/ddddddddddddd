@@ -16,6 +16,7 @@ interface LogOrderBody {
   total: number
   isConsultation?: boolean
   comment?: string
+  orderHtml?: string
 }
 
 export async function POST(request: Request) {
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
       body.isConsultation ? 'Консультация' : (body.services || []).join(', '),
       body.total || 0, body.comment || '',
       status, '',
+      body.orderHtml || '',
     ]
 
     if (isGoogleSheetsConfigured()) {

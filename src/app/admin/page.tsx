@@ -140,7 +140,7 @@ export default function AdminDashboard() {
     if (statusFilter && (o['Статус'] || '').toLowerCase() !== statusFilter.toLowerCase()) return false
     if (search) {
       const q = search.toLowerCase()
-      const searchable = [o['Клиент'], o['Телефон'], o['Email'], o['Заказ №'], o['ККМ'], o['Услуги'], o['Комментарий']].filter(Boolean).join(' ').toLowerCase()
+      const searchable = [o['Клиент'] || o['_col2'], o['Телефон'] || o['_col3'], o['Email'] || o['_col4'], o['Заказ №'] || o['_col1'], o['ККМ'] || o['_col5'], o['Услуги'] || o['_col7'], o['Комментарий'] || o['_col9']].filter(Boolean).join(' ').toLowerCase()
       if (!searchable.includes(q)) return false
     }
     return true
@@ -163,8 +163,8 @@ export default function AdminDashboard() {
   const getStatusFromOrder = (o: Order) => o['Статус'] || ''
 
   const handlePrintOrder = (order: Order) => {
-    // Ищем HTML заказ-наряда: по заголовку колонки или по индексу
-    const savedHtml = order['Файл заказа'] || order['orderHtml'] || order['_col12'] || ''
+    // Ищем HTML заказ-наряда: по заголовку или по индексу колонки
+    const savedHtml = order['Файл заказа'] || order['_col12'] || order['orderHtml'] || ''
 
     if (savedHtml && savedHtml.includes('<html')) {
       // Печатаем сохранённый HTML (тот же что ушёл в ТГ)
@@ -176,9 +176,9 @@ export default function AdminDashboard() {
       }
     } else {
       // Фоллбэк — генерируем из данных таблицы
-      const phone = (order['Телефон'] || '').replace(/^#.*$/, '')
+      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^#.*$/, '')
       const clientName = order['Клиент'] || ''
-      const email = (order['Email'] || '').replace(/^#.*$/, '')
+      const email = (order['Email'] || order['_col4'] || '').replace(/^#.*$/, '')
       const kkm = order['ККМ'] || ''
       const services = order['Услуги'] || ''
       const total = order['Сумма'] || order['Итого'] || '0'
@@ -424,16 +424,17 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                       const isExpanded = expandedRow === order._row
                       const status = getStatusFromOrder(order)
                       const badge = getStatusBadge(status)
-                      const phone = (order['Телефон'] || order['Телефон '] || '').replace(/^#.*$/, '')
-                      const clientName = order['Клиент'] || ''
-                      const kkm = order['ККМ'] || ''
-                      const services = order['Услуги'] || ''
-                      const total = order['Сумма'] || order['Итого'] || '0'
-                      const orderNum = order['Заказ №'] || order['Дата/время']?.slice(0, 10) || ''
-                      const timestamp = order['Дата/время'] || ''
-                      const email = order['Email'] || order['Email '] || ''
-                      const clientComment = order['Комментарий'] || order['Примечание'] || ''
-                      const managerComment = order['Комментарий менеджера'] || ''
+                      // Берём данные по заголовку, а если пусто — по индексу колонки
+                      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^#.*$/, '')
+                      const clientName = order['Клиент'] || order['_col2'] || ''
+                      const kkm = order['ККМ'] || order['_col5'] || ''
+                      const services = order['Услуги'] || order['_col7'] || ''
+                      const total = order['Сумма'] || order['_col8'] || order['Итого'] || '0'
+                      const orderNum = order['Заказ №'] || order['_col1'] || order['Дата/время']?.slice(0, 10) || ''
+                      const timestamp = order['Дата/время'] || order['_col0'] || ''
+                      const email = (order['Email'] || order['_col4'] || '').replace(/^#.*$/, '')
+                      const clientComment = order['Комментарий'] || order['_col9'] || order['Примечание'] || ''
+                      const managerComment = order['Комментарий менеджера'] || order['_col11'] || ''
                       const inn = order['ИНН'] || ''
 
                       return (

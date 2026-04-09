@@ -198,8 +198,9 @@ export default function TellurServiceCalculator() {
       // ====== ТЕКУЩАЯ КАССА: НУЖНО ПОДКЛЮЧИТЬ МАРКИРОВКУ ======
       if (isRegistrationMode) {
         next.delete('partial_marketing_setup')
+        // Полная маркировка включает регистрацию ККТ в ФНС — перерегистрация отдельно не нужна
         if (!next.has('marking_setup')) next.add('marking_setup')
-        if (!next.has('fns_reregistration')) next.add('fns_reregistration')
+        next.delete('fns_reregistration')
         return [...next]
       }
 

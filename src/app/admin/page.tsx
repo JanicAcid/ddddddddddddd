@@ -154,7 +154,6 @@ export default function AdminDashboard() {
     waitingCall: (data?.orders || []).filter((o) => (o['Статус'] || '').toLowerCase() === 'ждёт звонка').length,
   }
 
-  // Заголовки для отображения в таблице (сопоставляем с данными из Sheets)
   const displayHeaders = data?.headers || [
     'Дата/время', 'Заказ №', 'Клиент', 'Телефон', 'Email',
     'ККМ', 'Состояние', 'Услуги', 'Сумма', 'Комментарий'
@@ -163,11 +162,9 @@ export default function AdminDashboard() {
   const getStatusFromOrder = (o: Order) => o['Статус'] || ''
 
   const handlePrintOrder = (order: Order) => {
-    // Ищем HTML заказ-наряда: по заголовку или по индексу колонки
     const savedHtml = order['Файл заказа'] || order['_col12'] || order['orderHtml'] || ''
 
     if (savedHtml && savedHtml.includes('<html')) {
-      // Печатаем сохранённый HTML (тот же что ушёл в ТГ)
       const win = window.open('', '_blank')
       if (win) {
         win.document.write(savedHtml)
@@ -175,7 +172,6 @@ export default function AdminDashboard() {
         setTimeout(() => { win.print() }, 500)
       }
     } else {
-      // Фоллбэк — генерируем из данных таблицы
       const phone = (order['Телефон'] || order['_col3'] || '').replace(/^['#]/, '')
       const clientName = order['Клиент'] || ''
       const email = (order['Email'] || order['_col4'] || '').replace(/^['#]/, '')
@@ -210,16 +206,36 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
     }
   }
 
+  // Извлечение данных заказа — единая функция для мобильных карточек и таблицы
+  const getOrderData = (order: Order) => {
+    const phone = (order['Телефон'] || order['_col3'] || '').replace(/^['#]/, '')
+    const clientName = order['Клиент'] || order['_col2'] || ''
+    const kkm = order['ККМ'] || order['_col5'] || ''
+    const services = order['Услуги'] || order['_col7'] || ''
+    const total = order['Сумма'] || order['_col8'] || order['Итого'] || '0'
+    const orderNum = order['Заказ №'] || order['_col1'] || order['Дата/время']?.slice(0, 10) || ''
+    const timestamp = order['Дата/время'] || order['_col0'] || ''
+    const email = (order['Email'] || order['_col4'] || '').replace(/^['#]/, '')
+    const clientComment = order['Комментарий'] || order['_col9'] || order['Примечание'] || ''
+    const managerComment = order['Комментарий менеджера'] || order['_col11'] || ''
+    const inn = order['ИНН'] || ''
+    const status = getStatusFromOrder(order)
+    const badge = getStatusBadge(status)
+    return { phone, clientName, kkm, services, total, orderNum, timestamp, email, clientComment, managerComment, inn, status, badge }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Шапка */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Building2 className="w-5 h-5 text-[#1e3a5f]" />
-            <h1 className="font-semibold text-[#1e3a5f] text-sm sm:text-base">Кабинет менеджера</h1>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#1e3a5f]/10 flex items-center justify-center">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f]" />
+            </div>
+            <h1 className="font-semibold text-[#1e3a5f] text-sm sm:text-base">Кабинет</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={fetchOrders}
               disabled={loading}
@@ -231,7 +247,7 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
             <button
               onClick={handleLogout}
               disabled={logoutLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               {logoutLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
               <span className="hidden sm:inline">Выход</span>
@@ -240,48 +256,48 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Статистика */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <ClipboardList className="w-4 h-4 text-slate-400" />
-              <span className="text-xs font-medium text-slate-500 uppercase">Всего</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+              <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase">Всего</span>
             </div>
-            <p className="text-2xl font-bold text-[#1e3a5f]">{stats.total}</p>
+            <p className="text-xl sm:text-2xl font-bold text-[#1e3a5f]">{stats.total}</p>
           </div>
-          <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-4 h-4 text-blue-500" />
-              <span className="text-xs font-medium text-blue-600 uppercase">Новые</span>
+          <div className="bg-blue-50 rounded-xl border border-blue-200 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
+              <span className="text-[10px] sm:text-xs font-medium text-blue-600 uppercase">Новые</span>
             </div>
-            <p className="text-2xl font-bold text-blue-700">{stats.newCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-700">{stats.newCount}</p>
           </div>
-          <div className="bg-yellow-50 rounded-xl border border-yellow-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Filter className="w-4 h-4 text-yellow-500" />
-              <span className="text-xs font-medium text-yellow-600 uppercase">В работе</span>
+          <div className="bg-yellow-50 rounded-xl border border-yellow-200 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500" />
+              <span className="text-[10px] sm:text-xs font-medium text-yellow-600 uppercase">В работе</span>
             </div>
-            <p className="text-2xl font-bold text-yellow-700">{stats.inProgress}</p>
+            <p className="text-xl sm:text-2xl font-bold text-yellow-700">{stats.inProgress}</p>
           </div>
-          <div className="bg-purple-50 rounded-xl border border-purple-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Phone className="w-4 h-4 text-purple-500" />
-              <span className="text-xs font-medium text-purple-600 uppercase">Ждут звонка</span>
+          <div className="bg-purple-50 rounded-xl border border-purple-200 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" />
+              <span className="text-[10px] sm:text-xs font-medium text-purple-600 uppercase">Ждёт звонка</span>
             </div>
-            <p className="text-2xl font-bold text-purple-700">{stats.waitingCall}</p>
+            <p className="text-xl sm:text-2xl font-bold text-purple-700">{stats.waitingCall}</p>
           </div>
         </div>
 
         {/* Фильтры */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Поиск по клиенту, телефону, номеру заказа..."
+              placeholder="Поиск..."
               className="w-full pl-9 pr-8 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors"
             />
             {search && (
@@ -294,7 +310,7 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors"
+              className="flex-1 sm:flex-initial px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors"
             >
               <option value="">Все статусы</option>
               <option value="новый">Новый</option>
@@ -304,8 +320,8 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
               <option value="отменён">Отменён</option>
               <option value="консультация">Консультация</option>
             </select>
-            <span className="text-xs text-slate-400 whitespace-nowrap">
-              {filteredOrders.length} из {data?.total || 0}
+            <span className="text-[11px] sm:text-xs text-slate-400 whitespace-nowrap">
+              {filteredOrders.length}/{data?.total || 0}
             </span>
           </div>
         </div>
@@ -313,18 +329,16 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
         {/* Ошибка / Настройка Google Sheets */}
         {error && !data && (
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="flex items-start gap-3 p-5 bg-amber-50 border-b border-amber-200">
+            <div className="flex items-start gap-3 p-4 sm:p-5 bg-amber-50 border-b border-amber-200">
               <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-amber-800">Не удалось загрузить заказы</p>
                 <p className="text-sm text-amber-700 mt-0.5">{error}</p>
               </div>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4">
               <h3 className="text-base font-semibold text-slate-800">Инструкция по настройке</h3>
-
               <div className="space-y-4">
-                {/* Шаг 1 */}
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">1</span>
                   <div>
@@ -335,8 +349,6 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                     </div>
                   </div>
                 </div>
-
-                {/* Шаг 2 */}
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">2</span>
                   <div>
@@ -346,8 +358,6 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                     </p>
                   </div>
                 </div>
-
-                {/* Шаг 3 */}
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">3</span>
                   <div>
@@ -355,8 +365,6 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                     <p className="text-sm text-slate-500 mt-0.5">Откройте созданную Google Таблицу → кнопку «Поделиться» → вставьте email сервисного аккаунта из JSON-ключа (поле <code className="bg-slate-100 px-1 rounded text-xs">client_email</code>) → роль «Редактор».</p>
                   </div>
                 </div>
-
-                {/* Шаг 4 */}
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">4</span>
                   <div>
@@ -368,16 +376,10 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                         <span className="text-slate-400 mx-2">=</span>
                         <span className="text-slate-500">ID из URL таблицы (docs.google.com/spreadsheets/d/<strong>ID</strong>/edit)</span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-                        <span className="font-mono font-semibold text-slate-700">GOOGLE_SERVICE_ACCOUNT_KEY</span>
-                        <span className="text-slate-400 mx-2">=</span>
-                        <span className="text-slate-500">весь JSON-файл ключа сервисного аккаунта (одной строкой)</span>
-                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-
               <button onClick={fetchOrders} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#1e3a5f] rounded-lg hover:bg-[#1e3a5f]/90 transition-colors">
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Попробовать снова
@@ -394,218 +396,337 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
           </div>
         )}
 
-        {/* Таблица */}
+        {/* ========================================= */}
+        {/* МОБИЛЬНЫЕ КАРТОЧКИ (только на маленьких экранах) */}
+        {/* ========================================= */}
         {data && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Заказ</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Дата</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Клиент</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Телефон</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">ККМ</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Услуги</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Сумма</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Статус</th>
-                    <th className="w-10"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredOrders.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="px-4 py-12 text-center text-slate-400">
-                        {search || statusFilter ? 'Заказы не найдены' : 'Нет заказов'}
-                      </td>
+          <>
+            <div className="sm:hidden space-y-3">
+              {filteredOrders.length === 0 ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 text-sm">
+                  {search || statusFilter ? 'Заказы не найдены' : 'Нет заказов'}
+                </div>
+              ) : (
+                filteredOrders.map((order) => {
+                  const d = getOrderData(order)
+                  const isExpanded = expandedRow === order._row
+                  return (
+                    <div key={order._row} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      {/* Заголовок карточки */}
+                      <div className="p-3">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="font-mono text-xs font-semibold text-[#1e3a5f]">#{d.orderNum}</span>
+                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${d.badge.bg} ${d.badge.color}`}>
+                                {d.badge.label}
+                              </span>
+                            </div>
+                            <p className="text-sm font-semibold text-slate-800 truncate">{d.clientName || '—'}</p>
+                          </div>
+                          <p className="text-sm font-bold text-slate-800 whitespace-nowrap shrink-0">
+                            {parseInt(d.total.replace(/[^\d]/g, ''))?.toLocaleString('ru-RU') || '0'} ₽
+                          </p>
+                        </div>
+
+                        {/* Телефон и дата */}
+                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
+                          <span className="truncate">{d.timestamp}</span>
+                          {d.kkm && <span className="truncate text-slate-400">{d.kkm}</span>}
+                        </div>
+
+                        {/* Телефон — крупный и кликабельный */}
+                        {d.phone && (
+                          <a
+                            href={`tel:${d.phone.replace(/[\s()-]/g, '')}`}
+                            className="flex items-center gap-2 px-3 py-2 bg-[#1e3a5f]/5 border border-[#1e3a5f]/15 rounded-lg text-sm font-medium text-[#1e3a5f] mb-2 active:bg-[#1e3a5f]/10"
+                          >
+                            <Phone className="w-4 h-4 shrink-0" />
+                            <span>{d.phone}</span>
+                          </a>
+                        )}
+
+                        {/* Кнопки действий — всегда видны */}
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={d.status}
+                            onChange={(e) => handleStatusChange(order._row, e.target.value)}
+                            disabled={updateLoading === order._row}
+                            className={`flex-1 text-xs font-medium px-2.5 py-2 rounded-lg border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 ${d.badge.bg} ${d.badge.color}`}
+                          >
+                            <option value="">— статус —</option>
+                            <option value="новый">Новый</option>
+                            <option value="ждёт звонка">Ждёт звонка</option>
+                            <option value="в работе">В работе</option>
+                            <option value="выполнен">Выполнен</option>
+                            <option value="отменён">Отменён</option>
+                            <option value="консультация">Консультация</option>
+                          </select>
+                          <button
+                            onClick={() => setExpandedRow(isExpanded ? null : order._row)}
+                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+                          >
+                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Расширенная часть */}
+                      {isExpanded && (
+                        <div className="border-t border-slate-100 bg-slate-50/50 px-3 py-3 space-y-3">
+                          {/* Детали клиента */}
+                          <div className="space-y-1.5 text-sm">
+                            {d.inn && <p className="text-slate-600">ИНН: {d.inn}</p>}
+                            {d.email && (
+                              <a href={`mailto:${d.email}`} className="flex items-center gap-1.5 text-[#1e3a5f] hover:underline text-xs">
+                                <Mail className="w-3.5 h-3.5" />{d.email}
+                              </a>
+                            )}
+                            {d.services && <p className="text-xs text-slate-600"><span className="text-slate-400">Услуги:</span> {d.services}</p>}
+                          </div>
+
+                          {/* Комментарий клиента */}
+                          {d.clientComment && (
+                            <div className="bg-amber-50/70 border border-amber-200/50 rounded-lg p-2.5">
+                              <p className="text-[11px] font-semibold text-amber-600 mb-0.5 flex items-center gap-1">
+                                <MessageSquare className="w-3 h-3" /> Комментарий клиента
+                              </p>
+                              <p className="text-xs text-slate-700">{d.clientComment}</p>
+                            </div>
+                          )}
+
+                          {/* Комментарий менеджера */}
+                          <div>
+                            <p className="text-[11px] font-semibold text-slate-400 uppercase mb-1.5 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Заметки менеджера
+                            </p>
+                            <textarea
+                              value={d.managerComment}
+                              onChange={(e) => handleCommentUpdate(order._row, e.target.value)}
+                              onBlur={(e) => handleCommentUpdate(order._row, e.target.value)}
+                              placeholder="Добавить комментарий..."
+                              rows={2}
+                              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors resize-y"
+                            />
+                          </div>
+
+                          {/* Кнопки */}
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => handlePrintOrder(order)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1e3a5f] bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg hover:bg-[#1e3a5f]/10 transition-colors"
+                            >
+                              <Printer className="w-3.5 h-3.5" />Печать
+                            </button>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${d.clientName}\n${d.phone}\n${d.email}\n\nУслуги: ${d.services}\nСумма: ${d.total} ₽`)
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                            >
+                              <Download className="w-3.5 h-3.5" />Копировать
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* ========================================= */}
+            {/* ДЕСКТОПНАЯ ТАБЛИЦА (скрыта на мобильных) */}
+            {/* ========================================= */}
+            <div className="hidden sm:block bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Заказ</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Дата</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Клиент</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Телефон</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">ККМ</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Услуги</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Сумма</th>
+                      <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Статус</th>
+                      <th className="w-10"></th>
                     </tr>
-                  ) : (
-                    filteredOrders.map((order) => {
-                      const isExpanded = expandedRow === order._row
-                      const status = getStatusFromOrder(order)
-                      const badge = getStatusBadge(status)
-                      // Берём данные по заголовку, а если пусто — по индексу колонки
-                      // Телефон: убираем лидирующую кавычку (экранирование Sheets) и #ERROR
-                      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^['#]/, '')
-                      const clientName = order['Клиент'] || order['_col2'] || ''
-                      const kkm = order['ККМ'] || order['_col5'] || ''
-                      const services = order['Услуги'] || order['_col7'] || ''
-                      const total = order['Сумма'] || order['_col8'] || order['Итого'] || '0'
-                      const orderNum = order['Заказ №'] || order['_col1'] || order['Дата/время']?.slice(0, 10) || ''
-                      const timestamp = order['Дата/время'] || order['_col0'] || ''
-                      const email = (order['Email'] || order['_col4'] || '').replace(/^['#]/, '')
-                      const clientComment = order['Комментарий'] || order['_col9'] || order['Примечание'] || ''
-                      const managerComment = order['Комментарий менеджера'] || order['_col11'] || ''
-                      const inn = order['ИНН'] || ''
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-12 text-center text-slate-400">
+                          {search || statusFilter ? 'Заказы не найдены' : 'Нет заказов'}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredOrders.map((order) => {
+                        const d = getOrderData(order)
+                        const isExpanded = expandedRow === order._row
 
-                      return (
-                        <>
-                          <tr key={order._row} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="px-4 py-3">
-                              <span className="font-mono text-xs font-medium text-[#1e3a5f]">#{orderNum}</span>
-                            </td>
-                            <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell whitespace-nowrap">
-                              {timestamp}
-                            </td>
-                            <td className="px-4 py-3">
-                              <p className="font-medium text-slate-800 truncate max-w-[180px]">{clientName || '—'}</p>
-                            </td>
-                            <td className="px-4 py-3 hidden sm:table-cell">
-                              {phone ? (
-                                <a href={`tel:${phone.replace(/[\s()-]/g, '')}`} className="text-xs text-[#1e3a5f] hover:underline whitespace-nowrap">{phone}</a>
-                              ) : <span className="text-xs text-slate-400">—</span>}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell whitespace-nowrap max-w-[120px] truncate">
-                              {kkm || '—'}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-slate-600 hidden lg:table-cell max-w-[200px] truncate">
-                              {services || '—'}
-                            </td>
-                            <td className="px-4 py-3 text-right font-semibold text-slate-800 whitespace-nowrap">
-                              {parseInt(total.replace(/[^\d]/g, ''))?.toLocaleString('ru-RU') || '0'} ₽
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <select
-                                value={status}
-                                onChange={(e) => handleStatusChange(order._row, e.target.value)}
-                                disabled={updateLoading === order._row}
-                                className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 ${badge.bg} ${badge.color}`}
-                              >
-                                <option value="">—</option>
-                                <option value="новый">Новый</option>
-                                <option value="ждёт звонка">Ждёт звонка</option>
-                                <option value="в работе">В работе</option>
-                                <option value="выполнен">Выполнен</option>
-                                <option value="отменён">Отменён</option>
-                                <option value="консультация">Консультация</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3">
-                              <button
-                                onClick={() => setExpandedRow(isExpanded ? null : order._row)}
-                                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                              >
-                                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                              </button>
-                            </td>
-                          </tr>
-
-                          {/* Расширенная карточка */}
-                          {isExpanded && (
-                            <tr key={`${order._row}-expanded`}>
-                              <td colSpan={9} className="px-4 py-0">
-                                <div className="bg-slate-50/80 border-t border-b border-slate-100 p-5 space-y-4">
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {/* Клиент */}
-                                    <div>
-                                      <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                                        <Building2 className="w-3.5 h-3.5" /> Клиент
-                                      </h4>
-                                      <div className="space-y-1 text-sm">
-                                        {clientName && <p className="font-medium text-slate-800">{clientName}</p>}
-                                        {inn && <p className="text-slate-600">ИНН: {inn}</p>}
-                                        {phone && (
-                                          <a href={`tel:${phone.replace(/[\s()-]/g, '')}`} className="flex items-center gap-1.5 text-[#1e3a5f] hover:underline">
-                                            <Phone className="w-3.5 h-3.5" />{phone}
-                                          </a>
-                                        )}
-                                        {email && (
-                                          <a href={`mailto:${email}`} className="flex items-center gap-1.5 text-[#1e3a5f] hover:underline">
-                                            <Mail className="w-3.5 h-3.5" />{email}
-                                          </a>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Касса */}
-                                    <div>
-                                      <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                                        <FileText className="w-3.5 h-3.5" /> Касса
-                                      </h4>
-                                      <div className="space-y-1 text-sm text-slate-600">
-                                        {kkm && <p>Тип: <span className="font-medium">{kkm}</span></p>}
-                                        {order['Состояние'] && <p>Состояние: {order['Состояние']}</p>}
-                                      </div>
-                                    </div>
-
-                                    {/* Услуги */}
-                                    <div className="sm:col-span-2 lg:col-span-1">
-                                      <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                                        <ClipboardList className="w-3.5 h-3.5" /> Услуги
-                                      </h4>
-                                      <p className="text-sm text-slate-600">{services || '—'}</p>
-                                    </div>
-                                  </div>
-
-                                  {/* Комментарий клиента */}
-                                  {clientComment && (
-                                    <div className="bg-amber-50/70 border border-amber-200/50 rounded-lg p-3">
-                                      <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
-                                        <MessageSquare className="w-3 h-3" /> Комментарий клиента
-                                      </p>
-                                      <p className="text-sm text-slate-700">{clientComment}</p>
-                                    </div>
-                                  )}
-
-                                  {/* Комментарий менеджера */}
-                                  <div>
-                                    <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                                      <CheckCircle2 className="w-3.5 h-3.5" /> Заметки менеджера
-                                    </h4>
-                                    <textarea
-                                      value={managerComment}
-                                      onChange={(e) => handleCommentUpdate(order._row, e.target.value)}
-                                      onBlur={(e) => handleCommentUpdate(order._row, e.target.value)}
-                                      placeholder="Добавить комментарий к заказу..."
-                                      rows={2}
-                                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors resize-y"
-                                    />
-                                  </div>
-
-                                  {/* Быстрые действия */}
-                                  <div className="flex flex-wrap gap-2 pt-1">
-                                    {phone && (
-                                      <a
-                                        href={`tel:${phone.replace(/[\s()-]/g, '')}`}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1e3a5f] bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg hover:bg-[#1e3a5f]/10 transition-colors"
-                                      >
-                                        <Phone className="w-3.5 h-3.5" />Позвонить
-                                      </a>
-                                    )}
-                                    <button
-                                      onClick={() => handlePrintOrder(order)}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1e3a5f] bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg hover:bg-[#1e3a5f]/10 transition-colors"
-                                    >
-                                      <Printer className="w-3.5 h-3.5" />Печать
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(`${clientName}\n${phone}\n${email}\n\nУслуги: ${services}\nСумма: ${total} ₽`)
-                                      }}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
-                                    >
-                                      <Download className="w-3.5 h-3.5" />Копировать
-                                    </button>
-                                  </div>
-                                </div>
+                        return (
+                          <>
+                            <tr key={order._row} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="px-4 py-3">
+                                <span className="font-mono text-xs font-medium text-[#1e3a5f]">#{d.orderNum}</span>
+                              </td>
+                              <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
+                                {d.timestamp}
+                              </td>
+                              <td className="px-4 py-3">
+                                <p className="font-medium text-slate-800 truncate max-w-[180px]">{d.clientName || '—'}</p>
+                              </td>
+                              <td className="px-4 py-3">
+                                {d.phone ? (
+                                  <a href={`tel:${d.phone.replace(/[\s()-]/g, '')}`} className="text-xs text-[#1e3a5f] hover:underline whitespace-nowrap">{d.phone}</a>
+                                ) : <span className="text-xs text-slate-400">—</span>}
+                              </td>
+                              <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell whitespace-nowrap max-w-[120px] truncate">
+                                {d.kkm || '—'}
+                              </td>
+                              <td className="px-4 py-3 text-xs text-slate-600 hidden lg:table-cell max-w-[200px] truncate">
+                                {d.services || '—'}
+                              </td>
+                              <td className="px-4 py-3 text-right font-semibold text-slate-800 whitespace-nowrap">
+                                {parseInt(d.total.replace(/[^\d]/g, ''))?.toLocaleString('ru-RU') || '0'} ₽
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <select
+                                  value={d.status}
+                                  onChange={(e) => handleStatusChange(order._row, e.target.value)}
+                                  disabled={updateLoading === order._row}
+                                  className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 ${d.badge.bg} ${d.badge.color}`}
+                                >
+                                  <option value="">—</option>
+                                  <option value="новый">Новый</option>
+                                  <option value="ждёт звонка">Ждёт звонка</option>
+                                  <option value="в работе">В работе</option>
+                                  <option value="выполнен">Выполнен</option>
+                                  <option value="отменён">Отменён</option>
+                                  <option value="консультация">Консультация</option>
+                                </select>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => setExpandedRow(isExpanded ? null : order._row)}
+                                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                                >
+                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
                               </td>
                             </tr>
-                          )}
-                        </>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
 
-        {/* Подсказка про Google Sheets */}
-        {data && (
-          <p className="text-xs text-center text-slate-400">
-            Данные загружены из Google Sheets. Изменения статуса сохраняются автоматически.
-          </p>
+                            {isExpanded && (
+                              <tr key={`${order._row}-expanded`}>
+                                <td colSpan={9} className="px-4 py-0">
+                                  <div className="bg-slate-50/80 border-t border-b border-slate-100 p-5 space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                      <div>
+                                        <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                                          <Building2 className="w-3.5 h-3.5" /> Клиент
+                                        </h4>
+                                        <div className="space-y-1 text-sm">
+                                          {d.clientName && <p className="font-medium text-slate-800">{d.clientName}</p>}
+                                          {d.inn && <p className="text-slate-600">ИНН: {d.inn}</p>}
+                                          {d.phone && (
+                                            <a href={`tel:${d.phone.replace(/[\s()-]/g, '')}`} className="flex items-center gap-1.5 text-[#1e3a5f] hover:underline">
+                                              <Phone className="w-3.5 h-3.5" />{d.phone}
+                                            </a>
+                                          )}
+                                          {d.email && (
+                                            <a href={`mailto:${d.email}`} className="flex items-center gap-1.5 text-[#1e3a5f] hover:underline">
+                                              <Mail className="w-3.5 h-3.5" />{d.email}
+                                            </a>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                                          <FileText className="w-3.5 h-3.5" /> Касса
+                                        </h4>
+                                        <div className="space-y-1 text-sm text-slate-600">
+                                          {d.kkm && <p>Тип: <span className="font-medium">{d.kkm}</span></p>}
+                                          {order['Состояние'] && <p>Состояние: {order['Состояние']}</p>}
+                                        </div>
+                                      </div>
+
+                                      <div className="sm:col-span-2 lg:col-span-1">
+                                        <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                                          <ClipboardList className="w-3.5 h-3.5" /> Услуги
+                                        </h4>
+                                        <p className="text-sm text-slate-600">{d.services || '—'}</p>
+                                      </div>
+                                    </div>
+
+                                    {d.clientComment && (
+                                      <div className="bg-amber-50/70 border border-amber-200/50 rounded-lg p-3">
+                                        <p className="text-xs font-semibold text-amber-600 mb-1 flex items-center gap-1.5">
+                                          <MessageSquare className="w-3 h-3" /> Комментарий клиента
+                                        </p>
+                                        <p className="text-sm text-slate-700">{d.clientComment}</p>
+                                      </div>
+                                    )}
+
+                                    <div>
+                                      <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> Заметки менеджера
+                                      </h4>
+                                      <textarea
+                                        value={d.managerComment}
+                                        onChange={(e) => handleCommentUpdate(order._row, e.target.value)}
+                                        onBlur={(e) => handleCommentUpdate(order._row, e.target.value)}
+                                        placeholder="Добавить комментарий к заказу..."
+                                        rows={2}
+                                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors resize-y"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                      {d.phone && (
+                                        <a
+                                          href={`tel:${d.phone.replace(/[\s()-]/g, '')}`}
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1e3a5f] bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg hover:bg-[#1e3a5f]/10 transition-colors"
+                                        >
+                                          <Phone className="w-3.5 h-3.5" />Позвонить
+                                        </a>
+                                      )}
+                                      <button
+                                        onClick={() => handlePrintOrder(order)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1e3a5f] bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg hover:bg-[#1e3a5f]/10 transition-colors"
+                                      >
+                                        <Printer className="w-3.5 h-3.5" />Печать
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(`${d.clientName}\n${d.phone}\n${d.email}\n\nУслуги: ${d.services}\nСумма: ${d.total} ₽`)
+                                        }}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                                      >
+                                        <Download className="w-3.5 h-3.5" />Копировать
+                                      </button>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {data && (
+              <p className="text-xs text-center text-slate-400">
+                Данные загружены из Google Sheets. Изменения статуса сохраняются автоматически.
+              </p>
+            )}
+          </>
         )}
       </main>
     </div>

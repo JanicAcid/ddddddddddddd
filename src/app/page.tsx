@@ -417,6 +417,7 @@ export default function TellurServiceCalculator() {
 .space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
         <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
 
+          <h1 className="sr-only">Калькулятор маркировки товаров в Санкт-Петербурге — расчёт стоимости за 2 минуты | Теллур-Интех</h1>
           <div className="mt-1 sm:mt-2">
 
 

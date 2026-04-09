@@ -99,36 +99,36 @@ export function StepServices({
 
       {/* Активные (доступные для выбора) услуги */}
       {step2Services.filter(s => {
+        // Универсальное правило: полная маркировка выбрана → перерегистрация скрыта
+        if (s.id === 'fns_reregistration' && step2Selections.includes('marking_setup')) return false
+
         // === НОВАЯ КАССА ===
         if (kkmCondition === 'new') {
-          if (s.id === 'fns_reregistration') return true  // показываем как включённую в маркировку
+          if (s.id === 'fns_reregistration') return false
           if (s.id === 'marking_setup') return true
           if (s.id === 'partial_marketing_setup') return false
           return false
         }
         // === Б/У КАССА ===
         if (kkmCondition === 'used') {
-          if (s.id === 'fns_reregistration') return true  // показываем как включённую в маркировку
+          if (s.id === 'fns_reregistration') return false
           if (s.id === 'marking_setup') return true
           if (s.id === 'partial_marketing_setup') return false
           return false
         }
         // === ТЕКУЩАЯ КАССА (old) ===
         if (kkmCondition === 'old') {
-          // Режим «уже работаю с маркировкой» — частичная + перерегистрация
           if (isPartialMode) {
             if (s.id === 'partial_marketing_setup') return true
             if (s.id === 'marking_setup') return false
-            // Перерегистрация: только при подакцизных или галочке «не уверен»
             if (s.id === 'fns_reregistration') {
               return clientData.sellsExcise || unsureFnsRegistration
             }
             return false
           }
-          // Режим «нужно подключить маркировку» — полная маркировка + перерегистрация
           if (isRegistrationMode) {
             if (s.id === 'marking_setup') return true
-            if (s.id === 'fns_reregistration') return true  // показываем как включённую
+            if (s.id === 'fns_reregistration') return false
             if (s.id === 'partial_marketing_setup') return false
             return false
           }

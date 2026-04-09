@@ -181,41 +181,27 @@ export default function TellurServiceCalculator() {
     setStep2Selections(prev => {
       const next = new Set(prev)
 
+      // Сначала убираем ВСЕ автоуправляемые услуги — предотвращает дублирование
+      next.delete('marking_setup')
+      next.delete('partial_marketing_setup')
+      next.delete('fns_reregistration')
+
       // ====== УЖЕ РАБОТАЕТ С МАРКИРОВКОЙ (галочка нажата) ======
       if (isPartialMode) {
-        // Частичная настройка — клиент уже работает с маркировкой
-        next.delete('marking_setup')
-        if (!next.has('partial_marketing_setup')) next.add('partial_marketing_setup')
-
-        if (hasAlcohol) {
-          if (!next.has('fns_reregistration')) next.add('fns_reregistration')
-        } else {
-          if (!unsureFnsRegistration) next.delete('fns_reregistration')
-        }
+        next.add('partial_marketing_setup')
+        if (hasAlcohol) next.add('fns_reregistration')
         return [...next]
       }
 
       // ====== ТЕКУЩАЯ КАССА: НУЖНО ПОДКЛЮЧИТЬ МАРКИРОВКУ ======
       if (isRegistrationMode) {
-        next.delete('partial_marketing_setup')
-        // Полная маркировка включает регистрацию ККТ в ФНС — перерегистрация отдельно не нужна
-        if (!next.has('marking_setup')) next.add('marking_setup')
-        next.delete('fns_reregistration')
+        next.add('marking_setup')
         return [...next]
       }
 
       // ====== НОВАЯ / Б/У КАССА ======
-      // Убираем partial если ушли из режима «уже работает»
-      if (!isPartialMode) {
-        next.delete('partial_marketing_setup')
-      }
-
-      // Для новой/б/у кассы: полная маркировка обязательна (включает регистрацию ККТ в ФНС)
       if (kkmCondition === 'new' || kkmCondition === 'used') {
-        // Регистрация ККТ теперь включена в marking_setup — не добавляем отдельно
-        next.delete('fns_reregistration')
-        // Полная маркировка — всегда для новой/б/у кассы
-        if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
+        next.add('marking_setup')
       }
 
       return [...next]

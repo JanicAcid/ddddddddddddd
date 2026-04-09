@@ -22,8 +22,12 @@ interface LogOrderBody {
 export async function POST(request: Request) {
   try {
     const body: LogOrderBody = await request.json()
-    if (!body.orderNum || !body.clientName || !body.phone) {
+    if (!body.orderNum || !body.clientName) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    // Телефон — обязателен для логирования, но не блокируем запись если пропущен
+    if (!body.phone) {
+      console.warn('LOG_ORDER: phone is empty, orderNum:', body.orderNum, 'client:', body.clientName)
     }
 
     const timestamp = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })
@@ -47,6 +51,38 @@ export async function POST(request: Request) {
         })
         const tok = await res.json()
         if (!tok.access_token) throw new Error('Token error')
+
+        // Проверяем заголовки таблицы — добавляем отсутствующие колонки
+        const REQUIRED_HEADERS = [
+          'Дата/время', 'Заказ №', 'Клиент', 'Телефон', 'Email',
+          'ККМ', 'Состояние', 'Услуги', 'Сумма', 'Комментарий',
+          'Статус', 'Комментарий менеджера', 'Файл заказа',
+        ]
+        try {
+          const headerRes = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1!1:1`,
+            { headers: { Authorization: `Bearer ${tok.access_token}` } }
+          )
+          const headerData = await headerRes.json()
+          const existingHeaders = headerData.values?.[0] || []
+          // Исправляем заголовки: заполняем пустые и добавляем недостающие
+          if (existingHeaders.length < REQUIRED_HEADERS.length) {
+            const fixedHeaders = [...existingHeaders]
+            while (fixedHeaders.length < REQUIRED_HEADERS.length) {
+              fixedHeaders.push(REQUIRED_HEADERS[fixedHeaders.length])
+            }
+            await fetch(
+              `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1!1:1?valueInputOption=USER_ENTERED`,
+              {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${tok.access_token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ values: [fixedHeaders] }),
+              }
+            )
+          }
+        } catch (headerErr) {
+          console.warn('Header check failed (non-critical):', headerErr)
+        }
 
         const appendRes = await fetch(
           `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Лист1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,

@@ -163,7 +163,8 @@ export default function AdminDashboard() {
   const getStatusFromOrder = (o: Order) => o['Статус'] || ''
 
   const handlePrintOrder = (order: Order) => {
-    const savedHtml = order['Файл заказа'] || order['orderHtml'] || ''
+    // Ищем HTML заказ-наряда: по заголовку колонки или по индексу
+    const savedHtml = order['Файл заказа'] || order['orderHtml'] || order['_col12'] || ''
 
     if (savedHtml && savedHtml.includes('<html')) {
       // Печатаем сохранённый HTML (тот же что ушёл в ТГ)
@@ -330,7 +331,7 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                     <p className="text-sm font-medium text-slate-800">Создайте Google Таблицу</p>
                     <p className="text-sm text-slate-500 mt-0.5">Откройте <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Sheets</a> и создайте новую таблицу. В первой строке (Лист1) добавьте заголовки колонок:</p>
                     <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700 overflow-x-auto">
-                      Дата/время | Заказ № | Клиент | Телефон | Email | ККМ | Состояние | Услуги | Сумма | Комментарий | Статус | Комментарий менеджера
+                      Дата/время | Заказ № | Клиент | Телефон | Email | ККМ | Состояние | Услуги | Сумма | Комментарий | Статус | Комментарий менеджера | Файл заказа
                     </div>
                   </div>
                 </div>

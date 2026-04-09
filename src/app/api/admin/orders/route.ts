@@ -74,6 +74,10 @@ export async function GET(request: NextRequest) {
     const orders = rows.slice(1).map((row: string[], idx: number) => {
       const order: Record<string, string> = { _row: String(idx + 2) }
       headers.forEach((h: string, i: number) => { order[h] = row[i] || '' })
+      // Если в строке больше значений чем заголовков — сохраняем доп. колонки по индексу
+      for (let i = headers.length; i < row.length; i++) {
+        order[`_col${i}`] = row[i] || ''
+      }
       return order
     })
     orders.reverse()

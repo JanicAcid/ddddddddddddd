@@ -262,14 +262,76 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Ошибка */}
-        {error && (
-          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-amber-800">Не удалось загрузить заказы</p>
-              <p className="text-sm text-amber-700 mt-0.5">{error}</p>
-              <button onClick={fetchOrders} className="mt-2 text-sm font-medium text-amber-800 hover:underline">
+        {/* Ошибка / Настройка Google Sheets */}
+        {error && !data && (
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="flex items-start gap-3 p-5 bg-amber-50 border-b border-amber-200">
+              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-800">Не удалось загрузить заказы</p>
+                <p className="text-sm text-amber-700 mt-0.5">{error}</p>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <h3 className="text-base font-semibold text-slate-800">Инструкция по настройке</h3>
+
+              <div className="space-y-4">
+                {/* Шаг 1 */}
+                <div className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">1</span>
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Создайте Google Таблицу</p>
+                    <p className="text-sm text-slate-500 mt-0.5">Откройте <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Sheets</a> и создайте новую таблицу. В первой строке (Лист1) добавьте заголовки колонок:</p>
+                    <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700 overflow-x-auto">
+                      Дата/время | Заказ № | Клиент | Телефон | Email | ККМ | Состояние | Услуги | Сумма | Комментарий | Статус | Комментарий менеджера
+                    </div>
+                  </div>
+                </div>
+
+                {/* Шаг 2 */}
+                <div className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">2</span>
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Создайте сервисный аккаунт Google Cloud</p>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Перейдите в <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Cloud Console</a> → создайте проект → включите <strong>Google Sheets API</strong> → создайте сервисный аккаунт → скачайте JSON-ключ.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Шаг 3 */}
+                <div className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">3</span>
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Дайте доступ сервисному аккаунту к таблице</p>
+                    <p className="text-sm text-slate-500 mt-0.5">Откройте созданную Google Таблицу → кнопку «Поделиться» → вставьте email сервисного аккаунта из JSON-ключа (поле <code className="bg-slate-100 px-1 rounded text-xs">client_email</code>) → роль «Редактор».</p>
+                  </div>
+                </div>
+
+                {/* Шаг 4 */}
+                <div className="flex gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">4</span>
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Настройте переменные окружения в Vercel</p>
+                    <p className="text-sm text-slate-500 mt-0.5">В панели Vercel → Settings → Environment Variables добавьте:</p>
+                    <div className="mt-2 space-y-1.5">
+                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                        <span className="font-mono font-semibold text-slate-700">GOOGLE_SHEETS_ID</span>
+                        <span className="text-slate-400 mx-2">=</span>
+                        <span className="text-slate-500">ID из URL таблицы (docs.google.com/spreadsheets/d/<strong>ID</strong>/edit)</span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                        <span className="font-mono font-semibold text-slate-700">GOOGLE_SERVICE_ACCOUNT_KEY</span>
+                        <span className="text-slate-400 mx-2">=</span>
+                        <span className="text-slate-500">весь JSON-файл ключа сервисного аккаунта (одной строкой)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={fetchOrders} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#1e3a5f] rounded-lg hover:bg-[#1e3a5f]/90 transition-colors">
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Попробовать снова
               </button>
             </div>

@@ -95,10 +95,11 @@ export function SiteFooter() {
         {/* Нижняя строка */}
         <div className="mt-8 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
           <p>© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <p>Центр технического обслуживания кассового оборудования</p>
-            <Link href="/admin/login" className="flex items-center gap-1 text-white/20 hover:text-white/50 transition-colors" title="Кабинет менеджера">
+            <Link href="/admin/login" className="flex items-center gap-1.5 text-white/25 hover:text-white/60 transition-colors" title="Кабинет менеджера">
               <Lock className="w-3 h-3" />
+              <span>Кабинет</span>
             </Link>
           </div>
         </div>

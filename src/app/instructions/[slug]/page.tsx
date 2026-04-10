@@ -9,6 +9,7 @@ import {
   Globe, Users, KeyRound, FileSignature, FileCheck, Settings,
   Clock, Calendar, Tag, Lightbulb, AlertTriangle, ChevronRight,
   ArrowLeft, Phone, MessageSquare, Calculator,
+  Monitor, ShieldCheck, Cpu, List, ScanLine, Wrench, CheckCircle,
 } from 'lucide-react'
 import { getAllArticleSlugs, getArticleBySlug, getRelatedArticles } from '@/config/articles'
 import { ArticleCard } from '@/components/instructions/ArticleCard'
@@ -27,6 +28,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   FileSignature,
   FileCheck,
   Settings,
+  Monitor,
+  ShieldCheck,
+  Cpu,
+  List,
+  ScanLine,
+  Wrench,
+  CheckCircle,
 }
 
 // ============================================================================

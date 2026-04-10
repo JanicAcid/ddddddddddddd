@@ -4,7 +4,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CheckCircle, Wrench, Monitor, FileText, ShieldCheck, GraduationCap, CreditCard, Zap, Phone, Calculator } from 'lucide-react'
+import { Wrench, Monitor, FileText, ShieldCheck, GraduationCap, Cpu, Tag, Settings, Phone, Calculator } from 'lucide-react'
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 const SERVICES = [
   {
-    icon: <Zap className="w-6 h-6" />,
+    icon: <Tag className="w-6 h-6" />,
     title: 'Подключение маркировки под ключ',
     desc: 'Комплексная настройка всех систем для работы с маркированными товарами: ЭДО, Честный ЗНАК, ТС ПИоТ, регистрация ККТ в ФНС, подключение ОФД. Связываем 6 систем в единую цепочку — от приёмки товара до пробития чека.',
     price: 'от 3 000 ₽',
@@ -49,7 +49,7 @@ const SERVICES = [
     price: 'от 3 000 ₽/15 мес.',
   },
   {
-    icon: <CreditCard className="w-6 h-6" />,
+    icon: <Cpu className="w-6 h-6" />,
     title: 'Замена фискального накопителя (ФН)',
     desc: 'Замена истёкшего ФН с перерегистрацией кассы в ФНС. Срок службы: 15 месяцев (общая торговля) или 36 месяцев (подакцизные товары). При истечении срока касса блокируется. Подберём подходящий ФН и оформим замену.',
     price: 'цена уточняется',
@@ -67,7 +67,7 @@ const SERVICES = [
     price: 'от 1 500 ₽/час',
   },
   {
-    icon: <CheckCircle className="w-6 h-6" />,
+    icon: <Settings className="w-6 h-6" />,
     title: 'Ремонт кассового оборудования',
     desc: 'Ремонт контрольно-кассовой техники всех основных брендов: Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI. Диагностика, замена комплектующих, обновление ПО, настройка. Оригинальные запчасти, гарантия.',
     price: 'диагностика бесплатно',

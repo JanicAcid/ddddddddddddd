@@ -1,12 +1,43 @@
 // ============================================================================
 // API: Диагностика Google Sheets подключения + данных
 // GET /api/admin/debug
+// ЗАЩИЩЁН — требует авторизации администратора
 // ============================================================================
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { isGoogleSheetsConfigured, SPREADSHEET_ID, getClientEmail, getPrivateKey, createGoogleJWT } from '@/config/google-sheets'
+import { ADMIN_COOKIE_NAME, ADMIN_JWT_SECRET } from '@/config/admin'
 
-export async function GET() {
+async function verifyAuth(request: NextRequest): Promise<boolean> {
+  const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value
+  if (!token) return false
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(ADMIN_JWT_SECRET),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+    const sigBytes = Buffer.from(parts[2], 'base64url')
+    const unsigned = `${parts[0]}.${parts[1]}`
+    const valid = await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(unsigned))
+    if (!valid) return false
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString())
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return false
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function GET(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const key = getPrivateKey()
   const email = getClientEmail()
 
@@ -15,8 +46,6 @@ export async function GET() {
     spreadsheetId: SPREADSHEET_ID || '(пусто)',
     email: email || '(пусто)',
     keyLength: key.length,
-    keyFirst20: key.slice(0, 20),
-    keyLast20: key.slice(-20),
     keyHasBegin: key.includes('-----BEGIN PRIVATE KEY-----'),
     keyHasEnd: key.includes('-----END PRIVATE KEY-----'),
     keyHasLiteralN: key.includes('\\n'),

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {
   Calculator, MessageCircle, Phone, ArrowRight, Clock, ShieldCheck,
-  Monitor, CreditCard, Zap, ChevronRight, FileText, HelpCircle,
+  Monitor, Cpu, Tag, ChevronRight, FileText, HelpCircle,
   CheckCircle, Star, Building2, Users, Wrench
 } from 'lucide-react'
 
@@ -45,7 +45,7 @@ const STATS = [
 
 const SERVICES = [
   {
-    icon: <Zap className="w-6 h-6" />,
+    icon: <Tag className="w-6 h-6" />,
     title: 'Подключение маркировки',
     desc: 'Комплексная настройка: ЭДО, Честный ЗНАК, ТС ПИоТ, ККТ, ОФД — все 6 систем связаны.',
     href: '/services',
@@ -63,7 +63,7 @@ const SERVICES = [
     href: '/services',
   },
   {
-    icon: <CreditCard className="w-6 h-6" />,
+    icon: <Cpu className="w-6 h-6" />,
     title: 'Замена фискального накопителя',
     desc: 'Замена ФН с перерегистрацией кассы в ФНС. 15 или 36 месяцев — подберём подходящий.',
     href: '/services',

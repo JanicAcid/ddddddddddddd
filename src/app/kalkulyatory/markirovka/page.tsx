@@ -27,6 +27,7 @@ import { StepServices } from '@/components/calculator/StepServices'
 import { StepExtra } from '@/components/calculator/StepExtra'
 import { StepSummary } from '@/components/calculator/StepSummary'
 import { SeoContent } from '@/components/SeoContent'
+import { KKT_CATALOG } from '@/config/kkt-catalog'
 
 // ============================================================================
 // ОСНОВНОЙ КОМПОНЕНТ
@@ -41,6 +42,12 @@ export default function TellurServiceCalculator() {
   const [orderNum, setOrderNum] = useState<string | null>(null)
   const [isCorrection, setIsCorrection] = useState(false)
   const [isConsultation, setIsConsultation] = useState(false)
+  const [consultManufacturer, setConsultManufacturer] = useState('')
+  const [consultModel, setConsultModel] = useState('')
+  const consultModels = useMemo(() => {
+    const mfr = KKT_CATALOG.find(m => m.id === consultManufacturer)
+    return mfr ? mfr.models : []
+  }, [consultManufacturer])
   const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
   const [kkmCondition, setKkmCondition] = useState<KkmCondition>('' as KkmCondition)
   const [sigmaSelected, setSigmaSelected] = useState(false)
@@ -355,6 +362,7 @@ export default function TellurServiceCalculator() {
   const startConsultation = () => {
     setIsConsultation(true)
     setIsDone(false)
+    setConsultManufacturer(''); setConsultModel('')
     if (!orderNum) setOrderNum(Date.now().toString().slice(-6))
     ;(document.activeElement as HTMLElement)?.blur()
     setTimeout(smoothScrollToTop, 50)
@@ -377,7 +385,9 @@ export default function TellurServiceCalculator() {
     // Клиентские данные
     setClientData({ name: '', inn: '', phone: '', email: '', address: '', kkmModel: '', kkmNumber: '', fnNumber: '', comment: '', evotorLogin: '', evotorPassword: '', hasEcp: false, fnActivityType: '', sellsExcise: false });
     // Общее
-    setCurrentStep(1); setIsDone(false); setOrderNum(null); setIsCorrection(false); setIsConsultation(false); window.scrollTo({ top: 0, behavior: 'smooth' })
+    setCurrentStep(1); setIsDone(false); setOrderNum(null); setIsCorrection(false); setIsConsultation(false);
+    setConsultManufacturer(''); setConsultModel('');
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // ===================================================================
@@ -626,10 +636,40 @@ export default function TellurServiceCalculator() {
                       <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} autoComplete="tel" inputMode="tel" />
                     </div>
                     <div>
-                      <Label className="text-xs font-semibold text-slate-700">Модель кассы <span className="text-red-500">*</span></Label>
-                      <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} placeholder="Например: Меркурий 185Ф, Атол 90Ф..." className="mt-1.5 text-sm h-11" autoComplete="off" />
-                      <p className="text-[11px] text-slate-400 mt-1">Найдите на корпусе кассы или в чеке</p>
+                      <Label className="text-xs font-semibold text-slate-700">Производитель кассы <span className="text-red-500">*</span></Label>
+                      <select
+                        value={consultManufacturer}
+                        onChange={(e) => { setConsultManufacturer(e.target.value); setConsultModel(''); setClientData({ ...clientData, kkmModel: '' }) }}
+                        className="mt-1.5 w-full h-11 px-3 text-sm text-slate-700 bg-white border-2 border-slate-100 rounded-lg focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="">Выберите производителя...</option>
+                        {KKT_CATALOG.map(m => (
+                          <option key={m.id} value={m.id}>{m.name} ({m.models.length} моделей)</option>
+                        ))}
+                      </select>
                     </div>
+                    {consultManufacturer && (
+                      <div className="animate-fade-in-up">
+                        <Label className="text-xs font-semibold text-slate-700">Модель кассы <span className="text-red-500">*</span></Label>
+                        <select
+                          value={consultModel}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setConsultModel(val)
+                            const mfr = KKT_CATALOG.find(m => m.id === consultManufacturer)
+                            const display = mfr && val ? `${mfr.name} ${val}` : (val || '')
+                            setClientData({ ...clientData, kkmModel: display })
+                          }}
+                          className="mt-1.5 w-full h-11 px-3 text-sm text-slate-700 bg-white border-2 border-slate-100 rounded-lg focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all appearance-none cursor-pointer"
+                        >
+                          <option value="">Выберите модель...</option>
+                          {consultModels.map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                        <p className="text-[11px] text-slate-400 mt-1">Найдите на корпусе кассы или в чеке</p>
+                      </div>
+                    )}
                     <div>
                       <Label className="text-xs font-semibold text-slate-700">Опишите проблему</Label>
                       <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Что случилось с кассой или что нужно настроить" className="mt-1.5 text-sm h-11" autoComplete="off" />

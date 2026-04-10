@@ -461,6 +461,10 @@ export default function NastroykaKassyPage() {
             </Link>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-white/50">
+            <Link href="/kakuyu-kassu-dlya-markirovki" className="underline underline-offset-2 hover:text-white/80 transition-colors">
+              Какую кассу выбрать
+            </Link>
+            <span>|</span>
             <Link href="/podklyuchenie-chestnyy-znak" className="underline underline-offset-2 hover:text-white/80 transition-colors">
               Подключение Честного ЗНАК
             </Link>

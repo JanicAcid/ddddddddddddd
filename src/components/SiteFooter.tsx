@@ -17,11 +17,11 @@ const NAV_LINKS = [
 
 const SERVICE_LINKS = [
   { label: 'Подключение маркировки под ключ', href: '/kalkulyatory/markirovka' },
-  { label: 'Регистрация ККТ в ФНС', href: '/services' },
-  { label: 'Настройка ЭДО', href: '/services' },
-  { label: 'Подключение ОФД', href: '/services' },
-  { label: 'Замена фискального накопителя', href: '/services' },
-  { label: 'Инструкция: Честный ЗНАК', href: '/instructions/kak-podklyuchit-kabinet-chestnyznak' },
+  { label: 'Настройка кассы для маркировки', href: '/nastroyka-kassy-markirovka' },
+  { label: 'Какую кассу выбрать', href: '/kakuyu-kassu-dlya-markirovki' },
+  { label: 'Подключение Честного ЗНАК', href: '/podklyuchenie-chestnyy-znak' },
+  { label: 'Интеграция с 1С', href: '/integraciya-1c' },
+  { label: 'Честный ЗНАК — инструкция', href: '/instructions/kak-podklyuchit-kabinet-chestnyznak' },
 ]
 
 export function SiteFooter() {

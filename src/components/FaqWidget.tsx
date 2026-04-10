@@ -41,18 +41,22 @@ export function FaqWidget() {
     setIsOpen(false)
 
     if (pathname === '/faq') {
-      // Уже на странице FAQ — скроллим к вопросу
-      const el = document.getElementById(item.slug)
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        el.classList.add('ring-2', 'ring-[#e8a817]/50', 'rounded-lg')
-        setTimeout(() => el.classList.remove('ring-2', 'ring-[#e8a817]/50', 'rounded-lg'), 3000)
-      }
-    } else if (pathname === '/') {
-      // На главной — пробуем скроллить к SEO-секции
-      window.dispatchEvent(new CustomEvent('scroll-to-faq', { detail: { id: item.id } }))
+      // Уже на странице FAQ — скроллим к вопросу и открываем его
+      setTimeout(() => {
+        const el = document.getElementById(item.slug)
+        if (el) {
+          // Открываем <details> если закрыт
+          if (!(el instanceof HTMLDetailsElement && el.open)) {
+            if (el instanceof HTMLDetailsElement) el.open = true
+          }
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // Подсветка
+          el.classList.add('ring-2', 'ring-[#e8a817]/50', 'rounded-lg')
+          setTimeout(() => el.classList.remove('ring-2', 'ring-[#e8a817]/50', 'rounded-lg'), 3000)
+        }
+      }, 100)
     } else {
-      // На другой странице — переходим на /faq с якорем
+      // На любой другой странице — переходим на /faq с якорем
       router.push(`/faq#${item.slug}`)
     }
   }

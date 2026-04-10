@@ -8,6 +8,7 @@ import { Phone, Mail, MapPin, Lock } from 'lucide-react'
 
 const NAV_LINKS = [
   { label: 'Главная', href: '/' },
+  { label: 'Диагностика', href: '/diagnostika' },
   { label: 'Калькуляторы', href: '/kalkulyatory' },
   { label: 'База знаний', href: '/instructions' },
   { label: 'Услуги', href: '/services' },

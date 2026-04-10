@@ -176,6 +176,32 @@ export default function HomePage() {
       </section>
 
       {/* ================================================================== */}
+      {/* DIAGNOSTICS BANNER */}
+      {/* ================================================================== */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="anim-fade-in-up anim-delay-1 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-[#e8a817]/20 p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          <div className="w-14 h-14 shrink-0 rounded-2xl bg-[#e8a817]/10 flex items-center justify-center">
+            <ShieldCheck className="w-7 h-7 text-[#e8a817]" />
+          </div>
+          <div className="flex-1 text-center sm:text-left min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-1">
+              Проверьте, правильно ли работает ваша маркировка
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              8 простых вопросов — и вы узнаете, где в цепочке могут быть проблемы. Без терминов, за 3 минуты.
+            </p>
+          </div>
+          <Link
+            href="/diagnostika"
+            className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-[#e8a817]/20 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Начать проверку
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
       {/* QUICK CALCULATOR CARDS */}
       {/* ================================================================== */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">

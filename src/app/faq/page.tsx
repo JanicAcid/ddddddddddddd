@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronDown, ChevronRight, Phone, ExternalLink } from 'lucide-react'
 import { BRANCHES } from '@/config/contacts'
+import { FaqHashScroller } from '@/components/FaqHashScroller'
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
@@ -95,6 +96,7 @@ const FAQS = [
 export default function FaqPage() {
   return (
     <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <FaqHashScroller />
       {/* Header */}
       <div className="text-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f] leading-tight">

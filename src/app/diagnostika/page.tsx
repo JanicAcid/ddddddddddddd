@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
   Phone, ChevronRight, ChevronLeft, AlertTriangle,
@@ -321,6 +321,14 @@ export default function DiagnostikaPage() {
 
   const currentQuestion = step >= 1 && step <= 8 ? QUESTIONS[step - 1] : null
   const progress = step >= 1 && step <= 8 ? (step / 8) * 100 : step >= 9 ? 100 : 0
+  const questionAreaRef = useRef<HTMLDivElement>(null)
+
+  // Автоскролл к верху при смене шага
+  useEffect(() => {
+    if (step >= 1 && step <= 9 && questionAreaRef.current) {
+      questionAreaRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [step])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8fafc] to-white">
@@ -379,7 +387,7 @@ export default function DiagnostikaPage() {
       {/* ================================================================ */}
       {currentQuestion && (
         <div className="min-h-[calc(100vh-56px)] flex flex-col px-4 py-6 sm:py-8">
-          <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
+          <div ref={questionAreaRef} className="max-w-xl mx-auto w-full flex-1 flex flex-col min-h-0">
             <div className="mb-6 sm:mb-8">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs sm:text-sm font-semibold text-[#1e3a5f]">Вопрос {step} из 8</span>
@@ -427,7 +435,12 @@ export default function DiagnostikaPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 mt-auto pt-4">
+            {/* Spacer чтобы контент не залезал под sticky кнопки */}
+            <div className="h-4" />
+
+            {/* Навигация — sticky к низу экрана */}
+            <div className="sticky bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/95 to-transparent pt-4 pb-3 -mx-4 px-4">
+              <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setStep(s => s - 1)}
@@ -458,6 +471,7 @@ export default function DiagnostikaPage() {
                   Показать результат <ShieldCheck className="w-4 h-4" />
                 </button>
               )}
+              </div>
             </div>
           </div>
         </div>
@@ -468,7 +482,7 @@ export default function DiagnostikaPage() {
       {/* ================================================================ */}
       {step === 9 && (
         <div className="min-h-[calc(100vh-56px)] flex flex-col px-4 py-6 sm:py-8">
-          <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
+        <div ref={questionAreaRef} className="max-w-xl mx-auto w-full flex-1 flex flex-col min-h-0">
             {/* Прогресс — заполнен */}
             <div className="mb-6 sm:mb-8">
               <div className="flex items-center justify-between mb-2">
@@ -551,8 +565,10 @@ export default function DiagnostikaPage() {
               </div>
             </div>
 
-            {/* Кнопки */}
-            <div className="flex items-center justify-between gap-3 mt-auto pt-4">
+            {/* Spacer + Sticky кнопки */}
+            <div className="h-4" />
+            <div className="sticky bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/95 to-transparent pt-4 pb-3 -mx-4 px-4">
+              <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setStep(8)}
@@ -594,6 +610,7 @@ export default function DiagnostikaPage() {
                   )}
                 </button>
               )}
+              </div>
             </div>
           </div>
         </div>

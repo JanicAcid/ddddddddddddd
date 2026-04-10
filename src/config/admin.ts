@@ -6,7 +6,7 @@
 export const ADMIN_LOGIN = process.env.ADMIN_LOGIN || 'manager'
 
 /** Пароль менеджера */
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'tellur2025'
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TellurIntex2026'
 
 /** Секрет для подписи JWT-токена сессии */
 export const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'tellur-admin-secret-2025'

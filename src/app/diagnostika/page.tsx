@@ -390,19 +390,91 @@ export default function DiagnostikaPage() {
     })
   }, [step, answers])
 
-  // ---- формирование текстового отчёта ----
-  const buildReport = (): string => {
-    const statusEmoji = { green: '🟢', yellow: '🟡', red: '🔴' }
-    const lines = ['📊 РЕЗУЛЬТАТ ДИАГНОСТИКИ', '']
+  // ---- формирование HTML-бланка отчёта ----
+  const buildReportHtml = (): string => {
+    const statusColors = { green: '#16a34a', yellow: '#d97706', red: '#dc2626' }
+    const statusLabels = { green: 'В порядке', yellow: 'Нужно проверить', red: 'Есть проблемы' }
+    const statusBg = { green: '#f0fdf4', yellow: '#fffbeb', red: '#fef2f2' }
+
+    const now = new Date()
+    const dateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+    const layersHtml = results.map(r => `
+      <tr>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#1e3a5f;">${r.title}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;">
+          <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:${statusColors[r.status]};background:${statusBg[r.status]};">${statusLabels[r.status]}</span>
+        </td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;">${r.score} из ${r.maxScore}</td>
+      </tr>
+    `).join('')
+
+    const questionsHtml = QUESTIONS.map((q, idx) => {
+      const a = answers[q.id] || []
+      return `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#94a3b8;font-size:13px;vertical-align:top;width:30px;">${idx + 1}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;font-size:13px;vertical-align:top;">${q.title}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#1e3a5f;font-size:13px;font-weight:500;">${a.join(', ') || '—'}</td>
+      </tr>`
+    }).join('')
+
+    const tipsHtml = results.filter(r => r.status !== 'green').map(r => `
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:600;color:${statusColors[r.status]};font-size:13px;margin-bottom:4px;">${r.title}</div>
+        ${r.tips.map(t => `<div style="color:#64748b;font-size:12px;padding-left:12px;">&bull; ${t}</div>`).join('')}
+      </div>
+    `).join('')
+
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:24px;background:#f8fafc;}</style></head><body>
+<div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#1e3a5f,#2a5080);padding:24px;color:#fff;">
+    <div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Теллур-Интех</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px;">Результат диагностики маркировки</div>
+    <div style="font-size:13px;opacity:0.8;">${dateStr} в ${timeStr}</div>
+  </div>
+  <div style="padding:20px 24px;">
+    <div style="font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:12px;">Сводка по слоям</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="background:#f8fafc;">
+        <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#64748b;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Слой</th>
+        <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#64748b;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Статус</th>
+        <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#64748b;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Баллы</th>
+      </tr></thead>
+      <tbody>${layersHtml}</tbody>
+    </table>
+  </div>
+  ${results.some(r => r.status !== 'green') ? `
+  <div style="padding:0 24px 20px;">
+    <div style="font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:10px;">Рекомендации</div>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;">${tipsHtml}</div>
+  </div>` : ''}
+  <div style="padding:0 24px 20px;">
+    <div style="font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:10px;">Ответы клиента</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <tbody>${questionsHtml}</tbody>
+    </table>
+  </div>
+  <div style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;">
+    ООО "Теллур-Интех" | +7 (812) 465-94-57 | push@tellur.spb.ru | tellurmarkirovka.vercel.app
+  </div>
+</div></body></html>`
+  }
+
+  // ---- формирование текстового отчёта для Telegram ----
+  const buildTelegramReport = (): string => {
+    const statusEmoji = { green: '✅', yellow: '⚠️', red: '❌' }
+    const statusLabels = { green: 'В порядке', yellow: 'Нужно проверить', red: 'Есть проблемы' }
+    const lines = [`📊 ДИАГНОСТИКА МАРКИРОВКИ`, `👤 ${clientName.trim()}`, `📞 ${clientPhone.trim()}`, ``]
     results.forEach(r => {
-      lines.push(`${statusEmoji[r.status]} ${r.title}: ${r.status === 'green' ? 'В порядке' : r.status === 'yellow' ? 'Нужно проверить' : 'Есть проблемы'}`)
+      lines.push(`${statusEmoji[r.status]} ${r.title}: ${statusLabels[r.status]} (${r.score}/${r.maxScore})`)
     })
     lines.push('')
-    // Ответы на вопросы
-    lines.push('— ОТВЕТЫ КЛИЕНТА —')
-    QUESTIONS.forEach(q => {
+    lines.push('— ОТВЕТЫ —')
+    QUESTIONS.forEach((q, idx) => {
       const a = answers[q.id] || []
-      lines.push(`${q.title}: ${a.join(', ') || '—'}`)
+      lines.push(`${idx + 1}. ${q.title}: ${a.join(', ') || '—'}`)
     })
     return lines.join('\n')
   }
@@ -416,7 +488,8 @@ export default function DiagnostikaPage() {
     setSending(true)
     setSendError('')
     try {
-      const report = buildReport()
+      const reportHtml = buildReportHtml()
+      const telegramReport = buildTelegramReport()
       const orderNum = `ДИАГ-${Date.now().toString().slice(-6)}`
 
       // Сводка по статусам для комментария
@@ -434,10 +507,10 @@ export default function DiagnostikaPage() {
           phone: clientPhone.trim(),
           kkmType: '',
           kkmCondition: '',
-          services: ['Диагностика (тест)'],
+          services: ['Диагностика маркировки'],
           total: 0,
           comment: `Результат: ${summary}`,
-          orderHtml: report,
+          orderHtml: reportHtml,
         }),
       })
 
@@ -447,7 +520,7 @@ export default function DiagnostikaPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subject: `🔍 Диагностика: ${clientName.trim()} | ${clientPhone.trim()}`,
-          html: report,
+          html: telegramReport,
         }),
       })
 

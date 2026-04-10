@@ -1,30 +1,47 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Lock, Eye, EyeOff, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 
-function generateCaptcha(): { question: string; answer: number } {
-  const a = Math.floor(Math.random() * 20) + 1
-  const b = Math.floor(Math.random() * 20) + 1
-  const ops = ['+', '-']
-  const op = ops[Math.floor(Math.random() * ops.length)]
-  const answer = op === '+' ? a + b : Math.max(a - b, 0)
-  return { question: `${a} ${op} ${b} = ?`, answer }
+interface CaptchaData {
+  question: string
+  token: string
 }
 
 export default function AdminLoginPage() {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [captchaInput, setCaptchaInput] = useState('')
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaQuestion, setCaptchaQuestion] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [captcha, setCaptcha] = useState(() => generateCaptcha())
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [captchaLoading, setCaptchaLoading] = useState(true)
+
+  const fetchCaptcha = useCallback(async () => {
+    setCaptchaLoading(true)
+    try {
+      const res = await fetch('/api/admin/auth?captcha=1')
+      const data: CaptchaData = await res.json()
+      setCaptchaQuestion(data.question)
+      setCaptchaToken(data.token)
+      setCaptchaInput('')
+    } catch {
+      setCaptchaQuestion('Ошибка загрузки')
+      setCaptchaToken('')
+    } finally {
+      setCaptchaLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchCaptcha()
+  }, [fetchCaptcha])
 
   const refreshCaptcha = useCallback(() => {
-    setCaptcha(generateCaptcha())
-    setCaptchaInput('')
-  }, [])
+    fetchCaptcha()
+  }, [fetchCaptcha])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +56,7 @@ export default function AdminLoginPage() {
           login,
           password,
           captchaAnswer: captchaInput,
-          captchaCorrect: String(captcha.answer),
+          captchaToken,
         }),
       })
 
@@ -120,34 +137,40 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            {/* Капча */}
+            {/* Капча — серверная */}
             <div>
               <label htmlFor="captcha" className="block text-sm font-medium text-slate-700 mb-1.5">
                 Капча
               </label>
               <div className="flex items-center gap-3">
-                <div className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-semibold text-slate-700 select-none">
-                  {captcha.question}
+                <div className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-semibold text-slate-700 select-none min-h-[42px] flex items-center">
+                  {captchaLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                  ) : (
+                    captchaQuestion
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={refreshCaptcha}
-                  className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
+                  disabled={captchaLoading}
+                  className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors shrink-0 disabled:opacity-40"
                   title="Обновить капчу"
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className={`w-4 h-4 ${captchaLoading ? 'animate-spin' : ''}`} />
                 </button>
               </div>
               <input
                 id="captcha"
                 type="text"
                 value={captchaInput}
-                onChange={(e) => setCaptchaInput(e.target.value.replace(/[^0-9]/g, ''))}
+                onChange={(e) => setCaptchaInput(e.target.value.replace(/[^0-9\-]/g, ''))}
                 placeholder="Ответ"
                 required
                 autoComplete="off"
                 className="w-full mt-2 px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors"
               />
+              <p className="mt-1 text-xs text-slate-400">Капта действует 5 минут. Обновляется автоматически при ошибке.</p>
             </div>
 
             {/* Ошибка */}
@@ -161,7 +184,7 @@ export default function AdminLoginPage() {
             {/* Кнопка */}
             <button
               type="submit"
-              disabled={loading || !login || !password || !captchaInput}
+              disabled={loading || !login || !password || !captchaInput || !captchaToken}
               className="w-full py-3 text-sm font-semibold text-white rounded-lg bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (

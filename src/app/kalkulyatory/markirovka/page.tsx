@@ -3,13 +3,14 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { formatPhone, isPhoneValid } from '@/lib/phone'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Info, Check, Phone, Send, MessageSquare, X } from 'lucide-react'
+import { Info, Check, Phone, Send, MessageSquare, X, ShieldCheck, ChevronRight } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
@@ -406,6 +407,19 @@ export default function TellurServiceCalculator() {
           <h1 className="sr-only">Калькулятор маркировки товаров в Санкт-Петербурге — расчёт стоимости за 2 минуты | Теллур-Интех</h1>
           <div className="mt-1 sm:mt-2">
 
+            {/* Ссылка на диагностику — только на шаге 1 */}
+            {currentStep === 1 && !isDone && !isConsultation && (
+              <div className="max-w-2xl mx-auto mb-3">
+                <Link
+                  href="/diagnostika"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl text-xs sm:text-sm text-amber-700 font-medium transition-colors"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Не уверены, всё ли настроено правильно? Пройдите бесплатную проверку маркировки
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
 
             {/* STEP INDICATOR */}
             {!isConsultation && (

@@ -6,7 +6,7 @@ import {
   Phone, ChevronRight, ChevronLeft, AlertTriangle,
   CheckCircle2, HelpCircle, ArrowRight, ShieldCheck,
   Monitor, Settings, FileText, Eye, CreditCard,
-  Clock, MessageCircle, User, Loader2, Send
+  Clock, MessageCircle, User, Loader2, Send, Calculator
 } from 'lucide-react'
 
 // ============================================================================
@@ -66,7 +66,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 'q2_categories',
-    title: 'Какие товарные группы вы продаёте?',
+    title: 'Какие товарные группы вы продаёте или планируете продавать?',
     subtitle: 'Выберите всё, что относится к вам',
     icon: <ShieldCheck className="w-6 h-6" />,
     options: [
@@ -83,6 +83,7 @@ const QUESTIONS: Question[] = [
       { label: 'Фотоаппараты / лампы-вспышки', scores: { knowledge: 2, docs: 1, online: 1, hardware: 0, fiscal: 0 } },
       { label: 'Другая группа', scores: { knowledge: 1, docs: 0, online: 0, hardware: 0, fiscal: 0 } },
       { label: 'Пока не продаю маркировку', scores: { knowledge: 0, docs: 0, online: 0, hardware: 0, fiscal: 0 } },
+      { label: 'Планирую начать', scores: { knowledge: 0, docs: 0, online: 0, hardware: 0, fiscal: 0 } },
     ],
   },
   {
@@ -98,13 +99,13 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 'q4_scanning',
-    title: 'При продаже сканируете ли вы с товара код-квадратик?',
+    title: 'Сканируете ли вы с товара код-квадратик при продаже?',
     icon: <Monitor className="w-6 h-6" />,
     options: [
       { label: 'Да, всегда сканером', scores: { hardware: 2, fiscal: 2, online: 1, docs: 0, knowledge: 2 } },
       { label: 'Вручную — ввожу код руками', scores: { hardware: 1, fiscal: 1, online: 0, docs: 0, knowledge: 1 } },
       { label: 'Не знаю, о каких квадратиках речь', scores: { hardware: 0, fiscal: 0, online: 0, docs: 0, knowledge: 0 } },
-      { label: 'Не продаю маркированный товар', scores: { hardware: 0, fiscal: 0, online: 0, docs: 0, knowledge: 0 } },
+      { label: 'Ещё не продаю маркированный товар', scores: { hardware: 0, fiscal: 0, online: 0, docs: 0, knowledge: 0 } },
     ],
   },
   {
@@ -188,6 +189,145 @@ const TIPS: Record<string, Record<string, string[]>> = {
     yellow: ['Рекомендуем периодически заходить на честныйзнак.рф и проверять чеки', 'Разберитесь, за какие именно услуги платите каждый месяц', 'Уточните, какие товарные группы стали обязательными после вашей последней настройки'],
     red: ['Рекомендуем бесплатный аудит текущей настройки', 'С 2020–2021 изменилось многое: новые группы, ФФД 1.2, ТС ПИоТ', 'Есть риск штрафов за незнание обязательных требований'],
   },
+}
+
+// ============================================================================
+// МЭППИНГ СЛОЁВ → УСЛУГИ В КАЛЬКУЛЯТОРЕ
+// ============================================================================
+
+const LAYER_CALC_MAP: Record<string, {
+  title: string
+  calcServices: string[]
+  description: string
+}> = {
+  hardware: {
+    title: 'Оборудование',
+    calcServices: ['Сканер 2D для кодов', 'Обновление прошивки кассы', 'Лицензия на ПО'],
+    description: 'Правильно работающее оборудование — основа маркировки. Без 2D-сканера и актуальной прошивки касса не сможет считывать и передавать коды маркировки в чек.',
+  },
+  fiscal: {
+    title: 'Фискальные данные',
+    calcServices: ['Подключение маркировки', 'Регистрация/перерегистрация ККТ в ФНС'],
+    description: 'Касса должна правильно передавать коды маркировки в чеке через ОФД в Честный ЗНАК. Без корректных фискальных настроек система маркировки не работает.',
+  },
+  online: {
+    title: 'Онлайн-сервисы',
+    calcServices: ['Подключение ОФД', 'Подключение маркировки'],
+    description: 'Цепочка «касса → ОФД → Честный ЗНАК → ТС ПИоТ» должна работать без разрывов. Если хотя бы одно звено не настроено — данные теряются.',
+  },
+  docs: {
+    title: 'Документооборот',
+    calcServices: ['Подключение маркировки', 'Договор обслуживания'],
+    description: 'ЭДО обеспечивает автоматическую приёмку товара от поставщика. Без ЭДО коды маркировки нужно вводить вручную в Честный ЗНАК, что занимает время и ведёт к ошибкам.',
+  },
+  knowledge: {
+    title: 'Знание и контроль',
+    calcServices: ['Обучение работе с кассой', 'Договор обслуживания'],
+    description: 'Регулярное обслуживание и обучение помогают избежать сбоев и штрафов. Менеджер будет на связи и поможет при любых изменениях в законодательстве.',
+  },
+}
+
+// ============================================================================
+// КОМПОНЕНТ РЕКОМЕНДАЦИЙ → КАЛЬКУЛЯТОР
+// ============================================================================
+
+function CalcRecommendations({ results }: { results: LayerResult[] }) {
+  const problemLayers = results.filter(r => r.status !== 'green')
+
+  // Если всё зелёное — короткая карточка
+  if (problemLayers.length === 0) {
+    return (
+      <div className="anim-fade-in mb-6 bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 sm:p-6">
+        <div className="flex items-start gap-3.5 mb-4">
+          <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-bold text-emerald-800 leading-snug">
+              Ваша маркировка настроена хорошо
+            </h3>
+            <p className="mt-1 text-xs sm:text-sm text-emerald-600 leading-relaxed">
+              По результатам проверки проблем не обнаружено. Но требования меняются — рекомендуем периодическую проверку или подключить договор обслуживания.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            href="/kalkulyatory/markirovka"
+            className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#e8a817]/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Calculator className="w-5 h-5" />
+            Рассчитать стоимость обслуживания
+          </Link>
+          <Link
+            href="/services"
+            className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-white hover:bg-slate-50 text-[#1e3a5f] font-semibold rounded-xl transition-all border-2 border-[#1e3a5f]/20 hover:border-[#1e3a5f]"
+          >
+            Все услуги
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Есть проблемы — развёрнутые рекомендации с привязкой к калькулятору
+  return (
+    <div className="anim-fade-in mb-6 bg-gradient-to-br from-amber-50 via-white to-orange-50 border-2 border-[#e8a817]/30 rounded-2xl p-5 sm:p-6">
+      <div className="flex items-start gap-3.5 mb-5">
+        <div className="w-11 h-11 rounded-xl bg-[#e8a817]/10 flex items-center justify-center shrink-0">
+          <Calculator className="w-6 h-6 text-[#e8a817]" />
+        </div>
+        <div>
+          <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f] leading-snug">
+            Что может потребоваться
+          </h3>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500 leading-relaxed">
+            На основе вашей проверки мы рекомендуем обратить внимание на следующие услуги. Рассчитайте точную стоимость в калькуляторе.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-5">
+        {problemLayers.map(layer => {
+          const map = LAYER_CALC_MAP[layer.id]
+          if (!map) return null
+          const statusIcon = layer.status === 'red'
+            ? <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            : <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+
+          return (
+            <div key={layer.id} className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
+              <div className="flex items-start gap-2.5 mb-2">
+                {statusIcon}
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-[#1e3a5f]">{map.title}</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed mt-0.5">{map.description}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2.5 pl-6">
+                {map.calcServices.map((svc, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#e8a817]/10 text-xs font-semibold text-[#b8860b]">
+                    <Settings className="w-3 h-3" />
+                    {svc}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <Link
+        href="/kalkulyatory/markirovka"
+        className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 bg-[#e8a817] hover:bg-[#d49a12] text-white text-base sm:text-lg font-bold rounded-xl transition-all shadow-lg shadow-[#e8a817]/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.98]"
+      >
+        <Calculator className="w-5 h-5" />
+        Рассчитать стоимость решения
+        <ArrowRight className="w-5 h-5" />
+      </Link>
+    </div>
+  )
 }
 
 // ============================================================================
@@ -435,16 +575,12 @@ export default function DiagnostikaPage() {
               </div>
             </div>
 
-            {/* Spacer чтобы контент не залезал под sticky кнопки */}
-            <div className="h-4" />
-
-            {/* Навигация — sticky к низу экрана */}
-            <div className="sticky bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/95 to-transparent pt-4 pb-3 -mx-4 px-4">
-              <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
+            {/* Навигация — под карточкой вопроса */}
+            <div className="flex items-center justify-between gap-3 mt-5 mb-2">
               <button
                 type="button"
                 onClick={() => setStep(s => s - 1)}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium text-slate-500 hover:text-[#1e3a5f] rounded-xl hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-5 py-3 text-sm font-medium text-slate-500 hover:text-[#1e3a5f] rounded-xl hover:bg-slate-50 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" /> Назад
               </button>
@@ -453,25 +589,24 @@ export default function DiagnostikaPage() {
                   type="button"
                   onClick={() => setStep(s => s + 1)}
                   disabled={!isAnswered(currentQuestion)}
-                  className={`inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-bold rounded-xl transition-all ${
-                    isAnswered(currentQuestion) ? 'bg-[#1e3a5f] hover:bg-[#2a5080] text-white shadow-md' : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                  className={`inline-flex items-center gap-2 px-8 py-3.5 text-base font-bold rounded-xl transition-all ${
+                    isAnswered(currentQuestion) ? 'bg-[#1e3a5f] hover:bg-[#2a5080] text-white shadow-lg shadow-[#1e3a5f]/20' : 'bg-slate-100 text-slate-300 cursor-not-allowed'
                   }`}
                 >
-                  Далее <ChevronRight className="w-4 h-4" />
+                  Далее <ChevronRight className="w-5 h-5" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => setStep(9)}
                   disabled={!isAnswered(currentQuestion)}
-                  className={`inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold rounded-xl transition-all ${
+                  className={`inline-flex items-center gap-2 px-8 py-3.5 text-base font-bold rounded-xl transition-all ${
                     isAnswered(currentQuestion) ? 'bg-[#e8a817] hover:bg-[#d49a12] text-white shadow-lg shadow-[#e8a817]/25' : 'bg-slate-100 text-slate-300 cursor-not-allowed'
                   }`}
                 >
-                  Показать результат <ShieldCheck className="w-4 h-4" />
+                  Показать результат <ShieldCheck className="w-5 h-5" />
                 </button>
               )}
-              </div>
             </div>
           </div>
         </div>
@@ -523,6 +658,7 @@ export default function DiagnostikaPage() {
                       value={clientName}
                       onChange={e => setClientName(e.target.value)}
                       placeholder="Иван Иванов"
+                      autoComplete="name"
                       className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all"
                     />
                   </div>
@@ -538,6 +674,8 @@ export default function DiagnostikaPage() {
                       value={clientPhone}
                       onChange={e => setClientPhone(e.target.value)}
                       placeholder="+7 (999) 123-45-67"
+                      autoComplete="tel"
+                      inputMode="tel"
                       className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all"
                     />
                   </div>
@@ -703,7 +841,12 @@ export default function DiagnostikaPage() {
               })}
             </div>
 
-            {/* CTA */}
+            {/* ================================================================ */}
+            {/* РЕКОМЕНДАЦИИ + CTA К КАЛЬКУЛЯТОРУ */}
+            {/* ================================================================ */}
+            <CalcRecommendations results={results} />
+
+            {/* CTA — связка с калькулятором */}
             <div className="anim-fade-in bg-gradient-to-br from-[#1e3a5f] to-[#2a5080] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden">
               <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#e8a817]/10 blur-2xl" />
               <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/5 blur-2xl" />
@@ -728,13 +871,6 @@ export default function DiagnostikaPage() {
                   <MessageCircle className="w-5 h-5" /> Написать в чат
                 </button>
               </div>
-            </div>
-
-            {/* Калькулятор */}
-            <div className="mt-4 text-center">
-              <Link href="/kalkulyatory/markirovka" className="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-[#1e3a5f]/20 text-[#1e3a5f] text-sm font-semibold rounded-xl hover:bg-[#1e3a5f] hover:text-white hover:border-[#1e3a5f] transition-all">
-                Рассчитать стоимость маркировки <ArrowRight className="w-4 h-4" />
-              </Link>
             </div>
 
             {/* Пройти заново */}

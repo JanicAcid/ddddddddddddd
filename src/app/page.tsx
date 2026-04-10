@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import {
   Calculator, MessageCircle, Phone, ArrowRight, Clock, ShieldCheck,
@@ -18,7 +19,7 @@ const CALCULATORS = [
     desc: 'Расчёт стоимости подключения маркировки товаров: Честный ЗНАК, ТС ПИоТ, ЭДО, ОФД, регистрация ККТ.',
     href: '/kalkulyatory/markirovka',
     active: true,
-    price: 'от 3 000 ₽',
+    price: 'от 1 500 ₽',
   },
   {
     title: 'Калькулятор 1С',
@@ -77,7 +78,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Сколько стоит подключение маркировки?',
-    a: 'Базовая настройка — от 3 000 ₽. Точная стоимость зависит от типа кассы, набора услуг и состояния оборудования. Рассчитайте бесплатно в нашем калькуляторе.',
+    a: 'Частичная настройка — от 1 500 ₽, полная под ключ — от 5 300 ₽. Точная стоимость зависит от типа кассы и набора услуг. Рассчитайте бесплатно в калькуляторе.',
   },
   {
     q: 'Какие кассы подходят для маркировки?',
@@ -95,6 +96,8 @@ const ARTICLES = [
 ]
 
 export default function HomePage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* CSS-only fade-in-up animations */}
@@ -176,28 +179,40 @@ export default function HomePage() {
       </section>
 
       {/* ================================================================== */}
-      {/* DIAGNOSTICS BANNER */}
+      {/* ДИАГНОСТИКА + КАЛЬКУЛЯТОР — единая воронка */}
       {/* ================================================================== */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="anim-fade-in-up anim-delay-1 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-[#e8a817]/20 p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-          <div className="w-14 h-14 shrink-0 rounded-2xl bg-[#e8a817]/10 flex items-center justify-center">
-            <ShieldCheck className="w-7 h-7 text-[#e8a817]" />
+        <div className="anim-fade-in-up anim-delay-1 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-[#e8a817]/20 p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="w-14 h-14 shrink-0 rounded-2xl bg-[#e8a817]/10 flex items-center justify-center">
+              <ShieldCheck className="w-7 h-7 text-[#e8a817]" />
+            </div>
+            <div className="flex-1 text-center sm:text-left min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-1">
+                Проверьте, правильно ли работает ваша маркировка
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                8 простых вопросов — узнайте, где в цепочке могут быть проблемы. Без терминов, за 3 минуты.
+                <span className="hidden sm:inline"> Потом рассчитайте стоимость решения в калькуляторе.</span>
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/diagnostika"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-[#e8a817]/20 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Начать проверку
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/kalkulyatory/markirovka"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border-2 border-[#1e3a5f]/20 text-[#1e3a5f] text-sm font-semibold rounded-xl hover:bg-[#1e3a5f] hover:text-white hover:border-[#1e3a5f] transition-all"
+              >
+                <Calculator className="w-4 h-4" />
+                Калькулятор
+              </Link>
+            </div>
           </div>
-          <div className="flex-1 text-center sm:text-left min-w-0">
-            <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-1">
-              Проверьте, правильно ли работает ваша маркировка
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              8 простых вопросов — и вы узнаете, где в цепочке могут быть проблемы. Без терминов, за 3 минуты.
-            </p>
-          </div>
-          <Link
-            href="/diagnostika"
-            className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-[#e8a817]/20 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Начать проверку
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
       </section>
 
@@ -360,20 +375,29 @@ export default function HomePage() {
                 </h2>
               </div>
               <div className="space-y-3">
-                {FAQ_ITEMS.map((item, idx) => (
-                  <details
-                    key={idx}
-                    className="group bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
-                  >
-                    <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-slate-50/50 transition-colors list-none">
-                      <h3 className="text-sm font-semibold text-[#1e3a5f] pr-4 leading-snug">{item.q}</h3>
-                      <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    <div className="px-4 pb-3.5">
-                      <p className="text-sm text-slate-600 leading-relaxed">{item.a}</p>
+                {FAQ_ITEMS.map((item, idx) => {
+                  const isOpen = openFaq === idx
+                  return (
+                    <div
+                      key={idx}
+                      className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(isOpen ? null : idx)}
+                        className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-slate-50/50 transition-colors w-full text-left"
+                      >
+                        <h3 className="text-sm font-semibold text-[#1e3a5f] pr-4 leading-snug">{item.q}</h3>
+                        <ChevronRight className={`w-4 h-4 text-slate-300 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+                      </button>
+                      {isOpen && (
+                        <div className="px-4 pb-3.5">
+                          <p className="text-sm text-slate-600 leading-relaxed">{item.a}</p>
+                        </div>
+                      )}
                     </div>
-                  </details>
-                ))}
+                  )
+                })}
               </div>
               <Link
                 href="/faq"

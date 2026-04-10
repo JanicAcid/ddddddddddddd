@@ -8,6 +8,7 @@ import {
   Monitor, Settings, FileText, Eye, CreditCard,
   Clock, MessageCircle, User, Loader2, Send, Calculator
 } from 'lucide-react'
+import { KKT_CATALOG } from '@/config/kkt-catalog'
 
 // ============================================================================
 // ТИПЫ
@@ -340,9 +341,15 @@ export default function DiagnostikaPage() {
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [clientName, setClientName] = useState('')
   const [clientPhone, setClientPhone] = useState('')
-  const [noCallNeeded, setNoCallNeeded] = useState(false)
+  const [selectedManufacturer, setSelectedManufacturer] = useState('')
+  const [selectedModel, setSelectedModel] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+
+  const filteredModels = useMemo(() => {
+    const mfr = KKT_CATALOG.find(m => m.id === selectedManufacturer)
+    return mfr?.models || []
+  }, [selectedManufacturer])
 
   // ---- выбор ответов ----
   const toggleAnswer = (qId: string, label: string) => {
@@ -396,15 +403,20 @@ export default function DiagnostikaPage() {
     const statusLabels = { green: 'В порядке', yellow: 'Нужно проверить', red: 'Есть проблемы' }
     const statusBg = { green: '#f0fdf4', yellow: '#fffbeb', red: '#fef2f2' }
 
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
     const now = new Date()
     const dateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
     const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
+    const kktMfr = KKT_CATALOG.find(m => m.id === selectedManufacturer)
+    const kktLabel = kktMfr ? (selectedModel ? `${kktMfr.name} ${selectedModel}` : kktMfr.name) : (selectedManufacturer === '_none' ? 'Нет кассы' : '')
+
     const layersHtml = results.map(r => `
       <tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#1e3a5f;">${r.title}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#1e3a5f;">${esc(r.title)}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;">
-          <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:${statusColors[r.status]};background:${statusBg[r.status]};">${statusLabels[r.status]}</span>
+          <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:${statusColors[r.status]};background:${statusBg[r.status]};">${esc(statusLabels[r.status])}</span>
         </td>
         <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;">${r.score} из ${r.maxScore}</td>
       </tr>
@@ -415,15 +427,15 @@ export default function DiagnostikaPage() {
       return `
       <tr>
         <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#94a3b8;font-size:13px;vertical-align:top;width:30px;">${idx + 1}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;font-size:13px;vertical-align:top;">${q.title}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#1e3a5f;font-size:13px;font-weight:500;">${a.join(', ') || '—'}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;font-size:13px;vertical-align:top;">${esc(q.title)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#1e3a5f;font-size:13px;font-weight:500;">${a.map(esc).join(', ') || '&#8212;'}</td>
       </tr>`
     }).join('')
 
     const tipsHtml = results.filter(r => r.status !== 'green').map(r => `
       <div style="margin-bottom:12px;">
-        <div style="font-weight:600;color:${statusColors[r.status]};font-size:13px;margin-bottom:4px;">${r.title}</div>
-        ${r.tips.map(t => `<div style="color:#64748b;font-size:12px;padding-left:12px;">&bull; ${t}</div>`).join('')}
+        <div style="font-weight:600;color:${statusColors[r.status]};font-size:13px;margin-bottom:4px;">${esc(r.title)}</div>
+        ${r.tips.map(t => `<div style="color:#64748b;font-size:12px;padding-left:12px;">&#8226; ${esc(t)}</div>`).join('')}
       </div>
     `).join('')
 
@@ -432,8 +444,9 @@ export default function DiagnostikaPage() {
   <div style="background:linear-gradient(135deg,#1e3a5f,#2a5080);padding:24px;color:#fff;">
     <div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Теллур-Интех</div>
     <div style="font-size:20px;font-weight:700;margin-bottom:4px;">Результат диагностики маркировки</div>
-    <div style="font-size:13px;opacity:0.8;">${dateStr} в ${timeStr}</div>
+    <div style="font-size:13px;opacity:0.8;">${esc(dateStr)} в ${esc(timeStr)}</div>
   </div>
+  ${kktLabel ? `<div style="padding:12px 24px;background:#f0f9ff;border-bottom:1px solid #bae6fd;"><span style="font-size:12px;color:#0369a1;font-weight:600;">Касса клиента: </span><span style="font-size:12px;color:#0c4a6e;">${esc(kktLabel)}</span></div>` : ''}
   <div style="padding:20px 24px;">
     <div style="font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:12px;">Сводка по слоям</div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -457,7 +470,7 @@ export default function DiagnostikaPage() {
     </table>
   </div>
   <div style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;">
-    ООО "Теллур-Интех" | +7 (812) 465-94-57 | push@tellur.spb.ru | tellurmarkirovka.vercel.app
+    ООО &quot;Теллур-Интех&quot; | +7 (812) 465-94-57 | push@tellur.spb.ru | tellurmarkirovka.vercel.app
   </div>
 </div></body></html>`
   }
@@ -466,7 +479,10 @@ export default function DiagnostikaPage() {
   const buildTelegramReport = (): string => {
     const statusEmoji = { green: '✅', yellow: '⚠️', red: '❌' }
     const statusLabels = { green: 'В порядке', yellow: 'Нужно проверить', red: 'Есть проблемы' }
+    const kktMfr = KKT_CATALOG.find(m => m.id === selectedManufacturer)
+    const kktStr = kktMfr ? (selectedModel ? `Касса: ${kktMfr.name} ${selectedModel}` : `Касса: ${kktMfr.name}`) : (selectedManufacturer === '_none' ? 'Касса: нет' : '')
     const lines = [`📊 ДИАГНОСТИКА МАРКИРОВКИ`, `👤 ${clientName.trim()}`, `📞 ${clientPhone.trim()}`, ``]
+    if (kktStr) lines.push(`🖥️ ${kktStr}`, '')
     results.forEach(r => {
       lines.push(`${statusEmoji[r.status]} ${r.title}: ${statusLabels[r.status]} (${r.score}/${r.maxScore})`)
     })
@@ -481,16 +497,15 @@ export default function DiagnostikaPage() {
 
   // ---- отправка заявки ----
   const handleSubmit = async () => {
-    if (noCallNeeded) {
-      setStep(10)
-      return
-    }
     setSending(true)
     setSendError('')
     try {
       const reportHtml = buildReportHtml()
       const telegramReport = buildTelegramReport()
       const orderNum = `ДИАГ-${Date.now().toString().slice(-6)}`
+
+      const kktMfr = KKT_CATALOG.find(m => m.id === selectedManufacturer)
+      const kkmDisplay = kktMfr ? (selectedModel ? `${kktMfr.name} ${selectedModel}` : kktMfr.name) : (selectedManufacturer === '_none' ? 'Нет кассы' : '')
 
       // Сводка по статусам для комментария
       const summary = results.map(r => {
@@ -505,11 +520,11 @@ export default function DiagnostikaPage() {
           orderNum,
           clientName: clientName.trim(),
           phone: clientPhone.trim(),
-          kkmType: '',
+          kkmType: kkmDisplay || '',
           kkmCondition: '',
           services: ['Диагностика маркировки'],
           total: 0,
-          comment: `Результат: ${summary}`,
+          comment: `Результат: ${summary}${kkmDisplay ? ` | Касса: ${kkmDisplay}` : ''}`,
           orderHtml: reportHtml,
         }),
       })
@@ -753,18 +768,41 @@ export default function DiagnostikaPage() {
                     />
                   </div>
 
-                  {/* Галочка — не нужен звонок */}
-                  <label className="flex items-start gap-3 cursor-pointer group py-1">
-                    <input
-                      type="checkbox"
-                      checked={noCallNeeded}
-                      onChange={e => setNoCallNeeded(e.target.checked)}
-                      className="mt-0.5 w-5 h-5 rounded border-2 border-slate-200 text-[#1e3a5f] focus:ring-[#1e3a5f]/20 cursor-pointer accent-[#1e3a5f]"
-                    />
-                    <span className="text-xs sm:text-sm text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">
-                      Звонок пока не нужен — хочу просто увидеть результат
-                    </span>
-                  </label>
+                  {/* Выбор кассы */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1e3a5f] mb-1.5">
+                      Ваша касса <span className="text-slate-400 font-normal">(необязательно)</span>
+                    </label>
+                    <select
+                      value={selectedManufacturer}
+                      onChange={e => { setSelectedManufacturer(e.target.value); setSelectedModel('') }}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 text-sm text-slate-700 bg-white focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all"
+                    >
+                      <option value="">— Выберите производителя —</option>
+                      <option value="_none">У меня нет кассы</option>
+                      {KKT_CATALOG.map(m => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {filteredModels.length > 0 && (
+                    <div className="anim-fade-in">
+                      <label className="block text-sm font-semibold text-[#1e3a5f] mb-1.5">
+                        Модель кассы
+                      </label>
+                      <select
+                        value={selectedModel}
+                        onChange={e => setSelectedModel(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 text-sm text-slate-700 bg-white focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all"
+                      >
+                        <option value="">— Выберите модель —</option>
+                        {filteredModels.map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Ошибка */}
@@ -788,39 +826,28 @@ export default function DiagnostikaPage() {
                 <ChevronLeft className="w-4 h-4" /> Назад
               </button>
 
-              {noCallNeeded ? (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1e3a5f] hover:bg-[#2a5080] text-white text-sm font-bold rounded-xl transition-all shadow-md"
-                >
-                  Показать результат
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!clientName.trim() || !clientPhone.trim() || sending}
-                  className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl transition-all ${
-                    clientName.trim() && clientPhone.trim() && !sending
-                      ? 'bg-[#e8a817] hover:bg-[#d49a12] text-white shadow-lg shadow-[#e8a817]/25'
-                      : 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                  }`}
-                >
-                  {sending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Отправляем...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Получить результат
-                    </>
-                  )}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!clientName.trim() || !clientPhone.trim() || sending}
+                className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl transition-all ${
+                  clientName.trim() && clientPhone.trim() && !sending
+                    ? 'bg-[#e8a817] hover:bg-[#d49a12] text-white shadow-lg shadow-[#e8a817]/25'
+                    : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                }`}
+              >
+                {sending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Отправляем...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Получить результат
+                  </>
+                )}
+              </button>
               </div>
             </div>
           </div>
@@ -834,39 +861,20 @@ export default function DiagnostikaPage() {
         <div className="px-4 py-6 sm:py-8 pb-16">
           <div className="max-w-2xl mx-auto">
 
-            {/* Если оставил контакты — уведомление */}
-            {!noCallNeeded && (
-              <div className="anim-fade-in mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-5">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-bold text-emerald-800 mb-1">
-                      Заявка отправлена
-                    </h3>
-                    <p className="text-xs sm:text-sm text-emerald-700 leading-relaxed">
-                      Спасибо, {clientName.trim()}! Ваш результат диагностики сохранён. Специалист свяжется с вами по номеру {clientPhone.trim()} для уточнения деталей и бесплатной консультации.
-                    </p>
-                  </div>
+            {/* Уведомление об отправке */}
+            <div className="anim-fade-in mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-emerald-800 mb-1">
+                    Заявка отправлена
+                  </h3>
+                  <p className="text-xs sm:text-sm text-emerald-700 leading-relaxed">
+                    Спасибо, {clientName.trim()}! Ваш результат диагностики сохранён. Специалист свяжется с вами по номеру {clientPhone.trim()} для уточнения деталей и бесплатной консультации.
+                  </p>
                 </div>
               </div>
-            )}
-
-            {/* Если без звонка */}
-            {noCallNeeded && (
-              <div className="anim-fade-in mb-6 bg-blue-50 border border-blue-200 rounded-2xl p-4 sm:p-5">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="w-6 h-6 text-blue-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-bold text-blue-800 mb-1">
-                      Вот ваш результат
-                    </h3>
-                    <p className="text-xs sm:text-sm text-blue-700 leading-relaxed">
-                      Если появятся вопросы или понадобится помощь с настройкой — звоните или пишите нам. Мы всегда на связи.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
 
             {/* Заголовок */}
             <div className="text-center mb-6 sm:mb-8 anim-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -950,7 +958,7 @@ export default function DiagnostikaPage() {
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={() => { setAnswers({}); setClientName(''); setClientPhone(''); setNoCallNeeded(false); setStep(0) }}
+                onClick={() => { setAnswers({}); setClientName(''); setClientPhone(''); setSelectedManufacturer(''); setSelectedModel(''); setStep(0) }}
                 className="text-sm text-slate-400 hover:text-[#1e3a5f] transition-colors underline underline-offset-2"
               >
                 Пройти проверку заново

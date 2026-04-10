@@ -162,6 +162,74 @@ export default function AdminDashboard() {
   const getStatusFromOrder = (o: Order) => o['Статус'] || ''
 
   const handlePrintOrder = (order: Order) => {
+    const orderNum = order['Заказ №'] || ''
+    const isDiag = orderNum.startsWith('ДИАГ-')
+
+    // Для диагностических заказов — восстанавливаем из данных, а не из сохранённого HTML
+    // (Google Sheets искажает HTML-содержимое, поэтому сохранённый orderHtml не читается)
+    if (isDiag) {
+      const phone = (order['Телефон'] || order['_col3'] || '').replace(/^['#]/, '')
+      const clientName = order['Клиент'] || ''
+      const timestamp = order['Дата/время'] || ''
+      const status = order['Статус'] || ''
+      const kkm = order['ККМ'] || ''
+      const services = order['Услуги'] || ''
+      const clientComment = order['Комментарий'] || ''
+      const managerComment = order['Комментарий менеджера'] || ''
+
+      // Разбираем сводку из комментария (формат: "Результат: ✅ Оборудование | ⚠️ Фискальные данные | ...")
+      const summaryMatch = clientComment.match(/Результат:\s*(.+)/)
+      const summaryParts = summaryMatch ? summaryMatch[1].split('|').map((s: string) => s.trim()) : []
+      // Разбираем кассу из комментария (формат: "Касса: АТОЛ АТОЛ 30Ф")
+      const kkmMatch = clientComment.match(/Касса:\s*(.+)/)
+      const diagKkm = kkmMatch ? kkmMatch[1].trim() : (kkm || '—')
+
+      // Цвета и метки статусов
+      const statusStyles: Record<string, { color: string; bg: string; label: string }> = {
+        '✅': { color: '#16a34a', bg: '#f0fdf4', label: 'В порядке' },
+        '⚠️': { color: '#d97706', bg: '#fffbeb', label: 'Нужно проверить' },
+        '❌': { color: '#dc2626', bg: '#fef2f2', label: 'Есть проблемы' },
+      }
+
+      const layersHtml = summaryParts.map((part: string) => {
+        const emoji = part.charAt(0)
+        const name = part.slice(2).trim()
+        const st = statusStyles[emoji] || statusStyles['⚠️']
+        return `<tr>
+          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#1e3a5f;">${name}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+            <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;color:${st.color};background:${st.bg};">${st.label}</span>
+          </td>
+        </tr>`
+      }).join('')
+
+      const hasProblems = summaryParts.some((p: string) => p.startsWith('⚠️') || p.startsWith('❌'))
+
+      const printHtml = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Диагностика ${orderNum}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:13px;color:#222;padding:30px;max-width:650px;margin:0 auto}
+h1{font-size:18px;margin-bottom:4px}.sub{color:#666;font-size:12px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin-bottom:16px}th,td{border:1px solid #ddd;padding:8px 10px;text-align:left;font-size:13px}
+th{background:#f5f5f5;font-weight:600;width:140px}.st{font-weight:700;font-size:14px;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #1e3a5f}
+.cb{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 14px;margin-top:10px;font-size:12px}.cb strong{display:block;margin-bottom:4px}
+.kkt-row{background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:8px 14px;margin-bottom:16px;font-size:12px;color:#0369a1}
+.sig{display:flex;justify-content:space-between;margin-top:40px}.sig div{width:200px;text-align:center}.sig .l{border-top:1px solid #333;margin-bottom:4px;padding-top:30px}
+.ft{margin-top:30px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999}@media print{body{padding:15px}}</style>
+</head><body><h1>Диагностика маркировки ${orderNum}</h1><p class="sub">${timestamp}${status ? ' &middot; Статус: ' + status : ''}</p>
+<div class="st">Клиент</div><table><tr><th>Имя</th><td>${clientName}</td></tr>${phone ? `<tr><th>Телефон</th><td>${phone}</td></tr>` : ''}</table>
+<div class="kkt-row"><strong>Касса клиента:</strong> ${diagKkm}</div>
+<div class="st">Результат проверки</div><table>
+<thead><tr style="background:#f8fafc;"><th style="padding:6px 10px;text-align:left;border-bottom:2px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b;">Слой</th><th style="padding:6px 10px;text-align:left;border-bottom:2px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b;">Статус</th></tr></thead>
+<tbody>${layersHtml}</tbody></table>
+${hasProblems ? '<div class="cb"><strong>Рекомендация:</strong>Обнаружены проблемы в настройке маркировки. Рекомендуется бесплатная консультация специалиста.</div>' : '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#16a34a;"><strong>Маркировка настроена хорошо.</strong> Рекомендуем периодическую проверку.</div>'}
+${clientComment ? `<div class="cb"><strong>Комментарий:</strong>${clientComment}</div>` : ''}${managerComment ? `<div class="cb"><strong>Заметки менеджера:</strong>${managerComment}</div>` : ''}
+<div class="sig"><div><div class="l"></div>Специалист</div><div><div class="l"></div>Клиент</div></div>
+<div class="ft">OOO &laquo;Теллур-Интех&raquo; &middot; +7 (812) 465-94-57 &middot; push@tellur.spb.ru</div></body></html>`
+      const win = window.open('', '_blank')
+      if (win) { win.document.write(printHtml); win.document.close(); setTimeout(() => { win.print() }, 300) }
+      return
+    }
+
+    // Для обычных заказов — используем сохранённый HTML или строим из данных
     const savedHtml = order['Файл заказа'] || order['_col12'] || order['orderHtml'] || ''
 
     if (savedHtml && savedHtml.includes('<html')) {
@@ -178,7 +246,6 @@ export default function AdminDashboard() {
       const kkm = order['ККМ'] || ''
       const services = order['Услуги'] || ''
       const total = order['Сумма'] || order['Итого'] || '0'
-      const orderNum = order['Заказ №'] || ''
       const timestamp = order['Дата/время'] || ''
       const status = order['Статус'] || ''
       const inn = order['ИНН'] || ''

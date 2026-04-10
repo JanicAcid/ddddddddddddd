@@ -49,25 +49,25 @@ const SERVICES = [
     icon: <Tag className="w-6 h-6" />,
     title: 'Подключение маркировки',
     desc: 'Комплексная настройка: ЭДО, Честный ЗНАК, ТС ПИоТ, ККТ, ОФД — все 6 систем связаны.',
-    href: '/services',
+    href: '/kalkulyatory/markirovka',
   },
   {
     icon: <FileText className="w-6 h-6" />,
-    title: 'Регистрация ККТ в ФНС',
-    desc: 'Подача заявления, настройка фискализации, подключение ОФД. Перерегистрация при необходимости.',
-    href: '/services',
+    title: 'Настройка кассы для маркировки',
+    desc: 'Под ключ за 1 день. Меркурий, Атол, Эвотор, Штрих-М. ФФД 1.2, Честный ЗНАК, ТС ПИоТ.',
+    href: '/nastroyka-kassy-markirovka',
   },
   {
     icon: <Monitor className="w-6 h-6" />,
-    title: 'Настройка ЭДО',
-    desc: 'Подключение электронного документооборота: Контур.Диадок, СБИС, Такском.',
-    href: '/services',
+    title: 'Подключение Честного ЗНАК',
+    desc: 'Регистрация в системе маркировки, настройка товарных групп, подпись соглашения с ЦРПТ.',
+    href: '/podklyuchenie-chestnyy-znak',
   },
   {
     icon: <Cpu className="w-6 h-6" />,
-    title: 'Замена фискального накопителя',
-    desc: 'Замена ФН с перерегистрацией кассы в ФНС. 15 или 36 месяцев — подберём подходящий.',
-    href: '/services',
+    title: 'Какую кассу выбрать',
+    desc: 'Обзор моделей Атол, Эвотор, Меркурий, Штрих-М. Подбор по типу бизнеса и бюджету.',
+    href: '/kakuyu-kassu-dlya-markirovki',
   },
 ]
 
@@ -92,6 +92,12 @@ const ARTICLES = [
     slug: 'kak-podklyuchit-kabinet-chestnyznak',
     category: 'Честный ЗНАК',
     readingTime: 12,
+  },
+  {
+    title: 'Какую кассу выбрать для маркировки',
+    href: '/kakuyu-kassu-dlya-markirovki',
+    category: 'Кассы',
+    readingTime: 10,
   },
 ]
 
@@ -420,7 +426,7 @@ export default function HomePage() {
                   {ARTICLES.map((article, idx) => (
                     <Link
                       key={idx}
-                      href={`/instructions/${article.slug}`}
+                      href={article.href || `/instructions/${article.slug}`}
                       className="group block bg-white rounded-xl border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all"
                     >
                       <div className="flex items-start gap-3">

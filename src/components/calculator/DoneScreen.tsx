@@ -229,6 +229,26 @@ export function DoneScreen({
         })
         if (cancelled) return
         if (!res.ok) throw new Error('Send failed')
+
+        // Параллельно логируем в Google Sheets (не блокируем отправку)
+        fetch('/api/log-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderNum: safeOrderNum,
+            clientName: clientData.name || '',
+            phone: clientData.phone || '',
+            email: clientData.email || '',
+            kkmType: effectiveKkmInfo.name || kkmType,
+            kkmCondition: kkmCondition,
+            services: totalCalc.items.map(i => i.name),
+            total: totalCalc.total,
+            isConsultation: isConsultation || undefined,
+            comment: clientData.comment || '',
+            orderHtml: engineerHtml,
+          }),
+        }).catch(err => console.error('Google Sheets log error:', err))
+
         setSendStatus('sent')
       } catch (err) {
         if (cancelled) return

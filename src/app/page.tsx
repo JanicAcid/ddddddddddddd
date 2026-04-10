@@ -1,732 +1,515 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import React from 'react'
-import Image from 'next/image'
-import { formatPhone, isPhoneValid } from '@/lib/phone'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Info, Check, Phone, Send, MessageSquare, X } from 'lucide-react'
+import { useState } from 'react'
+import Link from 'next/link'
 import {
-  kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
-  type KkmType
-} from '@/config/services'
-import { step2Services } from '@/config/services-step2'
-import { step3Services } from '@/config/services-step3'
-import { OFD_PROVIDERS } from '@/config/ofd'
-import { getProductCardPrice } from '@/config/product-cards'
-import type { Step, KkmCondition, ClientData, TotalCalc, HintButtonProps } from '@/components/calculator/types'
-import { HintButton } from '@/components/calculator/HintButton'
-import { DoneScreen, generateOrderHtml } from '@/components/calculator/DoneScreen'
-import { StepBrands } from '@/components/calculator/StepBrands'
-import { StepServices } from '@/components/calculator/StepServices'
-import { StepExtra } from '@/components/calculator/StepExtra'
-import { StepSummary } from '@/components/calculator/StepSummary'
-import { SeoContent } from '@/components/SeoContent'
+  Calculator, MessageCircle, Phone, ArrowRight, Clock, ShieldCheck,
+  Monitor, Cpu, Tag, ChevronRight, FileText, HelpCircle,
+  CheckCircle, Star, Building2, Users, Wrench
+} from 'lucide-react'
 
 // ============================================================================
-// ОСНОВНОЙ КОМПОНЕНТ
+// ГЛАВНАЯ — Центр поддержки пользователей ККТ
+// Server Component (no 'use client')
 // ============================================================================
 
-export default function TellurServiceCalculator() {
-  const mainRef = useRef<HTMLDivElement>(null)
-  const conditionRef = useRef<HTMLDivElement>(null)
-  const [conditionFlash, setConditionFlash] = useState(false)
-  const [currentStep, setCurrentStep] = useState<Step>(1)
-  const [isDone, setIsDone] = useState(false)
-  const [orderNum, setOrderNum] = useState<string | null>(null)
-  const [isCorrection, setIsCorrection] = useState(false)
-  const [isConsultation, setIsConsultation] = useState(false)
-  const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
-  const [kkmCondition, setKkmCondition] = useState<KkmCondition>('' as KkmCondition)
-  const [sigmaSelected, setSigmaSelected] = useState(false)
-  const [evotorTradeType, setEvotorTradeType] = useState<'none' | 'marking' | 'alcohol' | 'both'>('none')
-  const [evotorAppsSelected, setEvotorAppsSelected] = useState<Set<string>>(new Set())
-  const [evotorHasSubscription, setEvotorHasSubscription] = useState(false)
-  const [step2Selections, setStep2Selections] = useState<string[]>([])
-  const [step3Selections, setStep3Selections] = useState<string[]>([])
-  const [trainingHours, setTrainingHours] = useState(1)
-  const [productCardCount, setProductCardCount] = useState(0)
-  const [scannerChecked, setScannerChecked] = useState(false)
-  const [firmwareChecked, setFirmwareChecked] = useState(false)
-  const [licenseChecked, setLicenseChecked] = useState(false)
-  const [evotorRestore, setEvotorRestore] = useState(false)
-  const [ofdChecked, setOfdChecked] = useState(false)
-  const [ofdPeriod, setOfdPeriod] = useState<'15' | '36'>('15')
-  const [ofdProvider, setOfdProvider] = useState('takskom')
-  const [fnChecked, setFnChecked] = useState(false)
-  const [fnPeriod, setFnPeriod] = useState<'15' | '36'>('15')
-  const [fnActivityType, setFnActivityType] = useState('general')
-  // Сигма — 3 тарифа, оплачиваются отдельно на sigma.ru/tarify/
-  const [sigmaHelpChecked, setSigmaHelpChecked] = useState(false)
-  const [unsureFnsRegistration, setUnsureFnsRegistration] = useState(false)
-  const [alreadyMarking, setAlreadyMarking] = useState(false)
-  const [serviceContractChecked, setServiceContractChecked] = useState(false)
-  const [serviceContractPeriod, setServiceContractPeriod] = useState<'month' | 'year'>('month')
+const CALCULATORS = [
+  {
+    title: 'Калькулятор маркировки',
+    desc: 'Расчёт стоимости подключения маркировки товаров: Честный ЗНАК, ТС ПИоТ, ЭДО, ОФД, регистрация ККТ.',
+    href: '/kalkulyatory/markirovka',
+    active: true,
+    price: 'от 1 500 ₽',
+  },
+  {
+    title: 'Калькулятор 1С',
+    desc: 'Расчёт стоимости интеграции кассового оборудования с программами 1С: Предприятие.',
+    href: '/kalkulyatory/1c',
+    active: false,
+    price: '',
+  },
+  {
+    title: 'Расчёт ОФД',
+    desc: 'Сравнение тарифов операторов фискальных данных: ТАКСКОМ, Контур, СБИС, Эвотор.',
+    href: '/kalkulyatory/ofd',
+    active: false,
+    price: '',
+  },
+]
 
-  const [clientData, setClientData] = useState<ClientData>({
-    name: '', inn: '', phone: '', email: '', address: '',
-    kkmModel: '', kkmNumber: '', fnNumber: '', comment: '',
-    evotorLogin: '', evotorPassword: '', hasEcp: false,
-    fnActivityType: '', sellsExcise: false
-  })
+const STATS = [
+  { value: 'С 1995 года', label: '30+ лет опыта' },
+  { value: '5 000+', label: 'касс настроено' },
+  { value: '300+', label: 'клиентов' },
+  { value: '1–3 дня', label: 'срок подключения' },
+]
 
-  const [showBanner, setShowBanner] = useState(true)
-  const [showConsultSlide, setShowConsultSlide] = useState(false)
-  const [activeHint, setActiveHint] = useState<string | null>(null)
-  const handleHintOpen = useCallback((key: string) => setActiveHint(key), [])
-  const handleHintClose = useCallback(() => setActiveHint(null), [])
+const SERVICES = [
+  {
+    icon: <Tag className="w-6 h-6" />,
+    title: 'Подключение маркировки',
+    desc: 'Комплексная настройка: ЭДО, Честный ЗНАК, ТС ПИоТ, ККТ, ОФД — все 6 систем связаны.',
+    href: '/services',
+  },
+  {
+    icon: <FileText className="w-6 h-6" />,
+    title: 'Регистрация ККТ в ФНС',
+    desc: 'Подача заявления, настройка фискализации, подключение ОФД. Перерегистрация при необходимости.',
+    href: '/services',
+  },
+  {
+    icon: <Monitor className="w-6 h-6" />,
+    title: 'Настройка ЭДО',
+    desc: 'Подключение электронного документооборота: Контур.Диадок, СБИС, Такском.',
+    href: '/services',
+  },
+  {
+    icon: <Cpu className="w-6 h-6" />,
+    title: 'Замена фискального накопителя',
+    desc: 'Замена ФН с перерегистрацией кассы в ФНС. 15 или 36 месяцев — подберём подходящий.',
+    href: '/services',
+  },
+]
 
-  const hintProps: HintButtonProps = { activeHint, onHintOpen: handleHintOpen, onHintClose: handleHintClose }
+const FAQ_ITEMS = [
+  {
+    q: 'Что такое маркировка товаров?',
+    a: 'Система прослеживаемости, при которой каждая единица получает уникальный код Data Matrix. Код заносится в «Честный ЗНАК» и считывается кассой при продаже.',
+  },
+  {
+    q: 'Сколько стоит подключение маркировки?',
+    a: 'Частичная настройка — от 1 500 ₽, полная под ключ — от 5 300 ₽. Точная стоимость зависит от типа кассы и набора услуг. Рассчитайте бесплатно в калькуляторе.',
+  },
+  {
+    q: 'Какие кассы подходят для маркировки?',
+    a: 'Любая касса с поддержкой ФФД 1.2: Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI. Если касса старая — обновим прошивку.',
+  },
+]
 
-  // Авто-скрытие баннера ТС ПИоТ через 1 минуту
-  useEffect(() => {
-    if (!showBanner) return
-    const timer = setTimeout(() => setShowBanner(false), 60000)
-    return () => clearTimeout(timer)
-  }, [showBanner])
+const ARTICLES = [
+  {
+    title: 'Как подключить кабинет Честный ЗНАК',
+    slug: 'kak-podklyuchit-kabinet-chestnyznak',
+    category: 'Честный ЗНАК',
+    readingTime: 12,
+  },
+]
 
-  const effectiveKkm: KkmType = (kkmType === 'atol' && sigmaSelected) ? 'sigma' : kkmType
-  const currentKkmInfo = kkmType && kkmTypes[kkmType] ? kkmTypes[kkmType] : { name: '', shortName: '', description: '', features: [], hidden: false }
-  const effectiveKkmInfo = effectiveKkm && kkmTypes[effectiveKkm] ? kkmTypes[effectiveKkm] : { name: '', shortName: '', description: '', features: [], hidden: false }
-  const visibleKkmTypes = Object.entries(kkmTypes).filter(([_, kkm]) => !kkm.hidden)
-
-  const needsFirmwareOrLicense = kkmCondition !== '' && kkmCondition !== 'new' && kkmType !== '' && kkmType !== 'evotor' && effectiveKkm !== 'sigma'
-  const fwPrices = effectiveKkm && firmwareLicensePrices[effectiveKkm] ? firmwareLicensePrices[effectiveKkm] : { firmware: 0, license: 0 }
-
-  // Сигма подписки: обязательна для новых касс, опциональна для старых/БУ
-  const sigmaSubsLocked = effectiveKkm === 'sigma' && kkmCondition === 'new'
-  const showSigmaSubs = effectiveKkm === 'sigma'
-
-  // Новая касса: ОФД обязательно, б/у и старые: по умолчанию включено, можно снять
-  const ofdLocked = kkmCondition === 'new' || kkmCondition === 'used'
-  const ofdEffective = ofdLocked || ofdChecked
-
-  // Валидация
-  const contactValid = isPhoneValid(clientData.phone)
-  // Для ВСЕХ касс: нужно выбрать вид деятельности (кроме уже работающих с маркировкой и кроме Сигмы)
-  const needsActivityType = kkmCondition !== '' && !alreadyMarking && effectiveKkm !== 'sigma'
-  const activityTypeReady = !needsActivityType || evotorTradeType !== 'none' || evotorAppsSelected.size > 0
-  const canGoStep2 = kkmType !== '' && kkmCondition !== '' && activityTypeReady
-  const canGoStep3 = step2Selections.length > 0
-
-  // --- Синхронизация торгового типа и приложений Эвотор ---
-  const handleEvotorTradeType = useCallback((tradeType: 'marking' | 'alcohol' | 'both') => {
-    setEvotorTradeType(tradeType)
-    setEvotorAppsSelected(prev => {
-      const next = new Set(prev)
-      // Добавляем обязательные приложения по типу торговли
-      if (tradeType === 'marking' || tradeType === 'both') {
-        next.add('marking')
-      } else {
-        next.delete('marking')
-      }
-      if (tradeType === 'alcohol' || tradeType === 'both') next.add('utm')
-      else next.delete('utm')
-      // Опциональные приложения (tobacco и др.) оставляем как были
-      return next
-    })
-  }, [])
-
-  const handleEvotorAppToggle = useCallback((appId: string) => {
-    setEvotorAppsSelected(prev => {
-      const next = new Set(prev)
-      if (next.has(appId)) next.delete(appId)
-      else next.add(appId)
-      // Обратная синхронизация типа торговли по выбранным приложениям
-      const hasMarking = next.has('marking') || next.has('tobacco')
-      const hasUtm = next.has('utm')
-      if (hasMarking && hasUtm) setEvotorTradeType('both')
-      else if (hasMarking) setEvotorTradeType('marking')
-      else if (hasUtm) setEvotorTradeType('alcohol')
-      else setEvotorTradeType('none')
-      return next
-    })
-  }, [])
-
-  // Автоматическая постановка галочек в step2 на основе состояния
-  useEffect(() => {
-    const isSmartTerminal = kkmType === 'evotor' || effectiveKkm === 'sigma'
-    const isPartialMode = alreadyMarking  // только если галочка «уже работаю» нажата
-    const isRegistrationMode = kkmCondition === 'old' && !alreadyMarking  // текущая касса, но нужно подключить маркировку
-
-    // Определяем наличие маркировки и алкоголя
-    let hasMarking = false
-    let hasAlcohol = false
-    if (isSmartTerminal) {
-      hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both' || evotorAppsSelected.has('marking') || evotorAppsSelected.has('tobacco')
-      hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || evotorAppsSelected.has('utm')
-    } else {
-      // Для не-смарт терминалов: используем выбранный вид деятельности
-      hasMarking = evotorTradeType === 'marking' || evotorTradeType === 'both'
-      hasAlcohol = evotorTradeType === 'alcohol' || evotorTradeType === 'both' || clientData.sellsExcise
-    }
-
-    // Авто-установка sellsExcise при выборе алкоголя (все типы касс)
-    if (hasAlcohol && !clientData.sellsExcise) {
-      setClientData(prev => ({ ...prev, sellsExcise: true }))
-    }
-
-    // Авто-установка unsureFnsRegistration при алкоголь/сигареты для текущих касс (partial)
-    if (isPartialMode && hasAlcohol && !unsureFnsRegistration) {
-      setUnsureFnsRegistration(true)
-    }
-
-    // Не-смарт терминал без маркировки/алкоголя — не ставим ничего автоматически
-    if (!isSmartTerminal && !hasMarking && !hasAlcohol && !isPartialMode && !isRegistrationMode) return
-
-    setStep2Selections(prev => {
-      const next = new Set(prev)
-
-      // ====== УЖЕ РАБОТАЕТ С МАРКИРОВКОЙ (галочка нажата) ======
-      if (isPartialMode) {
-        // Частичная настройка — клиент уже работает с маркировкой
-        next.delete('marking_setup')
-        if (!next.has('partial_marketing_setup')) next.add('partial_marketing_setup')
-
-        if (hasAlcohol) {
-          if (!next.has('fns_reregistration')) next.add('fns_reregistration')
-        } else {
-          if (!unsureFnsRegistration) next.delete('fns_reregistration')
-        }
-        return [...next]
-      }
-
-      // ====== ТЕКУЩАЯ КАССА: НУЖНО ПОДКЛЮЧИТЬ МАРКИРОВКУ ======
-      if (isRegistrationMode) {
-        next.delete('partial_marketing_setup')
-        // Полная маркировка включает регистрацию ККТ в ФНС — перерегистрация отдельно не нужна
-        if (!next.has('marking_setup')) next.add('marking_setup')
-        next.delete('fns_reregistration')
-        return [...next]
-      }
-
-      // ====== НОВАЯ / Б/У КАССА ======
-      // Убираем partial если ушли из режима «уже работает»
-      if (!isPartialMode) {
-        next.delete('partial_marketing_setup')
-      }
-
-      // Для новой/б/у кассы: полная маркировка обязательна (включает регистрацию ККТ в ФНС)
-      if (kkmCondition === 'new' || kkmCondition === 'used') {
-        // Регистрация ККТ теперь включена в marking_setup — не добавляем отдельно
-        next.delete('fns_reregistration')
-        // Полная маркировка — всегда для новой/б/у кассы
-        if (!next.has('marking_setup') && !next.has('partial_marketing_setup')) next.add('marking_setup')
-      }
-
-      return [...next]
-    })
-  }, [kkmType, effectiveKkm, evotorTradeType, evotorAppsSelected, kkmCondition, clientData.sellsExcise, alreadyMarking, unsureFnsRegistration])
-
-  const markingDesc = useMemo(() => {
-    const chestnyznakLink = <a href="https://честныйзнак.рф" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-slate-600 hover:text-[#1e3a5f] transition-colors">Честный ЗНАК<img src="/chestnyznak.png" alt="" className="w-3.5 h-3.5" /></a>
-    if (kkmType === 'evotor') return <>Связываем ЭДО, {chestnyznakLink}, кассу Эвотор, ТС ПИоТ и личный кабинет Эвотор в единую цепочку — от приёмки товара до пробития чека</>
-    return <>Связываем ЭДО, {chestnyznakLink}, Вашу кассу и ТС ПИоТ в единую цепочку — от приёмки товара до пробития чека</>
-  }, [kkmType])
-
-  const totalCalc = useMemo((): TotalCalc => {
-    const items: { name: string; price: number }[] = []
-
-    step2Services.forEach(s => {
-      if (step2Selections.includes(s.id)) {
-        const displayName = s.id === 'fns_reregistration' && (kkmCondition === 'new' || kkmCondition === 'used')
-          ? 'Регистрация ККТ в ФНС'
-          : s.name
-        items.push({ name: displayName, price: s.price })
-      }
-    })
-
-    step3Services.forEach(s => {
-      if (step3Selections.includes(s.id)) {
-        if (s.id === 'training') items.push({ name: s.name, price: s.price * trainingHours })
-        else items.push({ name: s.name, price: s.price })
-      }
-    })
-
-    // ФН — фискальный накопитель
-    if (fnChecked) {
-      items.push({ name: `Фискальный накопитель (ФН) — ${fnPeriod === '15' ? '15' : '36'} мес. (вид: ${fnActivityType === 'general' ? 'общая торговля' : 'подакцизная продукция'}) — цена уточняется менеджером`, price: 0 })
-    }
-
-    // ОФД
-    if (ofdEffective) {
-      const provider = OFD_PROVIDERS.find(p => p.id === ofdProvider) || OFD_PROVIDERS[0]
-      const periodInfo = provider.periods[ofdPeriod]
-      items.push({ name: `${provider.name} — договор на ${ofdPeriod === '15' ? '15' : '36'} мес.`, price: periodInfo.price })
-    }
-
-    if (scannerChecked) items.push({ name: 'Сканер 2D для считывания кодов маркировки', price: scannerPrices[effectiveKkm] })
-    if (firmwareChecked) items.push({ name: 'Обновление программного обеспечения кассы', price: fwPrices.firmware })
-    if (licenseChecked) items.push({ name: 'Лицензия на ПО кассы', price: fwPrices.license })
-    if (evotorRestore) items.push({ name: 'Восстановление доступа к ЛК Эвотор', price: 500 })
-
-    if (productCardCount > 0) {
-      const p = getProductCardPrice(productCardCount)
-      items.push({ name: `Создание карточек товаров (${productCardCount} шт.)`, price: p * productCardCount })
-    }
-
-    // Договор обслуживания
-    if (serviceContractChecked) {
-      if (serviceContractPeriod === 'month') {
-        items.push({ name: 'Договор обслуживания — помесячная оплата', price: 1000 })
-      } else {
-        items.push({ name: 'Договор обслуживания — подписка на 12 месяцев', price: 10000 })
-      }
-    }
-
-    // Сигма — помощь с оформлением тарифа и восстановлением доступа к кабинету
-    if (effectiveKkm === 'sigma' && sigmaHelpChecked) {
-      items.push({ name: 'Оформление тарифа Сигма + восстановление доступа к кабинету', price: 500 })
-    }
-
-    return { items, total: items.reduce((sum, i) => sum + i.price, 0) }
-  }, [step2Selections, step3Selections, scannerChecked, firmwareChecked, licenseChecked, evotorRestore, productCardCount, trainingHours, effectiveKkm, fwPrices, kkmCondition, ofdEffective, ofdPeriod, ofdProvider, fnChecked, fnPeriod, fnActivityType, evotorAppsSelected, sigmaHelpChecked, serviceContractChecked, serviceContractPeriod])
-
-  // Надёжный скролл наверх: работает на мобиле и ПК
-  const smoothScrollToTop = useCallback(() => {
-    const el = mainRef.current
-    if (!el) { window.scrollTo({ top: 0, behavior: 'smooth' }); return }
-    const top = el.getBoundingClientRect().top + window.scrollY
-    window.scrollTo({ top, behavior: 'smooth' })
-    // Фоллбэк для iOS Safari — принудительный скролл через 300мс
-    setTimeout(() => {
-      const top2 = el.getBoundingClientRect().top + window.scrollY
-      if (Math.abs(window.scrollY - top2) > 10) {
-        window.scrollTo({ top: top2, behavior: 'auto' })
-      }
-    }, 350)
-  }, [])
-
-  const goToStep = (step: Step) => {
-    // Назад — всегда можно на любой предыдущий шаг
-    if (step < currentStep) {
-      setCurrentStep(step)
-      setIsDone(false)
-      ;(document.activeElement as HTMLElement)?.blur()
-      setTimeout(smoothScrollToTop, 50)
-      return
-    }
-    // Вперёд — только на следующий шаг (+1), нельзя перепрыгивать
-    if (step !== currentStep + 1) return
-    // Проверяем минимальные требования ТЕКУЩЕГО шага
-    if (currentStep === 1 && !canGoStep2) return
-    if (currentStep === 2 && !canGoStep3) return
-    if (currentStep === 3) {
-      if (step2Selections.length === 0) return
-      if (!contactValid) return
-    }
-    setCurrentStep(step)
-    setIsDone(false)
-    ;(document.activeElement as HTMLElement)?.blur()
-    setTimeout(smoothScrollToTop, 50)
-  }
-
-  // Сброс торгового типа при смене типа кассы или состояния
-  useEffect(() => {
-    setEvotorTradeType('none')
-    setEvotorAppsSelected(new Set())
-    setEvotorHasSubscription(false)
-    // Для б/у касс — сбрасываем ОФД на Такском
-    if (kkmCondition === 'used' && ofdProvider !== 'takskom') setOfdProvider('takskom')
-  }, [kkmType, kkmCondition])
-
-  // ---- Печать ----
-  const handlePrint = () => {
-    const printContent = generateOrderHtml({
-      effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-      step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-      includeChecklist: false,
-      isConsultation
-    })
-    const printWithScript = printContent.replace('</body>', '<script>window.print();</script></body>')
-    const w = window.open('', '_blank')
-    if (w) { w.document.write(printWithScript); w.document.close() }
-  }
-
-  // ---- Готово ----
-  const handleDone = () => {
-    // Консультация — всегда новая заявка, не корректировка
-    if (isConsultation) {
-      setOrderNum(Date.now().toString().slice(-6))
-      setIsCorrection(false)
-    } else if (orderNum) {
-      setIsCorrection(true)
-    } else {
-      setOrderNum(Date.now().toString().slice(-6))
-      setIsCorrection(false)
-    }
-    setIsDone(true)
-    ;(document.activeElement as HTMLElement)?.blur()
-    setTimeout(smoothScrollToTop, 50)
-  }
-
-  // ---- Консультация (без выбора услуг) ----
-  const startConsultation = () => {
-    setIsConsultation(true)
-    setIsDone(false)
-    if (!orderNum) setOrderNum(Date.now().toString().slice(-6))
-    ;(document.activeElement as HTMLElement)?.blur()
-    setTimeout(smoothScrollToTop, 50)
-  }
-
-  // ---- Полный сброс ----
-  const handleReset = () => {
-    // Шаг 1 — касса
-    setKkmType('' as KkmType); setKkmCondition('' as KkmCondition); setSigmaSelected(false);
-    setEvotorTradeType('none'); setEvotorAppsSelected(new Set()); setEvotorHasSubscription(false);
-    setAlreadyMarking(false); setUnsureFnsRegistration(false);
-    // Шаг 2 — услуги
-    setStep2Selections([]); setOfdChecked(false); setOfdPeriod('15'); setOfdProvider('takskom');
-    // Шаг 3 — дополнительно
-    setStep3Selections([]); setScannerChecked(false); setProductCardCount(0); setTrainingHours(1);
-    setFirmwareChecked(false); setLicenseChecked(false); setEvotorRestore(false);
-    setSigmaHelpChecked(false); setOfdChecked(false); setFnChecked(false);
-    setFnPeriod('15'); setFnActivityType('general');
-    setServiceContractChecked(false); setServiceContractPeriod('month');
-    // Клиентские данные
-    setClientData({ name: '', inn: '', phone: '', email: '', address: '', kkmModel: '', kkmNumber: '', fnNumber: '', comment: '', evotorLogin: '', evotorPassword: '', hasEcp: false, fnActivityType: '', sellsExcise: false });
-    // Общее
-    setCurrentStep(1); setIsDone(false); setOrderNum(null); setIsCorrection(false); setIsConsultation(false); window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  // ===================================================================
-  // Консультация: подмена totalCalc
-  const consultationCalc = useMemo((): TotalCalc => ({
-    items: [{ name: 'Консультация по вашей кассе', price: 0 }],
-    total: 0
-  }), [])
+export default function HomePage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   return (
-    <div className="bg-gradient-to-br from-[#f0f4f8] to-[#e8ecf2] flex flex-col relative">
-        <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
-@keyframes greenPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 70% { box-shadow: 0 0 0 12px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
-@keyframes greenSlideIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.animate-green-pulse { animation: greenPulse 1.5s ease-out 2; }
-.animate-green-slide { animation: greenSlideIn 0.4s ease-out forwards; opacity: 0; }
-[data-slot=checkbox]{width:34px;height:34px;min-width:34px;min-height:34px;border:2.5px solid #334155;border-radius:8px;cursor:pointer;transition:all .15s ease;margin-top:0;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-[data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
-[data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
-[data-slot=checkbox][data-state=checked]:hover{background-color:#162d4a}
-[data-slot=radio-group-item]{border:2.5px solid #334155;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-[data-slot=radio-group-item]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
-[data-slot=radio-group-item][data-state=checked]{border-color:#1e3a5f;background:#fff}
-.space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
-        <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
+    <div className="flex flex-col min-h-screen">
+      {/* CSS-only fade-in-up animations */}
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .anim-fade-in-up {
+          opacity: 0;
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+        .anim-delay-1 { animation-delay: 0.1s; }
+        .anim-delay-2 { animation-delay: 0.2s; }
+        .anim-delay-3 { animation-delay: 0.3s; }
+        .anim-delay-4 { animation-delay: 0.4s; }
+        .anim-delay-5 { animation-delay: 0.5s; }
+        .anim-delay-6 { animation-delay: 0.6s; }
+      `}</style>
 
-          <h1 className="sr-only">Калькулятор маркировки товаров в Санкт-Петербурге — расчёт стоимости за 2 минуты | Теллур-Интех</h1>
-          <div className="mt-1 sm:mt-2">
+      {/* ================================================================== */}
+      {/* HERO SECTION */}
+      {/* ================================================================== */}
+      <section className="relative bg-gradient-to-br from-[#1e3a5f] via-[#2a5080] to-[#1e3a5f] overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[#e8a817]/10 blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full bg-white/5 blur-3xl" />
+        </div>
 
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 md:py-28 text-center">
+          <div className="anim-fade-in-up">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-white/90 text-xs sm:text-sm font-medium mb-6">
+              <Star className="w-3.5 h-3.5 text-[#e8a817]" />
+              Центр технического обслуживания кассового оборудования
+            </span>
+          </div>
 
-            {/* STEP INDICATOR */}
-            {!isConsultation && (
-            <div className="max-w-lg mx-auto mb-3 sm:mb-5">
-              <div className="flex items-center">
-                {[
-                  { num: 1, label: 'Касса' },
-                  { num: 2, label: 'Услуги' },
-                  { num: 3, label: 'Дополнительно' },
-                  { num: 4, label: 'Готово' }
-                ].map((step, idx) => {
-                  const isActive = currentStep === step.num || (isDone && step.num === 4)
-                  const isVisited = isDone || currentStep > step.num
-                  const isForward = step.num > currentStep
-                  const isNextStep = step.num === currentStep + 1
-                  // Назад — всегда можно. Вперёд — только на следующий (+1) и только если текущий шаг заполнен
-                  const canGoNext =
-                    (currentStep === 1 && canGoStep2) ||
-                    (currentStep === 2 && canGoStep3) ||
-                    (currentStep === 3 && step2Selections.length > 0 && contactValid)
-                  const isDisabled = isDone || (isForward && !(isNextStep && canGoNext))
+          <h1 className="anim-fade-in-up anim-delay-1 text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] font-extrabold text-white leading-tight mb-4 sm:mb-6">
+            Поддержка пользователей ККТ
+          </h1>
+
+          <p className="anim-fade-in-up anim-delay-2 text-base sm:text-lg md:text-xl text-white/75 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+            Центр технического обслуживания кассового оборудования&nbsp;— ООО&nbsp;«Теллур-Интех»
+          </p>
+
+          <div className="anim-fade-in-up anim-delay-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Link
+              href="/kalkulyatory/markirovka"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 bg-[#e8a817] hover:bg-[#d49a12] text-white text-base sm:text-lg font-bold rounded-xl transition-all shadow-lg shadow-[#e8a817]/25 hover:shadow-xl hover:shadow-[#e8a817]/35 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Calculator className="w-5 h-5" />
+              Рассчитать стоимость маркировки
+            </Link>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('open-chat'))}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 bg-white/15 hover:bg-white/25 text-white text-base sm:text-lg font-medium rounded-xl transition-all border border-white/20 hover:border-white/30"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Задать вопрос
+            </button>
+            <a
+              href="tel:+78124659457"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 bg-white/10 hover:bg-white/20 text-white text-base sm:text-lg font-medium rounded-xl transition-all border border-white/15 hover:border-white/25"
+            >
+              <Phone className="w-5 h-5" />
+              Позвонить
+            </a>
+          </div>
+        </div>
+
+        {/* Wave divider */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+            <path d="M0 60V30C240 0 480 0 720 30C960 60 1200 60 1440 30V60H0Z" fill="white" />
+          </svg>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* ДИАГНОСТИКА + КАЛЬКУЛЯТОР — единая воронка */}
+      {/* ================================================================== */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="anim-fade-in-up anim-delay-1 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-[#e8a817]/20 p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="w-14 h-14 shrink-0 rounded-2xl bg-[#e8a817]/10 flex items-center justify-center">
+              <ShieldCheck className="w-7 h-7 text-[#e8a817]" />
+            </div>
+            <div className="flex-1 text-center sm:text-left min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] mb-1">
+                Проверьте, правильно ли работает ваша маркировка
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                8 простых вопросов — узнайте, где в цепочке могут быть проблемы. Без терминов, за 3 минуты.
+                <span className="hidden sm:inline"> Потом рассчитайте стоимость решения в калькуляторе.</span>
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/diagnostika"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-[#e8a817]/20 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Начать проверку
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/kalkulyatory/markirovka"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border-2 border-[#1e3a5f]/20 text-[#1e3a5f] text-sm font-semibold rounded-xl hover:bg-[#1e3a5f] hover:text-white hover:border-[#1e3a5f] transition-all"
+              >
+                <Calculator className="w-4 h-4" />
+                Калькулятор
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* QUICK CALCULATOR CARDS */}
+      {/* ================================================================== */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="anim-fade-in-up anim-delay-2 text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f]">
+            Калькуляторы стоимости
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-500">
+            Рассчитайте точную стоимость услуг за 2 минуты
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+          {CALCULATORS.map((calc, idx) => (
+            <Link
+              key={idx}
+              href={calc.active ? calc.href : '#'}
+              className={`anim-fade-in-up anim-delay-${idx + 3} group relative bg-white rounded-2xl border-2 p-5 sm:p-6 transition-all duration-300 hover:shadow-lg ${
+                calc.active
+                  ? 'border-[#e8a817]/40 hover:border-[#e8a817] shadow-md'
+                  : 'border-slate-100 hover:border-slate-200'
+              } ${!calc.active ? 'pointer-events-none' : ''}`}
+            >
+              {/* Gold badge for active */}
+              {calc.active && (
+                <div className="absolute -top-3 left-5">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#e8a817] text-white text-[10px] sm:text-xs font-bold shadow-md shadow-[#e8a817]/30">
+                    <CheckCircle className="w-3 h-3" />
+                    Работает
+                  </span>
+                </div>
+              )}
+
+              {/* Coming soon badge */}
+              {!calc.active && (
+                <div className="absolute -top-3 left-5">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-200 text-slate-500 text-[10px] sm:text-xs font-bold">
+                    Скоро
+                  </span>
+                </div>
+              )}
+
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                calc.active
+                  ? 'bg-[#e8a817]/10 text-[#e8a817]'
+                  : 'bg-slate-100 text-slate-400'
+              }`}>
+                <Calculator className="w-6 h-6" />
+              </div>
+
+              <h3 className={`text-base sm:text-lg font-bold mb-2 ${
+                calc.active ? 'text-[#1e3a5f]' : 'text-slate-500'
+              }`}>
+                {calc.title}
+              </h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-4">
+                {calc.desc}
+              </p>
+
+              {calc.active && (
+                <span className={`inline-flex items-center gap-1.5 text-sm font-semibold ${
+                  calc.active ? 'text-[#e8a817] group-hover:gap-2.5' : ''
+                } transition-all`}>
+                  {calc.price && <span>{calc.price}</span>}
+                  Открыть <ArrowRight className="w-4 h-4" />
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* TRUST / STATS SECTION */}
+      {/* ================================================================== */}
+      <section className="bg-gradient-to-r from-[#1e3a5f] to-[#2a5080]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+            {STATS.map((stat, idx) => (
+              <div key={idx} className="text-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/10 flex items-center justify-center">
+                  {idx === 0 && <Clock className="w-6 h-6 text-[#e8a817]" />}
+                  {idx === 1 && <Wrench className="w-6 h-6 text-[#e8a817]" />}
+                  {idx === 2 && <Users className="w-6 h-6 text-[#e8a817]" />}
+                  {idx === 3 && <ShieldCheck className="w-6 h-6 text-[#e8a817]" />}
+                </div>
+                <p className="text-2xl sm:text-3xl font-extrabold text-white">{stat.value}</p>
+                <p className="text-xs sm:text-sm text-white/60 mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* SERVICES PREVIEW */}
+      {/* ================================================================== */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f]">
+            Наши услуги
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-500 max-w-xl mx-auto">
+            Полный спектр услуг по обслуживанию кассового оборудования
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          {SERVICES.map((service, idx) => (
+            <Link
+              key={idx}
+              href={service.href}
+              className="group bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all duration-300"
+            >
+              <div className="flex items-start gap-3.5 mb-3">
+                <div className="w-11 h-11 rounded-xl bg-[#1e3a5f]/5 flex items-center justify-center text-[#1e3a5f] shrink-0 group-hover:bg-[#1e3a5f]/10 transition-colors">
+                  {service.icon}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-base font-bold text-[#1e3a5f] leading-snug group-hover:text-[#e8a817] transition-colors">
+                    {service.title}
+                  </h3>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-300 shrink-0 group-hover:text-[#1e3a5f] group-hover:translate-x-1 transition-all ml-auto" />
+              </div>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                {service.desc}
+              </p>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/services"
+            className="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-[#1e3a5f]/20 text-[#1e3a5f] text-sm font-semibold rounded-xl hover:bg-[#1e3a5f] hover:text-white hover:border-[#1e3a5f] transition-all"
+          >
+            Все услуги
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* FAQ + USEFUL SECTION */}
+      {/* ================================================================== */}
+      <section className="bg-[#f8fafc]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
+            {/* FAQ */}
+            <div>
+              <div className="flex items-center gap-2 mb-5">
+                <HelpCircle className="w-5 h-5 text-[#e8a817]" />
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f]">
+                  Частые вопросы
+                </h2>
+              </div>
+              <div className="space-y-3">
+                {FAQ_ITEMS.map((item, idx) => {
+                  const isOpen = openFaq === idx
                   return (
-                    <React.Fragment key={step.num}>
-                      <div className="flex flex-col items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isDisabled) return
-                            goToStep(step.num as Step)
-                          }}
-                          disabled={isDisabled}
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0 ${isVisited && !isActive ? 'bg-[#1e3a5f] text-white shadow-md cursor-pointer hover:bg-[#1e3a5f]/90' : isActive ? 'bg-[#e8a817] text-white ring-4 ring-[#e8a817]/20 shadow-md' : isDisabled ? 'bg-white border-2 border-slate-200 text-slate-300 cursor-not-allowed opacity-50' : 'bg-white border-2 border-slate-300 text-slate-500 cursor-pointer hover:border-[#1e3a5f] hover:text-[#1e3a5f]'}`}
-                        >
-                          {isVisited && !isActive ? <Check className="w-4 h-4" /> : step.num}
-                        </button>
-                        <span className={`text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${isActive ? 'text-[#1e3a5f] font-bold' : isVisited ? 'text-[#1e3a5f]/70' : isDisabled ? 'text-slate-300' : 'text-slate-500'}`}>{step.label}</span>
-                      </div>
-                      {idx < 3 && (
-                        <div className={`flex-1 h-1 rounded-full transition-colors duration-300 mx-1 ${isVisited || (step.num === currentStep) ? 'bg-[#1e3a5f]' : 'bg-slate-200'}`} />
+                    <div
+                      key={idx}
+                      className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(isOpen ? null : idx)}
+                        className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-slate-50/50 transition-colors w-full text-left"
+                      >
+                        <h3 className="text-sm font-semibold text-[#1e3a5f] pr-4 leading-snug">{item.q}</h3>
+                        <ChevronRight className={`w-4 h-4 text-slate-300 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+                      </button>
+                      {isOpen && (
+                        <div className="px-4 pb-3.5">
+                          <p className="text-sm text-slate-600 leading-relaxed">{item.a}</p>
+                        </div>
                       )}
-                    </React.Fragment>
+                    </div>
                   )
                 })}
               </div>
+              <Link
+                href="/faq"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#e8a817] hover:text-[#d49a12] transition-colors"
+              >
+                Все вопросы <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-            )}
 
-            {/* ============================================================ */}
-            {/* ВЫБОР КАССЫ */}
-            {/* ============================================================ */}
-            {currentStep === 1 && !isDone && !isConsultation && (
-              <StepBrands
-                kkmType={kkmType}
-                kkmCondition={kkmCondition}
-                sigmaSelected={sigmaSelected}
-                evotorTradeType={evotorTradeType}
-                evotorAppsSelected={evotorAppsSelected}
-                evotorHasSubscription={evotorHasSubscription}
-                conditionFlash={conditionFlash}
-                conditionRef={conditionRef}
-                currentKkmInfo={currentKkmInfo}
-                visibleKkmTypes={visibleKkmTypes}
-                effectiveKkm={effectiveKkm}
-                showSigmaSubs={showSigmaSubs}
-                sigmaSubsLocked={sigmaSubsLocked}
-                needsFirmwareOrLicense={needsFirmwareOrLicense}
-                fwPrices={fwPrices}
-                canGoStep2={canGoStep2}
-                sigmaHelpChecked={sigmaHelpChecked}
-                firmwareChecked={firmwareChecked}
-                licenseChecked={licenseChecked}
-                effectiveKkmInfo={effectiveKkmInfo}
-                alreadyMarking={alreadyMarking}
-                setAlreadyMarking={setAlreadyMarking}
-                setKkmType={(v) => {
-                  if (!kkmCondition) {
-                    setConditionFlash(true)
-                    conditionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    setTimeout(() => setConditionFlash(false), 2000)
-                    return
-                  }
-                  setKkmType(v); if (v !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) }
-                }}
-                setKkmCondition={setKkmCondition}
-                setSigmaSelected={setSigmaSelected}
-                setSigmaHelpChecked={setSigmaHelpChecked}
-                setEvotorTradeType={setEvotorTradeType}
-                setEvotorHasSubscription={setEvotorHasSubscription}
-                setEvotorAppsSelected={setEvotorAppsSelected}
-                setScannerChecked={setScannerChecked}
-                setFirmwareChecked={setFirmwareChecked}
-                setLicenseChecked={setLicenseChecked}
-                handleEvotorTradeType={handleEvotorTradeType}
-                handleEvotorAppToggle={handleEvotorAppToggle}
-                hintProps={hintProps}
-                goToStep={goToStep}
-                startConsultation={startConsultation}
-              />
-            )}
-
-            {/* ============================================================ */}
-            {/* УСЛУГИ */}
-            {/* ============================================================ */}
-            {currentStep === 2 && !isDone && !isConsultation && (
-              <StepServices
-                kkmCondition={kkmCondition}
-                kkmType={kkmType}
-                step2Selections={step2Selections}
-                markingDesc={markingDesc}
-                clientData={clientData}
-                ofdChecked={ofdChecked}
-                ofdPeriod={ofdPeriod}
-                ofdProvider={ofdProvider}
-                ofdLocked={ofdLocked}
-                ofdEffective={ofdEffective}
-                unsureFnsRegistration={unsureFnsRegistration}
-                alreadyMarking={alreadyMarking}
-                canGoStep3={canGoStep3}
-                setStep2Selections={setStep2Selections}
-                setOfdChecked={setOfdChecked}
-                setOfdPeriod={setOfdPeriod}
-                setOfdProvider={setOfdProvider}
-                setClientData={setClientData}
-                setUnsureFnsRegistration={setUnsureFnsRegistration}
-                hintProps={hintProps}
-                goToStep={goToStep}
-                setCurrentStep={setCurrentStep}
-                mainRef={mainRef}
-              />
-            )}
-
-            {/* ============================================================ */}
-            {/* ДОПОЛНИТЕЛЬНО */}
-            {/* ============================================================ */}
-            {currentStep === 3 && !isDone && !isConsultation && (
-              <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
-                <StepExtra
-                  kkmType={kkmType}
-                  kkmCondition={kkmCondition}
-                  effectiveKkm={effectiveKkm}
-                  step3Selections={step3Selections}
-                  scannerChecked={scannerChecked}
-                  fnChecked={fnChecked}
-                  productCardCount={productCardCount}
-                  trainingHours={trainingHours}
-                  serviceContractChecked={serviceContractChecked}
-                  serviceContractPeriod={serviceContractPeriod}
-                  evotorRestore={evotorRestore}
-                  fnPeriod={fnPeriod}
-                  fnActivityType={fnActivityType}
-                  clientData={clientData}
-                  totalCalc={totalCalc}
-                  setStep3Selections={setStep3Selections}
-                  setScannerChecked={setScannerChecked}
-                  setFnChecked={setFnChecked}
-                  setFnPeriod={setFnPeriod}
-                  setFnActivityType={setFnActivityType}
-                  setProductCardCount={setProductCardCount}
-                  setTrainingHours={setTrainingHours}
-                  setServiceContractChecked={setServiceContractChecked}
-                  setServiceContractPeriod={setServiceContractPeriod}
-                  setEvotorRestore={setEvotorRestore}
-                  setClientData={setClientData}
-                  hintProps={hintProps}
-                  setCurrentStep={setCurrentStep}
-                  mainRef={mainRef}
-                  setIsDone={setIsDone}
-                  handleReset={handleReset}
-                  handleDone={handleDone}
-                />
-                <StepSummary
-                  totalCalc={totalCalc}
-                  effectiveKkm={effectiveKkm}
-                  effectiveKkmInfo={effectiveKkmInfo}
-                  kkmType={kkmType}
-                />
+            {/* Useful */}
+            <div>
+              <div className="flex items-center gap-2 mb-5">
+                <FileText className="w-5 h-5 text-[#e8a817]" />
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#1e3a5f]">
+                  Полезное
+                </h2>
               </div>
-            )}
-
-            {/* ============================================================ */}
-            {/* КОНСУЛЬТАЦИЯ — форма заявки */}
-            {/* ============================================================ */}
-            {isConsultation && !isDone && (
-              <div className="max-w-2xl mx-auto space-y-3">
-                <Card className="border-[#1e3a5f]/20 overflow-hidden">
-                  <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] px-4 sm:px-5 py-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-                        <MessageSquare className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-white font-extrabold text-base sm:text-lg leading-tight">Консультация по вашей кассе</h3>
-                        <p className="text-white/70 text-xs sm:text-sm mt-1">Менеджер перезвонит и поможет подобрать решение</p>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-4 sm:p-5 space-y-3">
-                    <div>
-                      <Label className="text-xs font-semibold text-slate-700">Как к вам обращаться? <span className="text-red-500">*</span></Label>
-                      <Input value={clientData.name} onChange={(e) => setClientData({ ...clientData, name: e.target.value })} placeholder="ИП Иванов или ООО «Ромашка»" className="mt-1.5 text-sm h-11" autoComplete="name" />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-semibold text-slate-700">Телефон <span className="text-red-500">*</span></Label>
-                      <Input type="tel" value={clientData.phone} onChange={(e) => setClientData({ ...clientData, phone: formatPhone(e.target.value) })} placeholder="+7 (___) ___-__-__" className="mt-1.5 text-sm h-11" maxLength={18} autoComplete="tel" inputMode="tel" />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-semibold text-slate-700">Модель кассы <span className="text-red-500">*</span></Label>
-                      <Input value={clientData.kkmModel} onChange={(e) => setClientData({ ...clientData, kkmModel: e.target.value })} placeholder="Например: Меркурий 185Ф, Атол 90Ф..." className="mt-1.5 text-sm h-11" autoComplete="off" />
-                      <p className="text-[11px] text-slate-400 mt-1">Найдите на корпусе кассы или в чеке</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs font-semibold text-slate-700">Опишите проблему</Label>
-                      <Input value={clientData.comment} onChange={(e) => setClientData({ ...clientData, comment: e.target.value })} placeholder="Что случилось с кассой или что нужно настроить" className="mt-1.5 text-sm h-11" autoComplete="off" />
-                    </div>
-                    <Button
-                      className={`w-full py-4 sm:py-5 text-base sm:text-lg font-bold transition-all ${clientData.name.trim() !== '' && isPhoneValid(clientData.phone) && clientData.kkmModel.trim() !== '' ? 'bg-[#e8a817] hover:bg-[#d49a12] hover:shadow-lg hover:shadow-[#e8a817]/20 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
-                      size="lg"
-                      disabled={clientData.name.trim() === '' || !isPhoneValid(clientData.phone) || clientData.kkmModel.trim() === ''}
-                      onClick={handleDone}
+              {ARTICLES.length > 0 ? (
+                <div className="space-y-3">
+                  {ARTICLES.map((article, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/instructions/${article.slug}`}
+                      className="group block bg-white rounded-xl border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all"
                     >
-                      <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                      Отправить заявку
-                    </Button>
-                    <p className="text-[10px] sm:text-xs text-slate-400 text-center">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
-                  </CardContent>
-                </Card>
-                <Button variant="outline" className="w-full text-xs" onClick={handleReset}>Сбросить</Button>
-              </div>
-            )}
-
-            {/* ГОТОВО */}
-            {isDone && (
-              <DoneScreen
-                effectiveKkmInfo={effectiveKkmInfo}
-                kkmCondition={kkmCondition}
-                clientData={clientData}
-                totalCalc={isConsultation ? consultationCalc : totalCalc}
-                onBack={isConsultation ? handleReset : () => { setIsDone(false); setTimeout(smoothScrollToTop, 50) }}
-                onPrint={handlePrint}
-                onClose={handleReset}
-                kkmType={kkmType}
-                effectiveKkm={effectiveKkm}
-                step2Selections={step2Selections}
-                step3Selections={step3Selections}
-                scannerChecked={scannerChecked}
-                fnChecked={fnChecked}
-                productCardCount={productCardCount}
-                serviceContractChecked={serviceContractChecked}
-                evotorRestore={evotorRestore}
-                sigmaHelpChecked={sigmaHelpChecked}
-                orderNum={orderNum}
-                isCorrection={isCorrection}
-                unsureFnsRegistration={unsureFnsRegistration}
-                isConsultation={isConsultation}
-              />
-            )}
-          </div>
-        </main>
-
-        {/* SEO-контент для поисковых систем — ниже калькулятора */}
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-4 sm:pb-6">
-          <SeoContent />
-        </div>
-
-
-
-        {/* FAB — «Перезвоните мне!» — нижний центр, на всех шагах */}
-        {!isDone && !isConsultation && (
-          <>
-            {showConsultSlide && (
-              <div className="fixed inset-0 bg-black/25 z-40" onClick={() => setShowConsultSlide(false)} />
-            )}
-            <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center px-20 sm:px-4 pb-3 sm:pb-5 pointer-events-none">
-              <div className={`transition-all duration-300 origin-bottom-center mb-3 pointer-events-auto ${showConsultSlide ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'}`}>
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#e8a817]/30 p-5 sm:p-7 w-full max-w-md">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e8a817] to-[#d49a12] flex items-center justify-center shrink-0 shadow-lg shadow-[#e8a817]/30">
-                      <Phone className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-extrabold text-lg sm:text-xl text-[#1e3a5f] leading-tight">Перезвоните мне!</p>
-                      <p className="text-sm text-slate-500 mt-0.5">Оставьте телефон — мы вам поможем</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-600 leading-relaxed mb-4">Не хотите разбираться в калькуляторе или не нашли свою кассу в списке? Менеджер перезвонит за <span className="font-bold text-[#e8a817]">15 минут</span>, поможет подобрать решение и рассчитает стоимость.</p>
-                  <button
-                    type="button"
-                    onClick={() => { setShowConsultSlide(false); startConsultation() }}
-                    className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-[#e8a817] to-[#d49a12] hover:from-[#d49a12] hover:to-[#c08b0d] text-white text-base sm:text-lg font-bold rounded-xl transition-all shadow-lg shadow-[#e8a817]/25 hover:shadow-xl hover:shadow-[#e8a817]/30 active:scale-[0.98]"
-                  >
-                    Оставить телефон
-                  </button>
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#1e3a5f] to-[#2a5080] flex items-center justify-center text-white shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-bold text-[#1e3a5f] group-hover:text-[#e8a817] transition-colors leading-snug">
+                            {article.title}
+                          </h3>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <span className="text-xs text-slate-400">{article.category}</span>
+                            <span className="text-xs text-slate-400">·</span>
+                            <span className="text-xs text-slate-400">{article.readingTime} мин чтения</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-slate-100 p-6 text-center">
+                  <p className="text-sm text-slate-400">Статьи скоро появятся</p>
+                </div>
+              )}
+              <Link
+                href="/instructions"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#e8a817] hover:text-[#d49a12] transition-colors"
+              >
+                База знаний <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* CTA BOTTOM */}
+      {/* ================================================================== */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="bg-gradient-to-br from-[#1e3a5f] to-[#2a5080] rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-center relative overflow-hidden">
+          {/* Decorative circles */}
+          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#e8a817]/10 blur-2xl" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/5 blur-2xl" />
+
+          <div className="relative">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white mb-3">
+              Нужна помощь?
+            </h2>
+            <p className="text-white/70 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed">
+              Позвоните или напишите нам — подключим маркировку под ключ, ответим на вопросы, поможем с кассой
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6">
+              <a
+                href="tel:+78124659457"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#e8a817]/25"
+              >
+                <Phone className="w-5 h-5" />
+                +7 (812) 465-94-57
+              </a>
+              <a
+                href="tel:+78123210606"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/15 hover:bg-white/25 text-white font-medium rounded-xl transition-colors border border-white/15"
+              >
+                <Phone className="w-5 h-5" />
+                +7 (812) 321-06-06
+              </a>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowConsultSlide(v => !v)}
-                className="pointer-events-auto w-full max-w-sm sm:max-w-md flex items-center justify-center gap-2.5 py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#e8a817] to-[#d49a12] hover:from-[#d49a12] hover:to-[#c08b0d] text-white shadow-xl shadow-[#e8a817]/30 hover:shadow-2xl hover:shadow-[#e8a817]/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                onClick={() => window.dispatchEvent(new Event('open-chat'))}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-[#1e3a5f] font-bold rounded-xl transition-colors shadow-md"
               >
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                <span className="font-bold text-base sm:text-lg">Перезвоните мне!</span>
-                {showConsultSlide ? <X className="w-5 h-5 sm:w-6 sm:h-6 ml-1 shrink-0" /> : null}
+                <MessageCircle className="w-5 h-5" />
+                Открыть чат
               </button>
+              <a
+                href="mailto:push@tellur.spb.ru"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-white/80 hover:text-white text-sm font-medium transition-colors"
+              >
+                push@tellur.spb.ru
+              </a>
             </div>
-          </>
-        )}
-
-      </div>
+          </div>
+        </div>
+      </section>
+    </div>
   )
 }

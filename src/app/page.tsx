@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Calculator, MessageCircle, Phone, ArrowRight, Clock, ShieldCheck,
   Monitor, Tag, ChevronRight, FileText, HelpCircle,
-  CheckCircle, Star, Building2, Users, Wrench, Footprints, Package, QrCode
+  CheckCircle, Star, Building2, Users, Wrench, Footprints, Package, QrCode, Shirt
 } from 'lucide-react'
 
 // ============================================================================
@@ -381,7 +381,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
           {[
-            { href: '/markirovka-odezhdy', icon: <Tag className="w-6 h-6" />, title: 'Маркировка одежды', desc: 'Обязательна с 2021 года. Data Matrix коды на все товары лёгкой промышленности.' },
+            { href: '/markirovka-odezhdy', icon: <Shirt className="w-6 h-6" />, title: 'Маркировка одежды', desc: 'Обязательна с 2021 года. Data Matrix коды на все товары лёгкой промышленности.' },
             { href: '/markirovka-obuvi', icon: <Footprints className="w-6 h-6" />, title: 'Маркировка обуви', desc: 'Обязательна с 2020 года. Коды на каждую пару, сканирование при продаже.' },
             { href: '/markirovka-tabaka', icon: <Package className="w-6 h-6" />, title: 'Маркировка табака', desc: 'Обязательна с 2019 года. Одна из первых категорий, ФН на 36 месяцев.' },
           ].map((cat, idx) => (

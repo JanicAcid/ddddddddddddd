@@ -786,10 +786,10 @@ export function ChatWidget() {
         )}
       </div>
 
-      {/* Floating Toggle Button */}
+      {/* Floating Toggle Button — скрыт на мобильных (кнопка чата в шапке) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        className="hidden sm:flex w-14 h-14 rounded-full items-center justify-center shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
         style={{ backgroundColor: '#1e3a5f' }}
         aria-label={isOpen ? 'Закрыть чат' : 'Открыть чат'}
       >

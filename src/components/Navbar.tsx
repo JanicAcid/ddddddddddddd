@@ -114,6 +114,16 @@ export function Navbar() {
                 <Phone className="w-6 h-6" />
               </a>
 
+              {/* Мобильный: иконка чата */}
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('open-chat'))}
+                className="sm:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#e8a817] hover:bg-[#d49a12] text-white transition-colors shadow-md"
+                aria-label="Открыть чат"
+              >
+                <MessageCircle className="w-6 h-6" />
+              </button>
+
               {/* Гамбургер (мобильный + планшет) */}
               <button
                 type="button"

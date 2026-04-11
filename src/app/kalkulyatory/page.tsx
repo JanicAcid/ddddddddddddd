@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Calculator, ArrowRight, CheckCircle, Clock, Zap } from 'lucide-react'
+import { Calculator, ArrowRight, CheckCircle } from 'lucide-react'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 const CALCULATORS = [
@@ -11,7 +11,7 @@ const CALCULATORS = [
     price: 'от 5 300 ₽',
     href: '/kalkulyatory/markirovka',
     active: true,
-    icon: <Zap className="w-7 h-7" />,
+    icon: <Calculator className="w-7 h-7" />,
   },
   {
     title: 'Калькулятор интеграции 1С',
@@ -27,7 +27,7 @@ const CALCULATORS = [
     price: '',
     href: '/kalkulyatory/ofd',
     active: false,
-    icon: <Clock className="w-7 h-7" />,
+    icon: <Calculator className="w-7 h-7" />,
   },
 ]
 

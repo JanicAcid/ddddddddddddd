@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Calculator, MessageCircle, Phone, ArrowRight, Clock, ShieldCheck,
   Monitor, Tag, ChevronRight, FileText, HelpCircle,
-  CheckCircle, Star, Building2, Users, Wrench, Footprints, Package, QrCode, Shirt
+  CheckCircle, Star, Building2, Users, Wrench, Footprints, Package, QrCode, Shirt, Store, Settings
 } from 'lucide-react'
 
 // ============================================================================
@@ -52,19 +52,19 @@ const SERVICES = [
     href: '/kalkulyatory/markirovka',
   },
   {
-    icon: <FileText className="w-6 h-6" />,
+    icon: <Settings className="w-6 h-6" />,
     title: 'Настройка кассы для маркировки',
     desc: 'Под ключ за 1 день. Меркурий, Атол, Эвотор, Штрих-М. ФФД 1.2, Честный ЗНАК, ТС ПИоТ.',
     href: '/nastroyka-kassy-markirovka',
   },
   {
-    icon: <Monitor className="w-6 h-6" />,
+    icon: <QrCode className="w-6 h-6" />,
     title: 'Подключение Честного ЗНАК',
     desc: 'Регистрация в системе маркировки, настройка товарных групп, подпись соглашения с ЦРПТ.',
     href: '/podklyuchenie-chestnyy-znak',
   },
   {
-    icon: <Monitor className="w-6 h-6" />,
+    icon: <Store className="w-6 h-6" />,
     title: 'Какую кассу выбрать',
     desc: 'Обзор моделей Атол, Эвотор, Меркурий, Штрих-М. Подбор по типу бизнеса и бюджету.',
     href: '/kakuyu-kassu-dlya-markirovki',

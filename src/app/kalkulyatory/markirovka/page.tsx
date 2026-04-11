@@ -27,6 +27,7 @@ import { StepServices } from '@/components/calculator/StepServices'
 import { StepExtra } from '@/components/calculator/StepExtra'
 import { StepSummary } from '@/components/calculator/StepSummary'
 import { SeoContent } from '@/components/SeoContent'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { KKT_CATALOG } from '@/config/kkt-catalog'
 
 // ============================================================================
@@ -413,6 +414,7 @@ export default function TellurServiceCalculator() {
 [data-slot=radio-group-item][data-state=checked]{border-color:#1e3a5f;background:#fff}
 .space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
         <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
+          <Breadcrumbs items={[{ label: 'Калькуляторы', href: '/kalkulyatory' }, { label: 'Маркировка' }]} />
 
           <h1 className="sr-only">Калькулятор маркировки товаров в Санкт-Петербурге — расчёт стоимости за 2 минуты | Теллур-Интех</h1>
           <div className="mt-1 sm:mt-2">

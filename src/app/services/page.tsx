@@ -4,7 +4,9 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Wrench, Monitor, FileText, ShieldCheck, GraduationCap, Cpu, Tag, Settings, Phone, Calculator } from 'lucide-react'
+import { Wrench, Monitor, FileText, ShieldCheck, GraduationCap, Cpu, Tag, Settings, Phone, Calculator, CheckCircle2 } from 'lucide-react'
+import { OpenChatButton } from '@/components/OpenChatButton'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
@@ -77,6 +79,8 @@ const SERVICES = [
 export default function ServicesPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <Breadcrumbs items={[{ label: 'Услуги' }]} />
+
       {/* Header */}
       <div className="text-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f] leading-tight">
@@ -109,8 +113,46 @@ export default function ServicesPage() {
         ))}
       </div>
 
-      {/* CTA */}
-      <div className="mt-8 sm:mt-10 bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] rounded-2xl p-6 sm:p-8 text-center">
+      {/* Conversion CTA — Настройка маркировки под ключ */}
+      <div className="mt-8 sm:mt-10 rounded-2xl p-6 sm:p-8 text-center" style={{ backgroundColor: '#1e3a5f' }}>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">
+          Настройка маркировки под ключ
+        </h2>
+        <p className="text-white/70 text-sm sm:text-base mb-6">
+          от 1 дня · от 5 000 ₽ · без остановки работы
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 justify-center">
+            <CheckCircle2 className="w-5 h-5 text-[#e8a817] shrink-0" />
+            <span className="text-white text-sm font-medium">Подключим к Честный ЗНАК</span>
+          </div>
+          <div className="flex items-center gap-2 justify-center">
+            <CheckCircle2 className="w-5 h-5 text-[#e8a817] shrink-0" />
+            <span className="text-white text-sm font-medium">Настроим кассу и 1С</span>
+          </div>
+          <div className="flex items-center gap-2 justify-center">
+            <CheckCircle2 className="w-5 h-5 text-[#e8a817] shrink-0" />
+            <span className="text-white text-sm font-medium">Обучим персонал</span>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <OpenChatButton
+            className="inline-flex items-center gap-2 px-6 py-3 text-white font-bold rounded-xl transition-colors shadow-md"
+            style={{ backgroundColor: '#e8a817' }}
+          >
+            Оставить заявку
+          </OpenChatButton>
+          <Link
+            href="/kalkulyatory/markirovka"
+            className="text-white/80 hover:text-white text-sm font-medium underline underline-offset-4 transition-colors"
+          >
+            Рассчитать стоимость
+          </Link>
+        </div>
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="mt-6 sm:mt-8 bg-gradient-to-r from-[#1e3a5f] to-[#2a5080] rounded-2xl p-6 sm:p-8 text-center">
         <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
           Рассчитайте стоимость онлайн
         </h2>
@@ -119,7 +161,7 @@ export default function ServicesPage() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href="/"
+            href="/kalkulyatory/markirovka"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-colors shadow-md"
           >
             <Calculator className="w-5 h-5" />

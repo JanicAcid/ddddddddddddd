@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MapPin, Phone, Mail, Clock, ExternalLink, MessageCircle, Calculator } from 'lucide-react'
 import { BRANCHES } from '@/config/contacts'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
@@ -33,6 +34,8 @@ const YANDEX_MAP_LINKS: Record<string, string> = {
 export default function ContactsPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <Breadcrumbs items={[{ label: 'Контакты' }]} />
+
       {/* Header */}
       <div className="text-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f] leading-tight">

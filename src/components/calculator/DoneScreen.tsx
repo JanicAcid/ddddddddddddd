@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useCallback, useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -8,7 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   CheckCheck, CreditCard, AlertCircle, Printer,
-  Phone, MessageSquare, Download, X, ArrowLeft, CheckCircle2, Info
+  Phone, MessageSquare, Download, X, ArrowLeft, CheckCircle2, Info,
+  Clock, Zap, ShieldCheck, Headphones, ChevronRight
 } from 'lucide-react'
 import { PHONES } from '@/config/contacts'
 import type { DoneScreenProps, GenerateOrderHtmlParams } from './types'
@@ -453,6 +455,76 @@ export function DoneScreen({
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
         {isConsultation ? 'Новый расчёт' : 'Вернуться к редактированию'}
       </Button>
+
+      {/* ============================================================ */}
+      {/* CTA — основной заказ */}
+      {/* ============================================================ */}
+      {!isConsultation && (
+        <div className="space-y-4 animate-fade-in-up">
+          {/* Navy CTA card */}
+          <div className="bg-[#1e3a5f] rounded-2xl p-5 sm:p-6 text-white shadow-lg">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+                <Headphones className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg sm:text-xl leading-tight">Нужна помощь с настройкой?</h3>
+                <p className="text-white/80 text-sm mt-1">Оставьте заявку и наш специалист настроит маркировку под ключ за 1-3 дня</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('open-chat'))}
+              className="w-full sm:w-auto bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold px-6 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-[#e8a817]/30 flex items-center justify-center gap-2"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Получить консультацию
+            </button>
+          </div>
+
+          {/* 3 benefit badges */}
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+            {[
+              { icon: Clock, label: 'Настройка за 1-3 дня' },
+              { icon: Zap, label: 'Без остановки работы' },
+              { icon: ShieldCheck, label: 'Гарантия результата' },
+            ].map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-2 bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-slate-100"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#1e3a5f]/10 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-[#1e3a5f]" />
+                </div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 text-center leading-tight">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* CTA — консультация */}
+      {/* ============================================================ */}
+      {isConsultation && (
+        <div className="animate-fade-in-up">
+          <div className="bg-[#1e3a5f] rounded-2xl p-5 sm:p-6 text-center text-white shadow-lg">
+            <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center mx-auto mb-3">
+              <Clock className="w-5 h-5 text-white" />
+            </div>
+            <p className="text-white/90 text-sm sm:text-base mb-4 leading-relaxed">
+              Мы перезвоним в течение 15 минут. А пока — рассчитайте стоимость маркировки:
+            </p>
+            <Link
+              href="/kalkulyatory/markirovka"
+              className="inline-flex items-center gap-2 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold px-6 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-[#e8a817]/30"
+            >
+              Рассчитать стоимость
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

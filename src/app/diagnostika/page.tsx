@@ -6,7 +6,7 @@ import {
   Phone, ChevronRight, ChevronLeft, AlertTriangle,
   CheckCircle2, HelpCircle, ArrowRight, ShieldCheck,
   Monitor, Settings, FileText, Eye, CreditCard,
-  Clock, MessageCircle, Loader2, Send, Calculator
+  Clock, MessageCircle, Loader2, Send, Calculator, RefreshCw
 } from 'lucide-react'
 import { KKT_CATALOG } from '@/config/kkt-catalog'
 
@@ -833,115 +833,93 @@ export default function DiagnostikaPage() {
       )}
 
       {/* ================================================================ */}
-      {/* RESULTS (шаг 10) */}
+      {/* ПОДТВЕРЖДЕНИЕ / РЕЗУЛЬТАТЫ (шаг 10) */}
       {/* ================================================================ */}
       {step === 10 && (
-        <div className="px-4 py-6 sm:py-8 pb-16">
-          <div className="max-w-2xl mx-auto">
+        <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-4 py-8">
+          <div className="max-w-xl mx-auto w-full">
 
-            {/* Уведомление об отправке */}
-            <div className="anim-fade-in mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-5">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-emerald-800 mb-1">
-                    Заявка отправлена
-                  </h3>
-                  <p className="text-xs sm:text-sm text-emerald-700 leading-relaxed">
-                    Спасибо, {clientName.trim()}! Ваш результат диагностики сохранён. Специалист свяжется с вами по номеру {clientPhone.trim()} для уточнения деталей и бесплатной консультации.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Заголовок */}
-            <div className="text-center mb-6 sm:mb-8 anim-fade-in" style={{ animationDelay: '0.1s' }}>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#2a5080] flex items-center justify-center shadow-lg shadow-[#1e3a5f]/20">
-                <FileText className="w-8 h-8 text-white" />
+            {/* Успешная отправка */}
+            <div className="text-center anim-fade-in mb-8">
+              <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f] leading-tight mb-2">
-                Результат проверки
+                Спасибо! Ваша заявка отправлена
               </h1>
-              <p className="text-sm sm:text-base text-slate-500 max-w-md mx-auto">
-                Анализ по 5 ключевым направлениям вашей настройки маркировки
+              <p className="text-sm sm:text-base text-slate-500 max-w-md mx-auto leading-relaxed">
+                Наш специалист свяжется с вами в течение 15 минут
               </p>
             </div>
 
-            {/* Карточки слоёв */}
-            <div className="space-y-3 sm:space-y-4 mb-8 sm:mb-10">
-              {results.map((layer, idx) => {
-                const statusConfig = {
-                  green: { bg: 'bg-emerald-50', border: 'border-emerald-200', badge: 'bg-emerald-100 text-emerald-700', icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />, label: 'В порядке' },
-                  yellow: { bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700', icon: <AlertTriangle className="w-5 h-5 text-amber-500" />, label: 'Нужно проверить' },
-                  red: { bg: 'bg-red-50', border: 'border-red-200', badge: 'bg-red-100 text-red-700', icon: <AlertTriangle className="w-5 h-5 text-red-500" />, label: 'Есть проблемы' },
-                }
-                const cfg = statusConfig[layer.status]
-                return (
-                  <div key={layer.id} className={`anim-fade-in ${cfg.bg} rounded-2xl border ${cfg.border} p-4 sm:p-5`} style={{ animationDelay: `${(idx + 2) * 0.08}s` }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="text-[#1e3a5f]">{layer.icon}</div>
-                        <h3 className="text-sm sm:text-base font-bold text-[#1e3a5f]">{layer.title}</h3>
+            {/* Сводка по слоям */}
+            <div className="anim-fade-in bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 mb-6" style={{ animationDelay: '0.1s' }}>
+              <h2 className="text-sm sm:text-base font-bold text-[#1e3a5f] mb-4">Результаты диагностики</h2>
+              <div className="space-y-3">
+                {results.map((layer) => {
+                  const statusConfig = {
+                    green: { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'В порядке' },
+                    yellow: { dot: 'bg-amber-500', text: 'text-amber-700', label: 'Нужно проверить' },
+                    red: { dot: 'bg-red-500', text: 'text-red-700', label: 'Есть проблемы' },
+                  }
+                  const cfg = statusConfig[layer.status]
+                  return (
+                    <div key={layer.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} />
+                        <span className="text-sm text-slate-700 font-medium truncate">{layer.title}</span>
                       </div>
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${cfg.badge}`}>
-                        {cfg.icon} {cfg.label}
-                      </span>
+                      <span className={`text-xs font-semibold shrink-0 ml-3 ${cfg.text}`}>{cfg.label}</span>
                     </div>
-                    <ul className="space-y-1.5">
-                      {layer.tips.map((tip, tipIdx) => (
-                        <li key={tipIdx} className="flex items-start gap-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-current opacity-30 shrink-0" />
-                          {tip}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* ================================================================ */}
-            {/* РЕКОМЕНДАЦИИ + CTA К КАЛЬКУЛЯТОРУ */}
-            {/* ================================================================ */}
-            <CalcRecommendations results={results} />
-
-            {/* CTA — связка с калькулятором */}
-            <div className="anim-fade-in bg-gradient-to-br from-[#1e3a5f] to-[#2a5080] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden">
-              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#e8a817]/10 blur-2xl" />
-              <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/5 blur-2xl" />
-              <div className="relative">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-3">Нужна помощь с настройкой?</h2>
-                <p className="text-white/70 text-sm sm:text-base max-w-lg mx-auto mb-6 leading-relaxed">
-                  Бесплатная проверка настройки по телефону — за 15 минут. Или оставьте заявку, и мы перезвоним сами.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6">
-                  <a href="tel:+78124659457" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#e8a817]/25">
-                    <Phone className="w-5 h-5" /> +7 (812) 465-94-57
-                  </a>
-                  <a href="tel:+78123210606" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/15 hover:bg-white/25 text-white font-medium rounded-xl transition-colors border border-white/15">
-                    <Phone className="w-5 h-5" /> +7 (812) 321-06-06
-                  </a>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => window.dispatchEvent(new Event('open-chat'))}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-[#1e3a5f] font-bold rounded-xl transition-colors shadow-md"
-                >
-                  <MessageCircle className="w-5 h-5" /> Написать в чат
-                </button>
+                  )
+                })}
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                <span className="text-xs text-slate-400">Баллы: {results.reduce((s, r) => s + r.score, 0)} из {results.reduce((s, r) => s + r.maxScore, 0)}</span>
+                <span className="text-xs text-slate-400">5 слоёв проверено</span>
               </div>
             </div>
 
-            {/* Пройти заново */}
-            <div className="mt-6 text-center">
+            {/* Лид-генерация — тёмная карточка */}
+            <div className="anim-fade-in rounded-2xl p-5 sm:p-6 mb-6" style={{ animationDelay: '0.2s', background: '#1e3a5f' }}>
+              <h2 className="text-base sm:text-lg font-bold text-white leading-snug mb-2">
+                Обнаружены проблемы?
+              </h2>
+              <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-5">
+                Наши специалисты исправят ошибки маркировки за 1 рабочий день. Без остановки вашей работы.
+              </p>
               <button
                 type="button"
-                onClick={() => { setAnswers({}); setClientName(''); setClientPhone(''); setSelectedManufacturer(''); setSelectedModel(''); setStep(0) }}
-                className="text-sm text-slate-400 hover:text-[#1e3a5f] transition-colors underline underline-offset-2"
+                onClick={() => window.dispatchEvent(new Event('open-chat'))}
+                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: '#e8a817', color: '#fff' }}
               >
-                Пройти проверку заново
+                <MessageCircle className="w-5 h-5" />
+                Получить настройку под ключ
+              </button>
+              <div className="mt-3 text-center">
+                <Link
+                  href="/kalkulyatory/markirovka"
+                  className="text-xs sm:text-sm font-medium transition-colors hover:underline"
+                  style={{ color: '#e8a817' }}
+                >
+                  Рассчитать стоимость
+                </Link>
+              </div>
+            </div>
+
+            {/* Пройти ещё раз */}
+            <div className="anim-fade-in text-center" style={{ animationDelay: '0.3s' }}>
+              <button
+                type="button"
+                onClick={() => { setStep(0); setAnswers({}); setClientName(''); setClientPhone(''); setSelectedManufacturer(''); setSelectedModel('') }}
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-[#1e3a5f] transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Пройти диагностику ещё раз
               </button>
             </div>
+
           </div>
         </div>
       )}

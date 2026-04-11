@@ -19,6 +19,18 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mc.yandex.ru https://www.googletagmanager.com https://cdn.jsdelivr.net",
+              "connect-src 'self' https://mc.yandex.ru https://www.googletagmanager.com",
+              "img-src 'self' data: https: blob:",
+              "style-src 'self' 'unsafe-inline'",
+              "font-src 'self' https://fonts.gstatic.com",
+              "frame-src https://www.googletagmanager.com",
+            ].join('; '),
+          },
         ],
       },
       {

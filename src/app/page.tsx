@@ -367,6 +367,45 @@ export default function HomePage() {
       </section>
 
       {/* ================================================================== */}
+      {/* МАРКИРОВКА ПО КАТЕГОРИЯМ */}
+      {/* ================================================================== */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f]">
+            Маркировка по категориям товаров
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-500 max-w-xl mx-auto">
+            Подробные инструкции, требования и стоимость подключения для каждой категории
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+          {[
+            { href: '/markirovka-odezhdy', icon: <Tag className="w-6 h-6" />, title: 'Маркировка одежды', desc: 'Обязательна с 2021 года. Data Matrix коды на все товары лёгкой промышленности.' },
+            { href: '/markirovka-obuvi', icon: <Monitor className="w-6 h-6" />, title: 'Маркировка обуви', desc: 'Обязательна с 2020 года. Коды на каждую пару, сканирование при продаже.' },
+            { href: '/markirovka-tabaka', icon: <Cpu className="w-6 h-6" />, title: 'Маркировка табака', desc: 'Обязательна с 2019 года. Одна из первых категорий, ФН на 36 месяцев.' },
+          ].map((cat, idx) => (
+            <Link
+              key={idx}
+              href={cat.href}
+              className="group bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 hover:shadow-md hover:border-[#e8a817]/40 transition-all duration-300"
+            >
+              <div className="w-11 h-11 rounded-xl bg-[#e8a817]/10 flex items-center justify-center text-[#e8a817] mb-3 group-hover:bg-[#e8a817] group-hover:text-white transition-colors">
+                {cat.icon}
+              </div>
+              <h3 className="text-base font-bold text-[#1e3a5f] leading-snug mb-2 group-hover:text-[#e8a817] transition-colors">
+                {cat.title}
+              </h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{cat.desc}</p>
+              <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#e8a817] mt-3 group-hover:gap-2 transition-all">
+                Подробнее <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ================================================================== */}
       {/* FAQ + USEFUL SECTION */}
       {/* ================================================================== */}
       <section className="bg-[#f8fafc]">

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Calculator, ArrowRight, CheckCircle, Clock, Zap } from 'lucide-react'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 const CALCULATORS = [
   {
@@ -33,6 +34,8 @@ const CALCULATORS = [
 export default function KalkulyatoryPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: 'Калькуляторы' }]} />
+
       {/* Header */}
       <div className="text-center mb-8 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f] leading-tight">

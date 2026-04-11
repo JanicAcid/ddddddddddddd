@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Phone, ChevronRight, ChevronLeft, AlertTriangle,
   CheckCircle2, HelpCircle, ArrowRight, ShieldCheck,
-  Monitor, Settings, FileText, Eye, CreditCard,
+  Monitor, Settings, FileText, Eye, Wifi,
   Clock, MessageCircle, Loader2, Send, Calculator, RefreshCw
 } from 'lucide-react'
 import { KKT_CATALOG } from '@/config/kkt-catalog'
@@ -43,7 +43,7 @@ interface LayerResult {
 const LAYERS = [
   { id: 'hardware', title: 'Оборудование', icon: <Monitor className="w-5 h-5" /> },
   { id: 'fiscal', title: 'Фискальные данные', icon: <Settings className="w-5 h-5" /> },
-  { id: 'online', title: 'Онлайн-сервисы', icon: <CreditCard className="w-5 h-5" /> },
+  { id: 'online', title: 'Онлайн-сервисы', icon: <Wifi className="w-5 h-5" /> },
   { id: 'docs', title: 'Документооборот', icon: <FileText className="w-5 h-5" /> },
   { id: 'knowledge', title: 'Знание и контроль', icon: <Eye className="w-5 h-5" /> },
 ]

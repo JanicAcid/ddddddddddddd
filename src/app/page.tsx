@@ -4,8 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import {
   Calculator, MessageCircle, Phone, ArrowRight, Clock, ShieldCheck,
-  Monitor, Cpu, Tag, ChevronRight, FileText, HelpCircle,
-  CheckCircle, Star, Building2, Users, Wrench
+  Monitor, Tag, ChevronRight, FileText, HelpCircle,
+  CheckCircle, Star, Building2, Users, Wrench, Footprints, Package, QrCode
 } from 'lucide-react'
 
 // ============================================================================
@@ -64,7 +64,7 @@ const SERVICES = [
     href: '/podklyuchenie-chestnyy-znak',
   },
   {
-    icon: <Cpu className="w-6 h-6" />,
+    icon: <Monitor className="w-6 h-6" />,
     title: 'Какую кассу выбрать',
     desc: 'Обзор моделей Атол, Эвотор, Меркурий, Штрих-М. Подбор по типу бизнеса и бюджету.',
     href: '/kakuyu-kassu-dlya-markirovki',
@@ -383,7 +383,7 @@ export default function HomePage() {
           {[
             { href: '/markirovka-odezhdy', icon: <Tag className="w-6 h-6" />, title: 'Маркировка одежды', desc: 'Обязательна с 2021 года. Data Matrix коды на все товары лёгкой промышленности.' },
             { href: '/markirovka-obuvi', icon: <Monitor className="w-6 h-6" />, title: 'Маркировка обуви', desc: 'Обязательна с 2020 года. Коды на каждую пару, сканирование при продаже.' },
-            { href: '/markirovka-tabaka', icon: <Cpu className="w-6 h-6" />, title: 'Маркировка табака', desc: 'Обязательна с 2019 года. Одна из первых категорий, ФН на 36 месяцев.' },
+            { href: '/markirovka-tabaka', icon: <Package className="w-6 h-6" />, title: 'Маркировка табака', desc: 'Обязательна с 2019 года. Одна из первых категорий, ФН на 36 месяцев.' },
           ].map((cat, idx) => (
             <Link
               key={idx}

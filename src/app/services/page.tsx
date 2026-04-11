@@ -4,7 +4,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Wrench, Monitor, FileText, ShieldCheck, GraduationCap, Cpu, Tag, Settings, Phone, Calculator, CheckCircle2 } from 'lucide-react'
+import { Wrench, FileText, ShieldCheck, GraduationCap, Tag, Settings, Phone, Calculator, CheckCircle2, ArrowLeftRight, Cog } from 'lucide-react'
 import { OpenChatButton } from '@/components/OpenChatButton'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -39,7 +39,7 @@ const SERVICES = [
     price: 'включено в маркировку',
   },
   {
-    icon: <Monitor className="w-6 h-6" />,
+    icon: <ArrowLeftRight className="w-6 h-6" />,
     title: 'Настройка ЭДО',
     desc: 'Подключение электронного документооборота для обмена накладными с поставщиками маркированных товаров. Работаем с операторами: Контур.Диадок, СБИС, Такском. ЭДО необходимо для приёмки товаров — без него коды маркировки не попадут в Честный ЗНАК.',
     price: 'включено в маркировку',
@@ -51,7 +51,7 @@ const SERVICES = [
     price: 'от 3 000 ₽/15 мес.',
   },
   {
-    icon: <Cpu className="w-6 h-6" />,
+    icon: <Cog className="w-6 h-6" />,
     title: 'Замена фискального накопителя (ФН)',
     desc: 'Замена истёкшего ФН с перерегистрацией кассы в ФНС. Срок службы: 15 месяцев (общая торговля) или 36 месяцев (подакцизные товары). При истечении срока касса блокируется. Подберём подходящий ФН и оформим замену.',
     price: 'цена уточняется',

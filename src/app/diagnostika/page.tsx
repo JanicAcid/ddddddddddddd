@@ -6,7 +6,7 @@ import {
   Phone, ChevronRight, ChevronLeft, AlertTriangle,
   CheckCircle2, HelpCircle, ArrowRight, ShieldCheck,
   Monitor, Settings, FileText, Eye, CreditCard,
-  Clock, MessageCircle, User, Loader2, Send, Calculator
+  Clock, MessageCircle, Loader2, Send, Calculator
 } from 'lucide-react'
 import { KKT_CATALOG } from '@/config/kkt-catalog'
 
@@ -18,7 +18,6 @@ interface Question {
   id: string
   title: string
   subtitle?: string
-  icon: React.ReactNode
   options: Option[]
 }
 
@@ -57,7 +56,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q1_experience',
     title: 'Когда вы впервые столкнулись с маркировкой?',
-    icon: <Clock className="w-6 h-6" />,
     options: [
       { label: 'Только планирую', scores: { knowledge: 0, hardware: 0, fiscal: 0, online: 0, docs: 0 } },
       { label: '2020–2021 (первые волны)', scores: { knowledge: 0, hardware: 0, fiscal: 0, online: 0, docs: 0 } },
@@ -69,7 +67,6 @@ const QUESTIONS: Question[] = [
     id: 'q2_categories',
     title: 'Какие товарные группы вы продаёте или планируете продавать?',
     subtitle: 'Выберите всё, что относится к вам',
-    icon: <ShieldCheck className="w-6 h-6" />,
     options: [
       { label: 'Одежда и текстиль', scores: { knowledge: 2, docs: 1, online: 1, hardware: 0, fiscal: 0 } },
       { label: 'Обувь', scores: { knowledge: 2, docs: 1, online: 1, hardware: 0, fiscal: 0 } },
@@ -90,7 +87,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q3_has_marked',
     title: 'Есть ли у вас товар с квадратиками-кодами (маркировкой)?',
-    icon: <HelpCircle className="w-6 h-6" />,
     options: [
       { label: 'Да, весь товар с кодами', scores: { hardware: 2, fiscal: 1, online: 1, docs: 1, knowledge: 2 } },
       { label: 'Часть с кодами, часть без', scores: { hardware: 1, fiscal: 0, online: 0, docs: 0, knowledge: 1 } },
@@ -101,7 +97,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q4_scanning',
     title: 'Сканируете ли вы с товара код-квадратик при продаже?',
-    icon: <Monitor className="w-6 h-6" />,
     options: [
       { label: 'Да, всегда сканером', scores: { hardware: 2, fiscal: 2, online: 1, docs: 0, knowledge: 2 } },
       { label: 'Вручную — ввожу код руками', scores: { hardware: 1, fiscal: 1, online: 0, docs: 0, knowledge: 1 } },
@@ -112,7 +107,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q5_cz_visited',
     title: 'Заходили ли вы на честныйзнак.рф за последний месяц?',
-    icon: <CreditCard className="w-6 h-6" />,
     options: [
       { label: 'Да, захожу регулярно', scores: { online: 2, knowledge: 2, docs: 1, hardware: 0, fiscal: 1 } },
       { label: 'Давно не заходил', scores: { online: 0, knowledge: 0, docs: 0, hardware: 0, fiscal: 0 } },
@@ -123,7 +117,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q6_cz_checks',
     title: 'Видели ли вы на честныйзнак.рф свои продажи (пробитые чеки)?',
-    icon: <Eye className="w-6 h-6" />,
     options: [
       { label: 'Да, видел', scores: { online: 2, fiscal: 2, knowledge: 2, hardware: 1, docs: 1 } },
       { label: 'Не проверял', scores: { online: 0, knowledge: 0, fiscal: 0, hardware: 0, docs: 0 } },
@@ -133,7 +126,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q7_auto_reception',
     title: 'Товар от поставщика сам появляется в вашей учётной программе (1С, МойСклад и т.д.)?',
-    icon: <FileText className="w-6 h-6" />,
     options: [
       { label: 'Да, сам приходит', scores: { docs: 2, online: 2, hardware: 1, fiscal: 1, knowledge: 2 } },
       { label: 'Приходят накладные, но вбиваю вручную', scores: { docs: 0, online: 0, hardware: 0, fiscal: 0, knowledge: 1 } },
@@ -144,7 +136,6 @@ const QUESTIONS: Question[] = [
   {
     id: 'q8_subscriptions',
     title: 'Знаете ли вы, за что платите каждый месяц по кассе?',
-    icon: <CreditCard className="w-6 h-6" />,
     options: [
       { label: 'Да, всё понимаю', scores: { knowledge: 2, online: 2, docs: 1, hardware: 1, fiscal: 1 } },
       { label: 'Примерно знаю', scores: { knowledge: 1, online: 1, docs: 0, hardware: 0, fiscal: 0 } },
@@ -614,8 +605,8 @@ export default function DiagnostikaPage() {
       {/* QUESTIONS */}
       {/* ================================================================ */}
       {currentQuestion && (
-        <div className="min-h-[calc(100vh-56px)] flex flex-col px-4 py-6 sm:py-8">
-          <div ref={questionAreaRef} className="max-w-xl mx-auto w-full flex-1 flex flex-col min-h-0">
+        <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-4 py-6 sm:py-8">
+          <div ref={questionAreaRef} className="max-w-xl mx-auto w-full">
             <div className="mb-6 sm:mb-8">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs sm:text-sm font-semibold text-[#1e3a5f]">Вопрос {step} из 8</span>
@@ -626,16 +617,11 @@ export default function DiagnostikaPage() {
               </div>
             </div>
 
-            <div className="anim-slide-in flex-1">
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-7 mb-4">
-                <div className="flex items-start gap-3.5 mb-5">
-                  <div className="w-11 h-11 rounded-xl bg-[#1e3a5f]/5 flex items-center justify-center text-[#1e3a5f] shrink-0">
-                    {currentQuestion.icon}
-                  </div>
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] leading-snug">{currentQuestion.title}</h2>
-                    {currentQuestion.subtitle && <p className="mt-1 text-xs text-slate-400">{currentQuestion.subtitle}</p>}
-                  </div>
+            <div className="anim-slide-in">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-7 mb-5">
+                <div className="mb-5">
+                  <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] leading-snug">{currentQuestion.title}</h2>
+                  {currentQuestion.subtitle && <p className="mt-1 text-xs text-slate-400">{currentQuestion.subtitle}</p>}
                 </div>
                 <div className="space-y-2.5">
                   {currentQuestion.options.map((opt, idx) => (
@@ -704,8 +690,8 @@ export default function DiagnostikaPage() {
       {/* КОНТАКТНАЯ ФОРМА (шаг 9) */}
       {/* ================================================================ */}
       {step === 9 && (
-        <div className="min-h-[calc(100vh-56px)] flex flex-col px-4 py-6 sm:py-8">
-        <div ref={questionAreaRef} className="max-w-xl mx-auto w-full flex-1 flex flex-col min-h-0">
+        <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-4 py-6 sm:py-8">
+        <div ref={questionAreaRef} className="max-w-xl mx-auto w-full">
             {/* Прогресс — заполнен */}
             <div className="mb-6 sm:mb-8">
               <div className="flex items-center justify-between mb-2">
@@ -717,20 +703,15 @@ export default function DiagnostikaPage() {
               </div>
             </div>
 
-            <div className="anim-fade-in flex-1">
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-7 mb-4">
-                <div className="flex items-start gap-3.5 mb-6">
-                  <div className="w-11 h-11 rounded-xl bg-[#e8a817]/10 flex items-center justify-center text-[#e8a817] shrink-0">
-                    <User className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] leading-snug">
-                      Как к вам обращаться?
-                    </h2>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-400 leading-relaxed">
-                      Чтобы мы могли связаться с вами и уточнить детали
-                    </p>
-                  </div>
+            <div className="anim-fade-in">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-7 mb-5">
+                <div className="mb-6">
+                  <h2 className="text-base sm:text-lg font-bold text-[#1e3a5f] leading-snug">
+                    Как к вам обращаться?
+                  </h2>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-400 leading-relaxed">
+                    Чтобы мы могли связаться с вами и уточнить детали
+                  </p>
                 </div>
 
                 {/* Форма */}
@@ -814,10 +795,8 @@ export default function DiagnostikaPage() {
               </div>
             </div>
 
-            {/* Spacer + Sticky кнопки */}
-            <div className="h-4" />
-            <div className="sticky bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/95 to-transparent pt-4 pb-3 -mx-4 px-4">
-              <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
+            {/* Навигация — сразу под карточкой */}
+            <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setStep(8)}
@@ -848,7 +827,6 @@ export default function DiagnostikaPage() {
                   </>
                 )}
               </button>
-              </div>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ChevronDown, ChevronRight, Phone, ExternalLink } from 'lucide-react'
+import { ChevronDown, ChevronRight, Phone, BookOpen } from 'lucide-react'
 import { BRANCHES } from '@/config/contacts'
 import { FaqHashScroller } from '@/components/FaqHashScroller'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -143,7 +143,7 @@ export default function FaqPage() {
             href="/instructions"
             className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#1e3a5f]/20 text-[#1e3a5f] text-sm font-medium rounded-xl hover:bg-[#1e3a5f]/5 transition-colors"
           >
-            <ExternalLink className="w-4 h-4" />
+            <BookOpen className="w-4 h-4" />
             Инструкции
           </Link>
           <Link

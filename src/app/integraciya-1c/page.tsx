@@ -12,7 +12,7 @@ import {
   ArrowLeftRight,
   FileText,
   ScanBarcode,
-  TestTube,
+  ClipboardCheck,
   GraduationCap,
   Clock,
   Settings,
@@ -178,7 +178,7 @@ const SETUP_ITEMS = [
     desc: 'Настраиваем 2D-сканеры штрихкодов для считывания кодов Data Matrix. Проверяем совместимость сканера с вашей конфигурацией 1С. При необходимости подберём и поставим подходящую модель.',
   },
   {
-    icon: <TestTube className="w-5 h-5" />,
+    icon: <ClipboardCheck className="w-5 h-5" />,
     title: 'Тестирование',
     desc: 'Проводим полное тестирование: приёмка товара через ЭДО → 1С, продажа с кассы → Честный ЗНАК, проверка остатков, сканирование кодов. Устраняем все ошибки до передачи в работу.',
   },

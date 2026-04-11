@@ -23,6 +23,7 @@ import {
   Package,
   ShieldCheck,
 } from 'lucide-react'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 const PAGE_URL = `${SITE_URL}/integraciya-1c`
@@ -273,12 +274,7 @@ export default function Integraciya1CPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }} />
 
       <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        {/* Breadcrumb */}
-        <nav className="mb-4 text-xs text-slate-400" aria-label="Хлебные крошки">
-          <Link href="/" className="hover:text-[#1e3a5f] transition-colors">Главная</Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-slate-600">Интеграция 1С с маркировкой</span>
-        </nav>
+        <Breadcrumbs items={[{ label: 'Интеграция 1С и маркировки' }]} />
 
         {/* Header */}
         <div className="text-center mb-8 sm:mb-10">

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ChevronDown, ChevronRight, Phone, ExternalLink } from 'lucide-react'
 import { BRANCHES } from '@/config/contacts'
 import { FaqHashScroller } from '@/components/FaqHashScroller'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 const SITE_URL = 'https://tellurmarkirovka.vercel.app'
 
@@ -96,6 +97,7 @@ const FAQS = [
 export default function FaqPage() {
   return (
     <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <Breadcrumbs items={[{ label: 'FAQ' }]} />
       <FaqHashScroller />
       {/* Header */}
       <div className="text-center mb-6 sm:mb-8">

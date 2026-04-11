@@ -4,6 +4,7 @@
 
 import { getAllArticles, getAllCategories } from '@/config/articles'
 import { ArticleCard } from '@/components/instructions/ArticleCard'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export default function InstructionsPage() {
   const articles = getAllArticles()
@@ -11,6 +12,8 @@ export default function InstructionsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <Breadcrumbs items={[{ label: 'База знаний' }]} />
+
       {/* Заголовок */}
       <div className="text-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e3a5f] leading-tight">

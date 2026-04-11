@@ -5,6 +5,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import KassaConsultWidget from '@/components/KassaConsultWidget'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 import {
   ChevronDown,
   Phone,
@@ -352,12 +353,7 @@ export default function KakuyuKassuPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }} />
 
       <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        {/* Breadcrumb */}
-        <nav className="mb-4 text-xs text-slate-400" aria-label="Хлебные крошки">
-          <Link href="/" className="hover:text-[#1e3a5f] transition-colors">Главная</Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-slate-600">Какую кассу выбрать для маркировки</span>
-        </nav>
+        <Breadcrumbs items={[{ label: 'Какую кассу выбрать для маркировки' }]} />
 
         {/* Header */}
         <div className="text-center mb-8 sm:mb-10">

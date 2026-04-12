@@ -4,12 +4,12 @@ export const metadata: Metadata = {
   title: 'Диагностика маркировки — Проверьте настройку кассы | Теллур-Интех',
   description: 'Бесплатная диагностика настройки маркировки: проверка оборудования, фискальных данных, онлайн-сервисов, документооборота и знаний. 8 вопросов за 2 минуты.',
   alternates: {
-    canonical: 'https://tellurmarkirovka.vercel.app/diagnostika',
+    canonical: 'https://kassa-cto.ru/diagnostika',
   },
   openGraph: {
     title: 'Диагностика маркировки — Теллур-Интех',
     description: 'Бесплатная диагностика настройки маркировки: проверка оборудования, фискальных данных, онлайн-сервисов, документооборота и знаний.',
-    url: 'https://tellurmarkirovka.vercel.app/diagnostika',
+    url: 'https://kassa-cto.ru/diagnostika',
     type: 'website',
   },
 }

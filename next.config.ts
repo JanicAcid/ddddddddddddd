@@ -1,13 +1,23 @@
 import type { NextConfig } from "next";
 
 // Инкрементировать при необходимости принудительной пересборки
-const BUILD_VERSION = 4;
+const BUILD_VERSION = 5;
 
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'tellurmarkirovka.vercel.app' }],
+        destination: 'https://kassa-cto.ru/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

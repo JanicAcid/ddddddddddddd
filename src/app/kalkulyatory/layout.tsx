@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Калькуляторы — Инструменты для маркировки | Теллур-Интех',
   description: 'Онлайн-калькуляторы стоимости подключения маркировки товаров и настройки кассового оборудования.',
   alternates: {
-    canonical: 'https://tellurmarkirovka.vercel.app/kalkulyatory',
+    canonical: 'https://kassa-cto.ru/kalkulyatory',
   },
 }
 

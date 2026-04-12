@@ -24,7 +24,7 @@ import {
   Settings,
 } from 'lucide-react'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 const PAGE_URL = `${SITE_URL}/kakuyu-kassu-dlya-markirovki`
 
 export const metadata: Metadata = {

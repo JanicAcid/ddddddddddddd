@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

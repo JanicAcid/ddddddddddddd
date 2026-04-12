@@ -4,12 +4,12 @@ export const metadata: Metadata = {
   title: 'Калькулятор маркировки — Рассчитайте стоимость настройки | Теллур-Интех',
   description: 'Бесплатный онлайн-калькулятор стоимости подключения маркировки. Расчёт за 2 минуты для любой кассы: Меркурий, Атол, Сигма, Эвотор, Штрих-М, Пионер, AQSI.',
   alternates: {
-    canonical: 'https://tellurmarkirovka.vercel.app/kalkulyatory/markirovka',
+    canonical: 'https://kassa-cto.ru/kalkulyatory/markirovka',
   },
   openGraph: {
     title: 'Калькулятор маркировки — Теллур-Интех',
     description: 'Бесплатный онлайн-калькулятор стоимости подключения маркировки. Расчёт за 2 минуты.',
-    url: 'https://tellurmarkirovka.vercel.app/kalkulyatory/markirovka',
+    url: 'https://kassa-cto.ru/kalkulyatory/markirovka',
     type: 'website',
   },
 }

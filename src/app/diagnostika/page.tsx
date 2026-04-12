@@ -461,7 +461,7 @@ export default function DiagnostikaPage() {
     </table>
   </div>
   <div style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;">
-    ООО &quot;Теллур-Интех&quot; | +7 (812) 465-94-57 | push@tellur.spb.ru | tellurmarkirovka.vercel.app
+    ООО &quot;Теллур-Интех&quot; | +7 (812) 465-94-57 | push@tellur.spb.ru | kassa-cto.ru
   </div>
 </div></body></html>`
   }

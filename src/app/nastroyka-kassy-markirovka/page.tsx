@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 const PAGE_URL = `${SITE_URL}/nastroyka-kassy-markirovka`
 
 export const metadata: Metadata = {

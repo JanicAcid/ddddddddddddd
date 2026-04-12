@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { OpenChatButton } from '@/components/OpenChatButton'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 const PAGE_URL = `${SITE_URL}/markirovka-obuvi`
 
 export const metadata: Metadata = {

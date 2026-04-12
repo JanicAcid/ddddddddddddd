@@ -9,7 +9,7 @@ import { BRANCHES } from '@/config/contacts'
 import { FaqHashScroller } from '@/components/FaqHashScroller'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 
 export const metadata: Metadata = {
   title: 'Часто задаваемые вопросы о маркировке товаров — Теллур-Интех',

@@ -22,4 +22,5 @@ Allow: /
 Disallow: /api/
 Disallow: /admin
 
-Sitemap: https://tellurmarkirovka.vercel.app/sitemap.xml
+Sitemap: https://kassa-cto.ru/sitemap.xml
+Host: https://kassa-cto.ru

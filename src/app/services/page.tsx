@@ -8,7 +8,7 @@ import { Wrench, FileText, ShieldCheck, GraduationCap, Tag, Settings, Phone, Cal
 import { OpenChatButton } from '@/components/OpenChatButton'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 
 export const metadata: Metadata = {
   title: 'Услуги по маркировке товаров и обслуживанию касс — Теллур-Интех',

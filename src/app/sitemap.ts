@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 import { getAllArticles } from '@/config/articles'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://tellurmarkirovka.vercel.app'
+  const baseUrl = 'https://kassa-cto.ru'
   const articles = getAllArticles()
 
   const instructionPages = articles.map(article => ({

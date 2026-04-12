@@ -2,7 +2,7 @@
 // JSON-LD для статьи (Article schema)
 // ============================================================================
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 
 interface ArticleJsonLdProps {
   slug: string

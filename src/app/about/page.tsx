@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShieldCheck, Zap, Users, CheckCircle, Clock, MapPin, Phone, Mail, Award } from 'lucide-react'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 
 export const metadata: Metadata = {
   title: 'О компании — ООО «Теллур-Интех» | Центр технического обслуживания касс с 1995 года',

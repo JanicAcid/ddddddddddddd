@@ -16,7 +16,7 @@ import { ArticleCard } from '@/components/instructions/ArticleCard'
 import { TableOfContents } from '@/components/instructions/TableOfContents'
 import { ArticleJsonLd } from '@/components/instructions/ArticleJsonLd'
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 
 // ============================================================================
 // Маппинг иконок — используем реальные lucide-react компоненты

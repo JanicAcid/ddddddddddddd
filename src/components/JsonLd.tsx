@@ -2,7 +2,7 @@
 // JSON-LD СТРУКТУРИРОВАННЫЕ ДАННЫЕ
 // ============================================================================
 
-const SITE_URL = 'https://tellurmarkirovka.vercel.app'
+const SITE_URL = 'https://kassa-cto.ru'
 const MAIN_SITE = 'https://tellur.spb.ru'
 
 // ============================================================================

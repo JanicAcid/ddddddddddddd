@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 // Инкрементировать при необходимости принудительной пересборки
-const BUILD_VERSION = 5;
+const BUILD_VERSION = 10;
 
 const nextConfig: NextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -1,3 +1,4 @@
+export function generateStaticParams() { return [{ slug: "1c" }, { slug: "ofd" }]; }
 import Link from 'next/link'
 import { ArrowLeft, Calculator, Clock } from 'lucide-react'
 

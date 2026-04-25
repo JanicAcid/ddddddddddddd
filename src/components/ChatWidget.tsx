@@ -84,14 +84,14 @@ export function ChatWidget() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Load from localStorage on mount
+  // Load from sessionStorage on mount (per-tab isolation — new tab = new session)
   useEffect(() => {
-    const storedSessionId = localStorage.getItem('chat_session_id')
-    const storedName = localStorage.getItem('chat_visitor_name')
+    const storedSessionId = sessionStorage.getItem('chat_session_id')
+    const storedName = sessionStorage.getItem('chat_visitor_name')
 
     if (!storedSessionId) {
       const newId = generateUUID()
-      localStorage.setItem('chat_session_id', newId)
+      sessionStorage.setItem('chat_session_id', newId)
       sessionIdRef.current = newId
     } else {
       sessionIdRef.current = storedSessionId
@@ -265,7 +265,7 @@ export function ChatWidget() {
     setVisitorName(trimmed)
     setNameSubmitted(true)
     setShowNameInput(false)
-    localStorage.setItem('chat_visitor_name', trimmed)
+    sessionStorage.setItem('chat_visitor_name', trimmed)
     setNameInput('')
   }
 

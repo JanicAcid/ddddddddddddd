@@ -69,7 +69,7 @@ function handleSendOrder(string $botToken, string $chatId): void {
 
 function handleLogOrder(): void { getJsonInput(); jsonResponse(['success' => true, 'logged' => false]); }
 
-// ==================== CHAT SEND (client -> Telegram) ====================
+// ==================== CHAT SEND ====================
 
 function handleChatSend(string $botToken, string $chatId, string $chatDataDir): void {
     $sessionId = ''; $name = 'Клиент'; $message = ''; $uploadedFile = null;
@@ -89,9 +89,7 @@ function handleChatSend(string $botToken, string $chatId, string $chatDataDir): 
     if (empty($sessionId)) $sessionId = 'default';
     $shortCode = substr($sessionId, 0, 6);
 
-    // Build text with Reply button
     $text = "<b>💬 Сообщение с сайта</b>\n<b>Клиент:</b> " . htmlspecialchars($name) . "\n<b>ID:</b> <code>#{$shortCode}</code>\n<b>Время:</b> " . date('d.m.Y H:i:s') . "\n\n" . htmlspecialchars($message ?: '📎 Файл');
-
     $keyboard = json_encode(['inline_keyboard' => [[['text' => "✏️ Ответить #{$shortCode} — {$name}", 'callback_data' => "reply_{$sessionId}"]]]]);
     $botMessageId = 0;
 
@@ -106,7 +104,6 @@ function handleChatSend(string $botToken, string $chatId, string $chatDataDir): 
         $botMessageId = tgSendMsg($botToken, $chatId, $text, $keyboard);
     }
 
-    // Save mapping
     if ($botMessageId > 0) {
         $mf = $chatDataDir . '/mapping.json';
         $m = file_exists($mf) ? (json_decode(file_get_contents($mf), true) ?: []) : [];
@@ -115,7 +112,6 @@ function handleChatSend(string $botToken, string $chatId, string $chatDataDir): 
         file_put_contents($mf, json_encode($m, JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
 
-    // Mark session active
     file_put_contents($chatDataDir . '/session_' . sanitizeFilename($sessionId) . '.json', json_encode(['lastActive' => time(), 'name' => $name]), LOCK_EX);
 
     $r = ['success' => true];
@@ -123,7 +119,7 @@ function handleChatSend(string $botToken, string $chatId, string $chatDataDir): 
     jsonResponse($r);
 }
 
-// ==================== CHAT POLL (client <- Telegram) ====================
+// ==================== CHAT POLL ====================
 
 function handleChatPoll(string $botToken, string $chatId, string $chatDataDir): void {
     $sessionId = $_GET['sessionId'] ?? '';
@@ -146,55 +142,50 @@ function handleChatPoll(string $botToken, string $chatId, string $chatDataDir): 
     jsonResponse(['messages' => $new, 'offset' => count($replies)]);
 }
 
-function autoClean(string $dir: void {
-    // Run cleanup max once per 5 minutes
-    $lockFile = \$dir . '/last_clean.txt';
-    if (file_exists($lockFile) && (time() - (int)file_get_contents($lockFile)) < 300) return;
-    file_put_contents($lockFile, (string)time());
+// ==================== AUTO CLEAN ====================
 
+function autoClean(string $chatDataDir): void {
+    $lf = $chatDataDir . '/last_clean.txt';
+    if (file_exists($lf) && (time() - (int)file_get_contents($lf)) < 300) return;
+    file_put_contents($lf, (string)time());
     $now = time();
 
-    // Remove inactive session files (older than 2 hours)
-    foreach (glob(\$dir . '/session_*.json') as $f) {
-        \$d = json_decode(file_get_contents($f), true) ?: [];
+    foreach (glob($chatDataDir . '/session_*.json') as $f) {
+        $d = json_decode(file_get_contents($f), true) ?: [];
         if ($now - ($d['lastActive'] ?? 0) > 7200) {
-            // Also remove its replies
-            $sid = str_replace('session_', '', basename(\$f, '.json'));
-            $rf = \$dir . '/replies_' . $sid . '.json';
+            $sid = str_replace('session_', '', basename($f, '.json'));
+            $rf = $chatDataDir . '/replies_' . $sid . '.json';
             if (file_exists($rf)) unlink($rf);
             unlink($f);
         }
     }
 
-    // Remove orphan reply files (no matching session, older than 1 hour)
-    foreach (glob(\$dir . '/replies_*.json') as $f) {
-        if (filemtime($f) < ($now - 3600)) {
-            unlink($f);
-        }
+    foreach (glob($chatDataDir . '/replies_*.json') as $f) {
+        if (filemtime($f) < ($now - 3600)) unlink($f);
     }
 
-    // Remove expired pending replies (older than 15 min)
-    $pf = \$dir . '/pending_reply.json';
+    $pf = $chatDataDir . '/pending_reply.json';
     if (file_exists($pf)) {
-        \$p = json_decode(file_get_contents($pf), true) ?: [];
+        $p = json_decode(file_get_contents($pf), true) ?: [];
         if ($now - ($p['ts'] ?? 0) > 900) unlink($pf);
     }
 
-    // Trim mapping to last 100 entries
-    \$mf = \$dir . '/mapping.json';
-    if (file_exists(\$mf)) {
-        $m = json_decode(file_get_contents(\$mf), true) ?: [];
-        if (count(\$m) > 100) {
-            file_put_contents(\$mf, json_encode(array_slice(\$m, -100), JSON_UNESCAPED_UNICODE), LOCK_EX);
+    $mf = $chatDataDir . '/mapping.json';
+    if (file_exists($mf)) {
+        $m = json_decode(file_get_contents($mf), true) ?: [];
+        if (count($m) > 100) {
+            file_put_contents($mf, json_encode(array_slice($m, -100), JSON_UNESCAPED_UNICODE), LOCK_EX);
         }
     }
 }
 
+// ==================== MANUAL CLEAN ====================
+
 function handleChatClean(string $chatDataDir): void {
     $c = 0;
-    // Only delete replies (already delivered). Sessions, mapping, offset preserved.
     foreach (glob($chatDataDir . '/replies_*.json') as $f) { if (unlink($f)) $c++; }
-    $pf = $chatDataDir . '/pending_reply.json'; if (file_exists($pf)) { unlink($pf); $c++; }
+    $pf = $chatDataDir . '/pending_reply.json';
+    if (file_exists($pf)) { unlink($pf); $c++; }
     jsonResponse(['success' => true, 'cleaned' => $c]);
 }
 
@@ -229,48 +220,41 @@ function fetchTelegramUpdates(string $botToken, string $chatId, string $chatData
     } finally { flock($lock, LOCK_UN); fclose($lock); }
 }
 
-// ==================== CALLBACK: operator presses [Reply] ====================
+// ==================== CALLBACK ====================
 
 function processCallback(string $botToken, string $chatId, string $chatDataDir, array $cb): void {
     $fromId = (string)($cb['from']['id'] ?? 0);
     if ($fromId !== (string)$chatId) return;
-
     $data = $cb['data'] ?? '';
     if (strpos($data, 'reply_') !== 0) return;
     $sessionId = substr($data, 6);
-    if (empty($sessionId)) { tgAnswerCb($botToken, $cb['id'], '❌ Ошибка', true); return; }
+    if (empty($sessionId)) { tgAnswerCb($botToken, $cb['id'], 'Ошибка', true); return; }
 
-    // Save pending reply
     file_put_contents($chatDataDir . '/pending_reply.json', json_encode([
         'sessionId' => $sessionId, 'operatorName' => $cb['from']['first_name'] ?? 'Оператор', 'ts' => time()
     ], JSON_UNESCAPED_UNICODE), LOCK_EX);
 
-    // Get client name
     $sf = $chatDataDir . '/session_' . sanitizeFilename($sessionId) . '.json';
     $clientName = 'Клиент';
     if (file_exists($sf)) { $sd = json_decode(file_get_contents($sf), true) ?: []; $clientName = $sd['name'] ?? 'Клиент'; }
     $sc = substr($sessionId, 0, 6);
 
-    // Update button to "selected"
     $msgId = $cb['message']['message_id'] ?? 0;
     if ($msgId) {
-        $kb = json_encode(['inline_keyboard' => [[['text' => "✅ Выбран #{$sc} — {$clientName}. Ждите ответ ↓", 'callback_data' => "noop"]]]]);
+        $kb = json_encode(['inline_keyboard' => [[['text' => "✅ Выбран #{$sc} — {$clientName}. Ждите ответ", 'callback_data' => 'noop']]]]);
         httpRequest("https://api.telegram.org/bot{$botToken}/editMessageReplyMarkup", ['chat_id' => $chatId, 'message_id' => $msgId, 'reply_markup' => $kb]);
     }
-
-    tgAnswerCb($botToken, $cb['id'], "✅ Напишите ответ для {$clientName} (#{$sc})");
+    tgAnswerCb($botToken, $cb['id'], "Напишите ответ для {$clientName} (#{$sc})");
 }
 
-// ==================== OPERATOR MESSAGE: check pending reply ====================
+// ==================== OPERATOR MESSAGE ====================
 
 function processOperatorMsg(string $botToken, string $chatId, string $chatDataDir, array $message): void {
     if ($message['from']['is_bot'] ?? false) return;
     if ((string)($message['chat']['id'] ?? 0) !== (string)$chatId) return;
-
     $text = $message['text'] ?? '';
     if (empty($text)) return;
 
-    // /cancel
     if ($text === '/cancel' || $text === '/отмена') {
         $pf = $chatDataDir . '/pending_reply.json';
         if (file_exists($pf)) unlink($pf);
@@ -278,7 +262,6 @@ function processOperatorMsg(string $botToken, string $chatId, string $chatDataDi
         return;
     }
 
-    // Check pending
     $pf = $chatDataDir . '/pending_reply.json';
     if (!file_exists($pf)) return;
 
@@ -286,14 +269,10 @@ function processOperatorMsg(string $botToken, string $chatId, string $chatDataDi
     $sessionId = $pending['sessionId'] ?? '';
     $operatorName = $pending['operatorName'] ?? 'Оператор';
     if (empty($sessionId)) return;
-
-    // One-shot: delete pending
     unlink($pf);
 
-    // Expire after 10 min
     if (time() - ($pending['ts'] ?? 0) > 600) return;
 
-    // Save reply
     $ts = ($message['date'] ?? time()) * 1000;
     saveReply($chatDataDir, $sessionId, ['type' => 'text', 'text' => $text, 'from' => $operatorName, 'timestamp' => $ts]);
 
@@ -313,7 +292,7 @@ function saveReply(string $dir, string $sid, array $reply): void {
 
 function sanitizeFilename(string $n): string { return preg_replace('/[^a-zA-Z0-9_-]/', '', $n) ?: 'default'; }
 
-// ==================== TELEGRAM SEND HELPERS ====================
+// ==================== TELEGRAM SEND ====================
 
 function tgSendMsg(string $bt, string $cid, string $text, string $kb): int {
     $p = ['chat_id' => $cid, 'text' => $text, 'parse_mode' => 'HTML'];
@@ -338,7 +317,7 @@ function tgSendFile(string $bt, string $cid, string $fp, string $fn, string $mim
     return $r ? (json_decode($r, true)['result']['message_id'] ?? 0) : 0;
 }
 
-function tgSendDocument(string $bt, string $cid, string $html, string $subject): void {
+function sendTelegramDocument(string $bt, string $cid, string $html, string $subject): void {
     $boundary = '----FormBoundary' . bin2hex(random_bytes(8));
     $fn = trim(preg_replace('/[^a-zA-Zа-яА-Я0-9_\-\s]/u', '', $subject)) ?: 'order'; $fn .= '.html';
     $body = "--{$boundary}\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n{$cid}\r\n--{$boundary}\r\nContent-Disposition: form-data; name=\"document\"; filename=\"{$fn}\"\r\nContent-Type: text/html; charset=utf-8\r\n\r\n{$html}\r\n--{$boundary}--\r\n";
@@ -350,7 +329,7 @@ function tgAnswerCb(string $bt, string $cbId, string $text, bool $alert = false)
     httpRequest("https://api.telegram.org/bot{$bt}/answerCallbackQuery", ['callback_query_id' => $cbId, 'text' => $text, 'show_alert' => $alert]);
 }
 
-// ==================== HTTP HELPERS ====================
+// ==================== HELPERS ====================
 
 function jsonResponse(array $d, int $s = 200): void { http_response_code($s); echo json_encode($d, JSON_UNESCAPED_UNICODE); exit; }
 function getJsonInput(): array { $r = file_get_contents('php://input'); return is_array($d = json_decode($r, true)) ? $d : []; }

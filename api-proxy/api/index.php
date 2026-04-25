@@ -80,6 +80,10 @@ try {
             handleChatPoll($botToken, $chatId, $chatDataDir);
             break;
 
+        case 'GET chat/clean':
+            handleChatClean($chatDataDir);
+            break;
+
         default:
             jsonResponse(['error' => 'Not Found'], 404);
     }
@@ -306,6 +310,20 @@ function handleChatPoll(string $botToken, string $chatId, string $chatDataDir): 
     ]);
 }
 
+function handleChatClean(string $chatDataDir): void
+{
+    $count = 0;
+    $files = glob($chatDataDir . '/replies_*.json');
+    foreach ($files as $file) {
+        if (unlink($file)) $count++;
+    }
+    $mappingFile = $chatDataDir . '/mapping.json';
+    if (file_exists($mappingFile)) { unlink($mappingFile); $count++; }
+    $offsetFile = $chatDataDir . '/update_offset.txt';
+    if (file_exists($offsetFile)) { unlink($offsetFile); }
+    jsonResponse(['success' => true, 'cleaned' => $count]);
+}
+
 // ========== TELEGRAM GETUPDATES (replaces webhook) ==========
 
 /**
@@ -408,6 +426,9 @@ function processTelegramUpdate(string $botToken, string $chatId, string $chatDat
     $timestamp = $message['date'] ?? time();
 
     if (empty($text)) return;
+
+    // Ignore old messages (>2min) to prevent stale reply flood
+    if (time() - $timestamp > 120) return;
 
     // Determine target session(s)
     $replyToMessage = $message['reply_to_message'] ?? null;

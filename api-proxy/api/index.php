@@ -192,9 +192,8 @@ function autoClean(string $dir: void {
 
 function handleChatClean(string $chatDataDir): void {
     $c = 0;
+    // Only delete replies (already delivered). Sessions, mapping, offset preserved.
     foreach (glob($chatDataDir . '/replies_*.json') as $f) { if (unlink($f)) $c++; }
-    foreach (glob($chatDataDir . '/session_*.json') as $f) { if (unlink($f)) $c++; }
-    $mf = $chatDataDir . '/mapping.json'; if (file_exists($mf)) { unlink($mf); $c++; }
     $pf = $chatDataDir . '/pending_reply.json'; if (file_exists($pf)) { unlink($pf); $c++; }
     jsonResponse(['success' => true, 'cleaned' => $c]);
 }

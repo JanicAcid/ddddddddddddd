@@ -450,11 +450,7 @@ function processTelegramUpdate(string $botToken, string $chatId, string $chatDat
         $targetSessions = findSessionsByPartialId($chatDataDir, $partialId);
     }
 
-    // Mode 3: Broadcast to all active sessions (last 60 min)
-    if (empty($targetSessions)) {
-        $targetSessions = getActiveSessions($chatDataDir, 3600);
-    }
-
+    // No broadcast - operator must REPLY to bot message
     if (empty($targetSessions)) return;
 
     // Build reply message

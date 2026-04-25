@@ -130,6 +130,7 @@ function handleChatPoll(string $botToken, string $chatId, string $chatDataDir): 
     $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
     if (empty($sessionId)) { jsonResponse(['messages' => [], 'offset' => $offset]); return; }
 
+    autoClean($chatDataDir);
     fetchTelegramUpdates($botToken, $chatId, $chatDataDir);
 
     $rf = $chatDataDir . '/replies_' . sanitizeFilename($sessionId) . '.json';
@@ -143,6 +144,50 @@ function handleChatPoll(string $botToken, string $chatId, string $chatDataDir): 
         }
     }
     jsonResponse(['messages' => $new, 'offset' => count($replies)]);
+}
+
+function autoClean(string $dir: void {
+    // Run cleanup max once per 5 minutes
+    $lockFile = \$dir . '/last_clean.txt';
+    if (file_exists($lockFile) && (time() - (int)file_get_contents($lockFile)) < 300) return;
+    file_put_contents($lockFile, (string)time());
+
+    $now = time();
+
+    // Remove inactive session files (older than 2 hours)
+    foreach (glob(\$dir . '/session_*.json') as $f) {
+        \$d = json_decode(file_get_contents($f), true) ?: [];
+        if ($now - ($d['lastActive'] ?? 0) > 7200) {
+            // Also remove its replies
+            $sid = str_replace('session_', '', basename(\$f, '.json'));
+            $rf = \$dir . '/replies_' . $sid . '.json';
+            if (file_exists($rf)) unlink($rf);
+            unlink($f);
+        }
+    }
+
+    // Remove orphan reply files (no matching session, older than 1 hour)
+    foreach (glob(\$dir . '/replies_*.json') as $f) {
+        if (filemtime($f) < ($now - 3600)) {
+            unlink($f);
+        }
+    }
+
+    // Remove expired pending replies (older than 15 min)
+    $pf = \$dir . '/pending_reply.json';
+    if (file_exists($pf)) {
+        \$p = json_decode(file_get_contents($pf), true) ?: [];
+        if ($now - ($p['ts'] ?? 0) > 900) unlink($pf);
+    }
+
+    // Trim mapping to last 100 entries
+    \$mf = \$dir . '/mapping.json';
+    if (file_exists(\$mf)) {
+        $m = json_decode(file_get_contents(\$mf), true) ?: [];
+        if (count(\$m) > 100) {
+            file_put_contents(\$mf, json_encode(array_slice(\$m, -100), JSON_UNESCAPED_UNICODE), LOCK_EX);
+        }
+    }
 }
 
 function handleChatClean(string $chatDataDir): void {

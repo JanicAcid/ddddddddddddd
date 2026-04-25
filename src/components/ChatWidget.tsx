@@ -146,7 +146,7 @@ export function ChatWidget() {
 
     const checkAvailability = async () => {
       try {
-        const res = await fetch('/api/chat/poll?offset=0&msgIds=')
+        const res = await fetch(`/api/chat/poll?offset=0&msgIds=&sessionId=${encodeURIComponent(sessionIdRef.current)}`)
         if (res.ok) {
           setOperatorAvailable(true)
         } else if (res.status === 503) {
@@ -174,13 +174,14 @@ export function ChatWidget() {
     if (pollTimerRef.current) return
 
     const poll = async () => {
-      if (sentMsgIdsRef.current.length === 0) return
+      if (sentMsgIdsRef.current.length === 0 && offsetRef.current === 0) return
 
       try {
         const msgIds = sentMsgIdsRef.current.join(',')
         const offset = offsetRef.current
+        const sessionId = sessionIdRef.current
         const res = await fetch(
-          `/api/chat/poll?offset=${offset}&msgIds=${encodeURIComponent(msgIds)}`
+          `/api/chat/poll?offset=${offset}&msgIds=${encodeURIComponent(msgIds)}&sessionId=${encodeURIComponent(sessionId)}`
         )
 
         if (!res.ok) return

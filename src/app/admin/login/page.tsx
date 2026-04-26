@@ -75,7 +75,7 @@ export default function AdminLoginPage() {
     }
 
     try {
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=login`, {
+      const res = await fetch(`${APPS_SCRIPT_URL}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login, password }),

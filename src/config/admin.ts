@@ -1,17 +1,27 @@
 // ============================================================================
 // КОНФИГУРАЦИЯ АДМИН-КАБИНЕТА
 // ============================================================================
-// Бэкенд — Google Apps Script (разворачивается как Web App)
-// Инструкция: /google-apps-script-instructions.md
+// Бэкенд — PHP-прокси на Beget хостинге (api/index.php)
+// Прокси работает с Google Sheets API через сервисный аккаунт.
 // ============================================================================
 
-// URL Google Apps Script Web App — вставить после развёртывания
-export const APPS_SCRIPT_URL = ''
+// URL PHP-прокси на хостинге Beget (без trailing slash)
+// Пример: 'https://kassa-cto.ru/api' или '/api'
+export const API_PROXY_URL = process.env.NEXT_PUBLIC_API_PROXY_URL || '/api'
 
-// ID Google Таблицы (из URL: docs.google.com/spreadsheets/d/ID/edit)
-export const GOOGLE_SHEET_ID = ''
+// Для совместимости: admin использует тот же прокси
+export const APPS_SCRIPT_URL = API_PROXY_URL
 
-// Фallback: если Apps Script не настроен — показываем инструкции
+// ID Google Таблицы (для справки, реальный ID в config.php на сервере)
+export const GOOGLE_SHEET_ID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID || ''
+
+// Проверяем, настроен ли бэкенд
 export function isAppsScriptConfigured(): boolean {
-  return APPS_SCRIPT_URL.length > 10
+  // На продакшене — проверяем, что URL задан
+  if (typeof window !== 'undefined') {
+    // На Beget хостинге прокси всегда доступен по /api
+    // Если мы не на Beget (локальная разработка), проверяем переменную
+    return API_PROXY_URL.length > 0
+  }
+  return true // Серверный рендеринг — всегда OK
 }

@@ -10,15 +10,16 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Phone, Menu, X, ChevronRight, MessageCircle } from 'lucide-react'
+import { Phone, Menu, X, ChevronRight, MessageCircle, UserCircle } from 'lucide-react'
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { label: string; href: string; icon?: boolean }[] = [
   { label: 'Главная', href: '/' },
   { label: 'Диагностика', href: '/diagnostika' },
   { label: 'Калькуляторы', href: '/kalkulyatory' },
   { label: 'База знаний', href: '/instructions' },
   { label: 'Услуги', href: '/services' },
   { label: 'Контакты', href: '/contacts' },
+  { label: 'Кабинет', href: '/admin/login', icon: true },
 ]
 
 const MAIN_PHONE = '+7 (921) 940-38-70'
@@ -84,12 +85,13 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
+                  className={`px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors inline-flex items-center gap-1.5 ${
                     isActive(item.href)
                       ? 'bg-[#1e3a5f]/8 text-[#1e3a5f] font-semibold'
                       : 'text-slate-500 hover:text-[#1e3a5f] hover:bg-slate-50'
                   }`}
                 >
+                  {item.icon && <UserCircle className="w-3.5 h-3.5" />}
                   {item.label}
                 </Link>
               ))}
@@ -162,7 +164,10 @@ export function Navbar() {
                       : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  <span>{item.label}</span>
+                  <span className="inline-flex items-center gap-2">
+                    {item.icon && <UserCircle className="w-4 h-4" />}
+                    {item.label}
+                  </span>
                   <ChevronRight className="w-4 h-4 text-slate-300" />
                 </Link>
               ))}

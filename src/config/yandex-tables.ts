@@ -169,14 +169,13 @@ export const YANDEX_DISK_API_BASE = 'https://cloud-api.yandex.net/v1/disk'
 /**
  * URL прокси-сервера для записи в CRM.
  * 
- * Для продакшена укажите URL вашего прокси:
- * - PHP-прокси на Beget: '/api/crm.php' (рекомендуется)
- * - Яндекс Функции: 'https://functions.yandexcloud.net/<function-id>'
- * - Cloudflare Worker: 'https://your-worker.your-name.workers.dev'
+ * Для продакшена (Beget хостинг):
+ * - PHP-прокси: '/api' (рекомендуется — уже настроен)
+ * - Укажите полный URL если хостинг на другом домене: 'https://kassa-cto.ru/api'
  * 
  * Если не настроен — CRM-функционал будет недоступна (кнопки скрываются).
  */
-export const CRM_PROXY_URL = process.env.NEXT_PUBLIC_CRM_PROXY_URL || ''
+export const CRM_PROXY_URL = process.env.NEXT_PUBLIC_CRM_PROXY_URL || process.env.NEXT_PUBLIC_API_PROXY_URL || '/api'
 
 /**
  * Проверить, настроена ли интеграция с CRM.

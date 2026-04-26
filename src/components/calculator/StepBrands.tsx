@@ -448,19 +448,19 @@ export function StepBrands({
           </CardContent>
         </Card>
 
-        {/* Ссылка «Перезвоните мне» — вместо мешающего FAB */}
-        <button
-          type="button"
-          onClick={startConsultation}
-          className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-[#e8a817] hover:text-[#d49a12] font-medium transition-colors"
-        >
-          <Phone className="w-4 h-4" />
-          Не хотите разбираться? Перезвоните мне — менеджер поможет за 15 минут
-        </button>
-
         <Button className="w-full bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 py-5 sm:py-6 text-lg sm:text-xl font-bold" size="lg" onClick={() => goToStep(2)} disabled={!canGoStep2}>
           Далее — выбор услуг <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 ml-2" />
         </Button>
+
+        {/* Ссылка «Перезвоните мне» — под кнопкой «Далее» */}
+        <button
+          type="button"
+          onClick={startConsultation}
+          className="mt-2 flex items-center justify-center gap-1.5 py-1 text-xs text-slate-400 hover:text-[#e8a817] transition-colors"
+        >
+          <Phone className="w-3.5 h-3.5" />
+          Не хотите разбираться? Перезвоните мне — менеджер поможет за 15 минут
+        </button>
       </div>
 
     </div>

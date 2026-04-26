@@ -24,6 +24,13 @@ $botToken = $config['TELEGRAM_BOT_TOKEN'] ?? '';
 $chatId = $config['OPERATOR_CHAT_ID'] ?? '';
 $chatDataDir = __DIR__ . '/chat-data';
 
+// Google Sheets CRM config
+$googleConfig = $config['GOOGLE'] ?? [];
+$gsSheetId = $googleConfig['SHEET_ID'] ?? '';
+$gsAccessToken = $googleConfig['SERVICE_ACCOUNT_KEY_PATH'] ?? '';
+$gsAdminUser = $config['ADMIN_USER'] ?? 'admin';
+$gsAdminPass = $config['ADMIN_PASS'] ?? 'changeme';
+
 if (empty($botToken) || empty($chatId)) { jsonResponse(['error' => 'API not configured'], 500); exit; }
 if (!is_dir($chatDataDir)) { mkdir($chatDataDir, 0755, true); }
 
@@ -40,6 +47,12 @@ try {
         case 'POST chat/send': handleChatSend($botToken, $chatId, $chatDataDir); break;
         case 'GET chat/poll': handleChatPoll($botToken, $chatId, $chatDataDir); break;
         case 'GET chat/clean': handleChatClean($chatDataDir); break;
+        // CRM Google Sheets endpoints
+        case 'POST crm/append': handleCrmAppend($gsSheetId, $googleConfig); break;
+        case 'GET crm/read': handleCrmRead($gsSheetId, $googleConfig); break;
+        case 'POST crm/update': handleCrmUpdate($gsSheetId, $googleConfig); break;
+        // Admin login
+        case 'POST admin/login': handleAdminLogin($gsAdminUser, $gsAdminPass); break;
         default: jsonResponse(['error' => 'Not Found'], 404);
     }
 } catch (Throwable $e) { error_log("API: " . $e->getMessage()); jsonResponse(['error' => 'Internal Server Error'], 500); }
@@ -327,6 +340,289 @@ function sendTelegramDocument(string $bt, string $cid, string $html, string $sub
 
 function tgAnswerCb(string $bt, string $cbId, string $text, bool $alert = false): void {
     httpRequest("https://api.telegram.org/bot{$bt}/answerCallbackQuery", ['callback_query_id' => $cbId, 'text' => $text, 'show_alert' => $alert]);
+}
+
+// ==================== GOOGLE SHEETS CRM ====================
+
+/**
+ * Получить access token для Google Sheets API через сервисный аккаунт (JWT).
+ * Файл ключа — JSON от Google Cloud Console.
+ */
+function getGoogleAccessToken(array $gConfig): ?string {
+    $keyPath = $gConfig['SERVICE_ACCOUNT_KEY_PATH'] ?? '';
+    if (empty($keyPath) || !file_exists($keyPath)) return null;
+
+    $keyData = json_decode(file_get_contents($keyPath), true);
+    if (!$keyData || empty($keyData['client_email']) || empty($keyData['private_key'])) return null;
+
+    $now = time();
+    $header = base64_encode(json_encode(['alg' => 'RS256', 'typ' => 'JWT']));
+    $claim = base64_encode(json_encode([
+        'iss' => $keyData['client_email'],
+        'scope' => 'https://www.googleapis.com/auth/spreadsheets',
+        'aud' => 'https://oauth2.googleapis.com/token',
+        'iat' => $now,
+        'exp' => $now + 3600,
+    ]));
+    $signature = '';
+    openssl_sign("{$header}.{$claim}", $signature, $keyData['private_key'], 'sha256');
+    $jwt = "{$header}.{$claim}." . base64_encode($signature);
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://oauth2.googleapis.com/token',
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query([
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => $jwt,
+        ]),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_CONNECTTIMEOUT => 5,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($code === 200 && $resp) {
+        $data = json_decode($resp, true);
+        return $data['access_token'] ?? null;
+    }
+    error_log("Google Auth failed: HTTP $code, " . ($resp ?: 'no response'));
+    return null;
+}
+
+/**
+ * Чтение Google Sheets через API.
+ */
+function googleSheetsRead(string $sheetId, string $accessToken, string $range = 'Лист1'): ?array {
+    $url = "https://sheets.googleapis.com/v4/spreadsheets/{$sheetId}/values/" . urlencode($range);
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_HTTPHEADER => ["Authorization: Bearer {$accessToken}"],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_CONNECTTIMEOUT => 5,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($code === 200 && $resp) {
+        $data = json_decode($resp, true);
+        return $data;
+    }
+    error_log("Google Sheets read failed: HTTP $code");
+    return null;
+}
+
+/**
+ * Запись строки в Google Sheets (append).
+ */
+function googleSheetsAppend(string $sheetId, string $accessToken, string $range, array $values): bool {
+    $url = "https://sheets.googleapis.com/v4/spreadsheets/{$sheetId}/values/" . urlencode($range) . ":append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS";
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode(['values' => [$values]], JSON_UNESCAPED_UNICODE),
+        CURLOPT_HTTPHEADER => [
+            "Authorization: Bearer {$accessToken}",
+            'Content-Type: application/json',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_CONNECTTIMEOUT => 5,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($code === 200) return true;
+    error_log("Google Sheets append failed: HTTP $code, " . ($resp ?: 'no response'));
+    return false;
+}
+
+/**
+ * Обновление ячеек в Google Sheets.
+ */
+function googleSheetsUpdate(string $sheetId, string $accessToken, string $range, array $values): bool {
+    $url = "https://sheets.googleapis.com/v4/spreadsheets/{$sheetId}/values/" . urlencode($range) . "?valueInputOption=USER_ENTERED";
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_PUT => true,
+        CURLOPT_POSTFIELDS => json_encode(['values' => [$values]], JSON_UNESCAPED_UNICODE),
+        CURLOPT_HTTPHEADER => [
+            "Authorization: Bearer {$accessToken}",
+            'Content-Type: application/json',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_CONNECTTIMEOUT => 5,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($code === 200) return true;
+    error_log("Google Sheets update failed: HTTP $code, " . ($resp ?: 'no response'));
+    return false;
+}
+
+/** Кэш Google access token */
+$_googleTokenCache = ['token' => '', 'expires' => 0];
+
+function getCachedGoogleToken(array $gConfig): ?string {
+    global $_googleTokenCache;
+    if (!empty($_googleTokenCache['token']) && time() < $_googleTokenCache['expires']) {
+        return $_googleTokenCache['token'];
+    }
+    $token = getGoogleAccessToken($gConfig);
+    if ($token) {
+        $_googleTokenCache = ['token' => $token, 'expires' => time() + 3500];
+    }
+    return $token;
+}
+
+/**
+ * CRM: Добавить заявку
+ */
+function handleCrmAppend(string $sheetId, array $gConfig): void {
+    if (empty($sheetId)) { jsonResponse(['error' => 'Google Sheets не настроена. Задайте SHEET_ID в config.php'], 503); return; }
+    $token = getCachedGoogleToken($gConfig);
+    if (!$token) { jsonResponse(['error' => 'Ошибка авторизации Google API'], 503); return; }
+
+    $input = getJsonInput();
+    $values = $input['values'] ?? [];
+    if (empty($values)) { jsonResponse(['error' => 'Нет данных для добавления'], 400); return; }
+
+    // Проверяем, есть ли заголовки — добавляем при первом запросе
+    $headers = $input['headers'] ?? null;
+    if ($headers && is_array($headers)) {
+        $readData = googleSheetsRead($sheetId, $token, 'Лист1!1:1');
+        if (!$readData || empty($readData['values'])) {
+            googleSheetsAppend($sheetId, $token, 'Лист1!A1', $headers);
+        }
+    }
+
+    $ok = googleSheetsAppend($sheetId, $token, 'Лист1!A:A', $values);
+    if ($ok) {
+        jsonResponse(['success' => true]);
+    } else {
+        jsonResponse(['error' => 'Не удалось записать в Google Таблицу'], 500);
+    }
+}
+
+/**
+ * CRM: Прочитать заявки
+ */
+function handleCrmRead(string $sheetId, array $gConfig): void {
+    if (empty($sheetId)) { jsonResponse(['error' => 'Google Sheets не настроена'], 503); return; }
+    $token = getCachedGoogleToken($gConfig);
+    if (!$token) { jsonResponse(['error' => 'Ошибка авторизации Google API'], 503); return; }
+
+    $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 200) : 100;
+    $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+
+    $readData = googleSheetsRead($sheetId, $token, 'Лист1');
+    if (!$readData || empty($readData['values'])) {
+        jsonResponse(['success' => true, 'orders' => [], 'total' => 0, 'headers' => []]);
+        return;
+    }
+
+    $allRows = $readData['values'];
+    $headers = array_shift($allRows);
+
+    // Фильтруем пустые строки
+    $allRows = array_values(array_filter($allRows, fn($r) => count(array_filter($r)) > 0));
+
+    $total = count($allRows);
+
+    // Разворачиваем — последние наверху
+    $allRows = array_reverse($allRows);
+
+    // Срез
+    $sliced = array_slice($allRows, $offset, $limit);
+
+    $orders = [];
+    foreach ($sliced as $i => $row) {
+        $order = ['_row' => (string)($total - $offset - $i)]; // Реальный номер строки в таблице (1-indexed)
+        foreach ($headers as $col => $header) {
+            $order[$header] = $row[$col] ?? '';
+        }
+        $orders[] = $order;
+    }
+
+    jsonResponse(['success' => true, 'orders' => $orders, 'total' => $total, 'headers' => $headers]);
+}
+
+/**
+ * CRM: Обновить заявку (статус, комментарий менеджера)
+ */
+function handleCrmUpdate(string $sheetId, array $gConfig): void {
+    if (empty($sheetId)) { jsonResponse(['error' => 'Google Sheets не настроена'], 503); return; }
+    $token = getCachedGoogleToken($gConfig);
+    if (!$token) { jsonResponse(['error' => 'Ошибка авторизации Google API'], 503); return; }
+
+    $input = getJsonInput();
+    $rowIndex = (int)($input['rowIndex'] ?? 0);
+    $updates = $input['updates'] ?? [];
+    if ($rowIndex <= 0 || empty($updates)) { jsonResponse(['error' => 'Неверные параметры'], 400); return; }
+
+    // Читаем заголовки
+    $readData = googleSheetsRead($sheetId, $token, 'Лист1!1:1');
+    if (!$readData || empty($readData['values'])) {
+        jsonResponse(['error' => 'Не удалось прочитать заголовки таблицы'], 500);
+        return;
+    }
+    $headers = $readData['values'][0];
+
+    // Ищем колонки для обновления
+    foreach ($updates as $key => $value) {
+        $colIndex = array_search($key, $headers);
+        if ($colIndex === false) {
+            // Пробуем по альтернативным ключам
+            $altMap = [
+                'Статус' => ['Статус', 'статус'],
+                'Комментарий менеджера' => ['Комментарий менеджера', 'Примечание менеджера'],
+            ];
+            $found = false;
+            foreach ($altMap[$key] ?? [] as $alt) {
+                $colIndex = array_search($alt, $headers);
+                if ($colIndex !== false) { $found = true; break; }
+            }
+            if (!$found) continue;
+        }
+        $colLetter = chr(65 + $colIndex); // A, B, C...
+        $range = "Лист1!{$colLetter}{$rowIndex}";
+        googleSheetsUpdate($sheetId, $token, $range, [$value]);
+    }
+
+    jsonResponse(['success' => true]);
+}
+
+// ==================== ADMIN LOGIN ====================
+
+function handleAdminLogin(string $adminUser, string $adminPass): void {
+    $input = getJsonInput();
+    $login = $input['login'] ?? '';
+    $password = $input['password'] ?? '';
+    if (empty($login) || empty($password)) { jsonResponse(['error' => 'Заполните все поля'], 400); return; }
+
+    if ($login === $adminUser && $password === $adminPass) {
+        $token = bin2hex(random_bytes(32));
+        // Сохраняем токен в файл (простая сессия)
+        $sessionDir = __DIR__ . '/sessions';
+        if (!is_dir($sessionDir)) mkdir($sessionDir, 0755, true);
+        file_put_contents($sessionDir . '/' . $token . '.json', json_encode([
+            'login' => $login, 'ts' => time(), 'ip' => $_SERVER['REMOTE_ADDR'] ?? '',
+        ], JSON_UNESCAPED_UNICODE), LOCK_EX);
+        jsonResponse(['success' => true, 'token' => $token]);
+    } else {
+        jsonResponse(['success' => false, 'error' => 'Неверный логин или пароль']);
+    }
 }
 
 // ==================== HELPERS ====================

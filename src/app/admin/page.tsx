@@ -59,7 +59,7 @@ export default function AdminDashboard() {
     try {
       const token = getToken()
       if (!token) { window.location.href = '/admin/login'; return }
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=getOrders&token=${encodeURIComponent(token)}`)
+      const res = await fetch(`${APPS_SCRIPT_URL}/crm/read?limit=100&token=${encodeURIComponent(token)}`)
       const d = await res.json()
       if (!res.ok || d.error) {
         if (d.error?.includes('auth') || d.error?.includes('session') || res.status === 401) {
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
     setUpdateLoading(rowIndex)
     try {
       const token = getToken()
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=updateOrder`, {
+      const res = await fetch(`${APPS_SCRIPT_URL}/crm/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     setUpdateLoading(rowIndex)
     try {
       const token = getToken()
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=updateOrder`, {
+      const res = await fetch(`${APPS_SCRIPT_URL}/crm/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -424,40 +424,30 @@ ${clientComment ? `<div class="cb"><strong>Комментарий клиента
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">1</span>
                   <div>
                     <p className="text-sm font-medium text-slate-800">Создайте Google Таблицу</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Откройте <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Sheets</a> и создайте новую таблицу. В первой строке (Лист1) добавьте заголовки колонок:</p>
-                    <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700 overflow-x-auto">
-                      Дата/время | Заказ № | Клиент | Телефон | Email | ККМ | Состояние | Услуги | Сумма | Комментарий | Статус | Комментарий менеджера | Файл заказа
-                    </div>
+                    <p className="text-sm text-slate-500 mt-0.5">Откройте <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Sheets</a> и создайте новую таблицу. Заголовки создадутся автоматически при первой заявке.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">2</span>
                   <div>
-                    <p className="text-sm font-medium text-slate-800">Создайте сервисный аккаунт Google Cloud</p>
+                    <p className="text-sm font-medium text-slate-800">Настройте Google Cloud сервисный аккаунт</p>
                     <p className="text-sm text-slate-500 mt-0.5">
-                      Перейдите в <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Cloud Console</a> → создайте проект → включите <strong>Google Sheets API</strong> → создайте сервисный аккаунт → скачайте JSON-ключ.
+                      <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-[#1e3a5f] underline">Google Cloud Console</a> → включите <strong>Google Sheets API</strong> → создайте сервисный аккаунт → скачайте JSON-ключ → загрузите в папку <code className="bg-slate-100 px-1 rounded text-xs">api/</code> на хостинге.
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">3</span>
                   <div>
-                    <p className="text-sm font-medium text-slate-800">Дайте доступ сервисному аккаунту к таблице</p>
-                    <p className="text-sm text-slate-500 mt-0.5">Откройте созданную Google Таблицу → кнопку «Поделиться» → вставьте email сервисного аккаунта из JSON-ключа (поле <code className="bg-slate-100 px-1 rounded text-xs">client_email</code>) → роль «Редактор».</p>
+                    <p className="text-sm font-medium text-slate-800">Настройте config.php на хостинге</p>
+                    <p className="text-sm text-slate-500 mt-0.5">В файле <code className="bg-slate-100 px-1 rounded text-xs">api/config.php</code> на Beget укажите: SHEET_ID таблицы, путь к JSON-ключу, логин и пароль администратора. Шаблон: <code className="bg-slate-100 px-1 rounded text-xs">config.example.php</code></p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white text-xs font-bold flex items-center justify-center">4</span>
                   <div>
-                    <p className="text-sm font-medium text-slate-800">Настройте переменные окружения в Vercel</p>
-                    <p className="text-sm text-slate-500 mt-0.5">В панели Vercel → Settings → Environment Variables добавьте:</p>
-                    <div className="mt-2 space-y-1.5">
-                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-                        <span className="font-mono font-semibold text-slate-700">GOOGLE_SHEETS_ID</span>
-                        <span className="text-slate-400 mx-2">=</span>
-                        <span className="text-slate-500">ID из URL таблицы (docs.google.com/spreadsheets/d/<strong>ID</strong>/edit)</span>
-                      </div>
-                    </div>
+                    <p className="text-sm font-medium text-slate-800">Дайте доступ к таблице</p>
+                    <p className="text-sm text-slate-500 mt-0.5">Google Таблица → «Поделиться» → email сервисного аккаунта из JSON-ключа → роль «Редактор».</p>
                   </div>
                 </div>
               </div>

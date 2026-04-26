@@ -95,13 +95,12 @@ export async function sendOrderToYandexTable(order: OrderData): Promise<CrmSendR
     const rowValues = orderToRowValues(order, 0) // Нумерация на стороне прокси
 
     // Отправляем запрос к прокси
-    const response = await fetch(CRM_PROXY_URL, {
+    const response = await fetch(`${CRM_PROXY_URL}/crm/append`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        action: 'append_row',
         headers: getColumnHeaders(),
         values: rowValues,
         orderType: order.orderType,
@@ -160,7 +159,7 @@ export async function fetchCrmOrders(limit: number = 50): Promise<CrmFetchResult
   }
 
   try {
-    const response = await fetch(`${CRM_PROXY_URL}?action=read&limit=${limit}`, {
+    const response = await fetch(`${CRM_PROXY_URL}/crm/read?limit=${limit}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

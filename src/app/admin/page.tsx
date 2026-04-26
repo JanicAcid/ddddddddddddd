@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import {
   LogOut, RefreshCw, Search, ChevronDown, ChevronUp,
-  Filter, X, Loader2, AlertTriangle, Building2,
+  Filter, X, Loader2, AlertTriangle, Building2, ArrowLeft,
   Phone, Mail, ClipboardList, Download, FileText,
   CheckCircle2, Clock, Ban, MessageSquare, Printer
 } from 'lucide-react'
+import { APPS_SCRIPT_URL, isAppsScriptConfigured } from '@/config/admin'
 
 interface Order {
   _row: string
@@ -44,22 +46,29 @@ export default function AdminDashboard() {
   const [updateLoading, setUpdateLoading] = useState<string | null>(null)
   const [logoutLoading, setLogoutLoading] = useState(false)
 
+  const getToken = () => localStorage.getItem('admin_token') || ''
+
   const fetchOrders = useCallback(async () => {
+    if (!isAppsScriptConfigured()) {
+      setError('GOOGLE_APPS_SCRIPT_NOT_CONFIGURED')
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/admin/orders')
-      if (res.status === 401) {
-        window.location.href = '/admin/login'
-        return
-      }
-      if (res.status === 503) {
-        const d = await res.json()
-        setError(d.error || 'Google Sheets не настроена')
-        return
-      }
+      const token = getToken()
+      if (!token) { window.location.href = '/admin/login'; return }
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=getOrders&token=${encodeURIComponent(token)}`)
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || 'Ошибка')
+      if (!res.ok || d.error) {
+        if (d.error?.includes('auth') || d.error?.includes('session') || res.status === 401) {
+          localStorage.removeItem('admin_token')
+          window.location.href = '/admin/login'
+          return
+        }
+        throw new Error(d.error || 'Ошибка')
+      }
       setData(d)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки')
@@ -72,7 +81,8 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     setLogoutLoading(true)
-    await fetch('/api/admin/auth', { method: 'DELETE' })
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_token_time')
     window.location.href = '/admin/login'
   }
 
@@ -80,10 +90,12 @@ export default function AdminDashboard() {
     if (!data) return
     setUpdateLoading(rowIndex)
     try {
-      const res = await fetch('/api/admin/orders', {
-        method: 'PATCH',
+      const token = getToken()
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=updateOrder`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          token,
           rowIndex,
           updates: { Статус: newStatus },
         }),
@@ -109,10 +121,12 @@ export default function AdminDashboard() {
   const handleCommentUpdate = async (rowIndex: string, comment: string) => {
     setUpdateLoading(rowIndex)
     try {
-      const res = await fetch('/api/admin/orders', {
-        method: 'PATCH',
+      const token = getToken()
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=updateOrder`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          token,
           rowIndex,
           updates: { 'Комментарий менеджера': comment },
         }),

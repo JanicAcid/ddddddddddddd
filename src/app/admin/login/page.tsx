@@ -1,77 +1,103 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { Lock, Eye, EyeOff, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { Lock, Eye, EyeOff, RefreshCw, AlertCircle, Loader2, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import { APPS_SCRIPT_URL, isAppsScriptConfigured } from '@/config/admin'
 
-interface CaptchaData {
-  question: string
-  token: string
+// ═══════════════════════════════════════════════════════════════════════════════
+// Клиентская капча — математический пример
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function generateCaptcha() {
+  const ops = ['+', '-', '×'] as const
+  const op = ops[Math.floor(Math.random() * ops.length)]
+  let a: number, b: number, answer: number
+
+  switch (op) {
+    case '+':
+      a = Math.floor(Math.random() * 20) + 1
+      b = Math.floor(Math.random() * 20) + 1
+      answer = a + b
+      break
+    case '-':
+      a = Math.floor(Math.random() * 20) + 5
+      b = Math.floor(Math.random() * a) + 1
+      answer = a - b
+      break
+    case '×':
+      a = Math.floor(Math.random() * 10) + 1
+      b = Math.floor(Math.random() * 10) + 1
+      answer = a * b
+      break
+  }
+
+  return { question: `${a} ${op} ${b} = ?`, answer: String(answer) }
 }
 
 export default function AdminLoginPage() {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [captchaInput, setCaptchaInput] = useState('')
-  const [captchaToken, setCaptchaToken] = useState('')
-  const [captchaQuestion, setCaptchaQuestion] = useState('')
+  const [captcha, setCaptcha] = useState(generateCaptcha)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [captchaLoading, setCaptchaLoading] = useState(true)
-
-  const fetchCaptcha = useCallback(async () => {
-    setCaptchaLoading(true)
-    try {
-      const res = await fetch('/api/admin/auth?captcha=1')
-      const data: CaptchaData = await res.json()
-      setCaptchaQuestion(data.question)
-      setCaptchaToken(data.token)
-      setCaptchaInput('')
-    } catch {
-      setCaptchaQuestion('Ошибка загрузки')
-      setCaptchaToken('')
-    } finally {
-      setCaptchaLoading(false)
-    }
-  }, [])
+  const [configured, setConfigured] = useState(true)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    fetchCaptcha()
-  }, [fetchCaptcha])
+    setConfigured(isAppsScriptConfigured())
+  }, [])
 
   const refreshCaptcha = useCallback(() => {
-    fetchCaptcha()
-  }, [fetchCaptcha])
+    setCaptcha(generateCaptcha())
+    setCaptchaInput('')
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
+    // Проверяем капчу локально
+    if (captchaInput.trim() !== captcha.answer) {
+      setError('Неверный ответ на капчу')
+      refreshCaptcha()
+      setLoading(false)
+      return
+    }
+
+    if (!configured) {
+      setError('Сервер не настроен. Обратитесь к администратору.')
+      setLoading(false)
+      return
+    }
+
     try {
-      const res = await fetch('/api/admin/auth', {
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          login,
-          password,
-          captchaAnswer: captchaInput,
-          captchaToken,
-        }),
+        body: JSON.stringify({ login, password }),
       })
 
       const data = await res.json()
 
-      if (!res.ok) {
+      if (!res.ok || !data.success) {
         setError(data.error || 'Ошибка авторизации')
         refreshCaptcha()
         return
       }
 
-      // Успешный вход — редирект в кабинет
+      // Сохраняем сессию
+      if (data.token) {
+        localStorage.setItem('admin_token', data.token)
+        localStorage.setItem('admin_token_time', String(Date.now()))
+      }
+
       window.location.href = '/admin'
     } catch {
-      setError('Ошибка соединения')
+      setError('Ошибка соединения с сервером. Проверьте настройки.')
       refreshCaptcha()
     } finally {
       setLoading(false)
@@ -90,6 +116,19 @@ export default function AdminLoginPage() {
           <p className="text-sm text-slate-500 mt-1">ООО «Теллур-Интех»</p>
         </div>
 
+        {/* Предупреждение если не настроен */}
+        {!configured && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              Кабинет не настроен
+            </p>
+            <p className="text-xs text-amber-700 mt-1">
+              Google Apps Script не подключён. Для работы кабинета необходимо настроить серверную часть. Обратитесь к разработчику.
+            </p>
+          </div>
+        )}
+
         {/* Форма */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 space-y-5">
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -100,6 +139,7 @@ export default function AdminLoginPage() {
               </label>
               <input
                 id="login"
+                ref={inputRef}
                 type="text"
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
@@ -137,27 +177,22 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            {/* Капча — серверная */}
+            {/* Клиентская капча */}
             <div>
               <label htmlFor="captcha" className="block text-sm font-medium text-slate-700 mb-1.5">
                 Капча
               </label>
               <div className="flex items-center gap-3">
-                <div className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-semibold text-slate-700 select-none min-h-[42px] flex items-center">
-                  {captchaLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                  ) : (
-                    captchaQuestion
-                  )}
+                <div className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-base font-mono font-bold text-[#1e3a5f] select-none min-h-[42px] flex items-center justify-center tracking-wider">
+                  {captcha.question}
                 </div>
                 <button
                   type="button"
                   onClick={refreshCaptcha}
-                  disabled={captchaLoading}
-                  className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors shrink-0 disabled:opacity-40"
+                  className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
                   title="Обновить капчу"
                 >
-                  <RefreshCw className={`w-4 h-4 ${captchaLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className="w-4 h-4" />
                 </button>
               </div>
               <input
@@ -170,7 +205,6 @@ export default function AdminLoginPage() {
                 autoComplete="off"
                 className="w-full mt-2 px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] transition-colors"
               />
-              <p className="mt-1 text-xs text-slate-400">Капта действует 5 минут. Обновляется автоматически при ошибке.</p>
             </div>
 
             {/* Ошибка */}
@@ -184,7 +218,7 @@ export default function AdminLoginPage() {
             {/* Кнопка */}
             <button
               type="submit"
-              disabled={loading || !login || !password || !captchaInput || !captchaToken}
+              disabled={loading || !login || !password || !captchaInput}
               className="w-full py-3 text-sm font-semibold text-white rounded-lg bg-[#1e3a5f] hover:bg-[#1e3a5f]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -199,9 +233,12 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Только для авторизованных сотрудников
-        </p>
+        <div className="mt-6 flex items-center justify-center">
+          <Link href="/" className="text-sm text-slate-400 hover:text-[#1e3a5f] transition-colors inline-flex items-center gap-1.5">
+            <ArrowLeft className="w-4 h-4" />
+            На главную
+          </Link>
+        </div>
       </div>
     </div>
   )

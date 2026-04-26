@@ -117,7 +117,7 @@ export function Navbar() {
               {/* Мобильный: иконка чата */}
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event('open-chat'))}
+                onClick={() => (window as any).Tawk_API?.toggle()}
                 className="sm:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#e8a817] hover:bg-[#d49a12] text-white transition-colors shadow-md"
                 aria-label="Открыть чат"
               >

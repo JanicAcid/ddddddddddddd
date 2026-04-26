@@ -160,7 +160,7 @@ export default function HomePage() {
             </Link>
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event('open-chat'))}
+              onClick={() => (window as any).Tawk_API?.toggle()}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 bg-white/15 hover:bg-white/25 text-white text-base sm:text-lg font-medium rounded-xl transition-all border border-white/20 hover:border-white/30"
             >
               <MessageCircle className="w-5 h-5" />
@@ -539,7 +539,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event('open-chat'))}
+                onClick={() => (window as any).Tawk_API?.toggle()}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-[#1e3a5f] font-bold rounded-xl transition-colors shadow-md"
               >
                 <MessageCircle className="w-5 h-5" />

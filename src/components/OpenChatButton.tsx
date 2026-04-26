@@ -10,7 +10,11 @@ export function OpenChatButton({
   return (
     <button
       type="button"
-      onClick={() => window.dispatchEvent(new Event('open-chat'))}
+      onClick={() => {
+        if (typeof window !== 'undefined' && (window as any).Tawk_API) {
+          (window as any).Tawk_API.toggle()
+        }
+      }}
       className={className}
     >
       {children}

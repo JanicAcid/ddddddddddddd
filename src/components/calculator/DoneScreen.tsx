@@ -403,7 +403,7 @@ export function DoneScreen({
               <a href="tel:+78124659457" className="flex items-center gap-1.5 text-red-700 font-medium hover:text-red-900 hover:underline">
                 <Phone className="w-3.5 h-3.5" />Позвонить
               </a>
-              <button type="button" onClick={() => window.dispatchEvent(new Event('open-chat'))} className="flex items-center gap-1.5 text-red-700 font-medium hover:text-red-900 hover:underline">
+              <button type="button" onClick={() => (window as any).Tawk_API?.toggle()} className="flex items-center gap-1.5 text-red-700 font-medium hover:text-red-900 hover:underline">
                 <MessageSquare className="w-3.5 h-3.5" />Написать в чат
               </button>
             </div>
@@ -442,7 +442,7 @@ export function DoneScreen({
             </a>
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event('open-chat'))}
+              onClick={() => (window as any).Tawk_API?.toggle()}
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
               <MessageSquare className="w-4 h-4" />
               Написать в чат
@@ -474,7 +474,7 @@ export function DoneScreen({
             </div>
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event('open-chat'))}
+              onClick={() => (window as any).Tawk_API?.toggle()}
               className="w-full sm:w-auto bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold px-6 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-[#e8a817]/30 flex items-center justify-center gap-2"
             >
               <MessageSquare className="w-4 h-4" />

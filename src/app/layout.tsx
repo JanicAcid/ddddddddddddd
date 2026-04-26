@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
 import { YandexMetrika } from "@/components/YandexMetrika";
-import { ChatWidget } from "@/components/ChatWidget";
+import Script from "next/script";
 import { FaqWidget } from "@/components/FaqWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { Navbar } from "@/components/Navbar";
@@ -104,8 +104,19 @@ export default function RootLayout({
           </div>
         </noscript>
         <ScrollToTopButton />
-        <ChatWidget />
         <FaqWidget />
+        {/* Tawk.to chat widget */}
+        <Script id="tawk-to" strategy="afterInteractive">
+          {`var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+          (function(){
+          var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+          s1.async=true;
+          s1.src='https://embed.tawk.to/e13865b51957dbc8d2a1f749ae1ac1cfba45a5b8/default';
+          s1.charset='UTF-8';
+          s1.setAttribute('crossorigin','*');
+          s0.parentNode.insertBefore(s1,s0);
+          })();`}
+        </Script>
       </body>
     </html>
   );

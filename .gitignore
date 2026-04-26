@@ -30,3 +30,5 @@ download/
 .vscode/
 .idea/
  
+api-proxy/api/config.php
+api-proxy/api/google-service-account.json

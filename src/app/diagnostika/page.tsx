@@ -890,7 +890,7 @@ export default function DiagnostikaPage() {
               </p>
               <button
                 type="button"
-                onClick={() => (window as any).Tawk_API?.toggle()}
+                onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
                 className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: '#e8a817', color: '#fff' }}
               >

@@ -125,7 +125,7 @@ export default function KalkulyatoryPage() {
           </a>
           <button
             type="button"
-            onClick={() => (window as any).Tawk_API?.toggle()}
+            onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
             className="inline-flex items-center gap-2 px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-medium rounded-xl transition-colors"
           >
             Открыть чат

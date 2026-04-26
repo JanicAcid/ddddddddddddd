@@ -8,16 +8,13 @@ export function OpenChatButton({
   className?: string
 }) {
   return (
-    <button
-      type="button"
-      onClick={() => {
-        if (typeof window !== 'undefined' && (window as any).Tawk_API) {
-          (window as any).Tawk_API.toggle()
-        }
-      }}
+    <a
+      href="https://t.me/spbmarkirovka_bot"
+      target="_blank"
+      rel="noopener noreferrer"
       className={className}
     >
       {children}
-    </button>
+    </a>
   )
 }

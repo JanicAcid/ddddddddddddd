@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,9 +12,11 @@ import { Badge } from '@/components/ui/badge'
 import {
   ScanLine, Info, AlertCircle,
   Package, Wine, PackageOpen, ExternalLink,
-  Download, BadgeCheck, Star, Handshake, ArrowRight
+  Download, BadgeCheck, Star, Handshake, ArrowRight,
+  Search, ChevronDown, ChevronUp, Monitor, X
 } from 'lucide-react'
 import { KKM_BRANDS } from '@/config/brands'
+import { KKM_REGISTRY, KKM_BRANDS_LIST, getBaseKkm } from '@/config/kkm-registry'
 import { sigmaTariffLink } from '@/config/services'
 import type { KkmType, KkmCondition, HintButtonProps } from './types'
 import { HintButton } from './HintButton'
@@ -149,28 +151,17 @@ export function StepBrands({
             {/* Заголовок перед брендами */}
             <h3 className="text-base sm:text-lg font-bold text-[#1e3a5f]">Выберите Вашу кассу</h3>
 
-            {/* Сетка касс */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
-              {visibleKkmTypes.map(([key, kkm]) => {
-                const brand = KKM_BRANDS[key] || { color: '#64748b', bg: '#64748b' }
-                const isSelected = kkmType === key
-                const isLargeLogo = key === 'shuttle' || key === 'mercury'
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setKkmType(key as KkmType)}
-                    className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all duration-200 cursor-pointer group overflow-hidden px-1 pt-3 pb-2 sm:pt-4 sm:pb-3 ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/90'}`}
-                    style={isSelected ? { borderColor: brand.color } : undefined}
-                  >
-                    <div className={`relative ${isLargeLogo ? 'h-[51px] sm:h-[57px]' : 'h-[25px] sm:h-[28px]'} w-full`}>
-                      <Image src={`/brands/${key}.webp`} alt={kkm.shortName} fill className={`object-contain transition-all duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-30 group-hover:blur-[2px]'}`} quality={100} unoptimized sizes="(max-width: 640px) 30vw, 200px" />
-                    </div>
-                    <span className={`text-lg sm:text-2xl font-bold leading-none whitespace-nowrap ${isSelected ? 'text-[#1e3a5f] opacity-100 mt-1' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center'} transition-all duration-200 pointer-events-none`}>{kkm.shortName}</span>
-                  </button>
-                )
-              })}
-            </div>
+            {/* Популярные кассы — иконки (быстрый выбор) */}
+            <BrandQuickSelect
+              selectedId={kkmType}
+              onSelect={(modelId) => setKkmType(getBaseKkm(modelId) as KkmType)}
+            />
+
+            {/* Выбор конкретной модели из реестра */}
+            <KkmModelSelector
+              selectedId={kkmType}
+              onSelect={(modelId) => setKkmType(getBaseKkm(modelId) as KkmType)}
+            />
 
             {/* Плавающая кнопка «Оставить заявку» — FAB */}
 
@@ -462,6 +453,220 @@ export function StepBrands({
         </Button>
       </div>
 
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Компонент быстрых брендов — иконки популярных касс
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const POPULAR_BRANDS = ['mercury', 'atol', 'shuttle', 'evotor', 'aqsi', 'pioneer'] as const
+
+function BrandQuickSelect({ selectedId, onSelect }: { selectedId: string; onSelect: (id: string) => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      {POPULAR_BRANDS.map(key => {
+        const brand = KKM_BRANDS[key] || { color: '#64748b' }
+        const isSelected = selectedId === key
+        const isLargeLogo = key === 'shuttle' || key === 'mercury'
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onSelect(key)}
+            className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all duration-200 cursor-pointer group overflow-hidden px-1 pt-3 pb-2 sm:pt-4 sm:pb-3 active:scale-95 ${isSelected ? 'bg-white' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/90'}`}
+            style={isSelected ? { borderColor: brand.color } : undefined}
+          >
+            <div className={`relative ${isLargeLogo ? 'h-[51px] sm:h-[57px]' : 'h-[25px] sm:h-[28px]'} w-full`}>
+              <Image
+                src={`/brands/${key}.webp`}
+                alt={key}
+                fill
+                className={`object-contain transition-all duration-200 ${isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-30 group-hover:blur-[2px]'}`}
+                quality={100}
+                unoptimized
+                sizes="(max-width: 640px) 30vw, 200px"
+              />
+            </div>
+            <span className={`text-base sm:text-xl font-bold leading-none whitespace-nowrap ${isSelected ? 'text-[#1e3a5f] opacity-100 mt-1' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center'} transition-all duration-200 pointer-events-none`}>
+              {key === 'shuttle' ? 'Штрих-М' : key === 'aqsi' ? 'AQSI' : key.charAt(0).toUpperCase() + key.slice(1)}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Компонент выбора модели из реестра — поиск + выпадающий список
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function KkmModelSelector({ selectedId, onSelect }: { selectedId: string; onSelect: (id: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [brandFilter, setBrandFilter] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  // Закрытие при клике снаружи
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false)
+        setSearch('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Фокус на поиск при открытии
+  useEffect(() => {
+    if (isOpen && searchRef.current) {
+      setTimeout(() => searchRef.current?.focus(), 100)
+    }
+  }, [isOpen])
+
+  // Фильтрация моделей
+  const filtered = KKM_REGISTRY.filter(m => {
+    const matchSearch = search.length === 0 ||
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.short.toLowerCase().includes(search.toLowerCase()) ||
+      m.brand.toLowerCase().includes(search.toLowerCase())
+    const matchBrand = brandFilter === '' || m.brand === brandFilter
+    return matchSearch && matchBrand
+  })
+
+  // Найти выбранную модель
+  const selectedModel = KKM_REGISTRY.find(m => m.id === selectedId) ||
+    KKM_REGISTRY.find(m => getBaseKkm(m.id) === selectedId)
+
+  return (
+    <div ref={ref} className="space-y-2">
+      {/* Подпись */}
+      <p className="text-xs text-slate-500">
+        Не нашли свою кассу? Выберите конкретную модель из реестра ККТ
+      </p>
+
+      {/* Кнопка-триггер */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border-2 text-left transition-all active:scale-[0.99] ${isOpen ? 'border-[#1e3a5f] ring-2 ring-[#1e3a5f]/10' : selectedModel ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/[0.03]' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a5f] shrink-0" />
+          {selectedModel ? (
+            <span className="text-sm sm:text-base font-medium text-[#1e3a5f] truncate">
+              {selectedModel.brand} {selectedModel.name}
+            </span>
+          ) : (
+            <span className="text-sm sm:text-base text-slate-400">Выберите модель кассы...</span>
+          )}
+        </div>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 shrink-0" />
+        )}
+      </button>
+
+      {/* Выпадающая панель */}
+      {isOpen && (
+        <div className="rounded-xl border-2 border-[#1e3a5f]/20 bg-white shadow-xl overflow-hidden animate-fade-in-up">
+          {/* Строка поиска */}
+          <div className="p-2 border-b border-slate-100">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 shrink-0" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Поиск по названию или бренду..."
+                className="w-full pl-8 pr-8 py-2 sm:py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f]/40 placeholder:text-slate-400"
+              />
+              {search && (
+                <button type="button" onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Фильтр по брендам — горизонтальный скролл */}
+          <div className="flex gap-1.5 px-2 py-2 border-b border-slate-100 overflow-x-auto scrollbar-hide">
+            <button
+              type="button"
+              onClick={() => setBrandFilter('')}
+              className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${brandFilter === '' ? 'bg-[#1e3a5f] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            >
+              Все бренды
+            </button>
+            {KKM_BRANDS_LIST.map(b => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => setBrandFilter(brandFilter === b ? '' : b)}
+                className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${brandFilter === b ? 'bg-[#1e3a5f] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+
+          {/* Список моделей */}
+          <div className="max-h-64 overflow-y-auto overscroll-contain">
+            {filtered.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm text-slate-400">
+                Ничего не найдено. Попробуйте другой запрос.
+              </div>
+            ) : (
+              filtered.map(m => {
+                const base = getBaseKkm(m.id)
+                const isSelected = selectedId === m.id || selectedId === base
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => { onSelect(m.id); setIsOpen(false); setSearch('') }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${isSelected ? 'bg-[#1e3a5f]/[0.07]' : 'hover:bg-slate-50'}`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-slate-900">{m.name}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">{m.brand}</span>
+                        {m.group === 'popular' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8a817]/15 text-[#1e3a5f] font-medium">Популярная</span>
+                        )}
+                      </div>
+                      {m.group === 'smart' && (
+                        <span className="text-[10px] text-slate-400 mt-0.5 block">Смарт-терминал</span>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-[#1e3a5f] flex items-center justify-center shrink-0">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                )
+              })
+            )}
+          </div>
+
+          {/* Подвал */}
+          <div className="px-3 py-2 border-t border-slate-100 bg-slate-50 text-center">
+            <span className="text-[10px] text-slate-400">
+              {filtered.length} из {KKM_REGISTRY.length} моделей в реестре
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

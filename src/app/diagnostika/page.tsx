@@ -6,9 +6,14 @@ import {
   Phone, ChevronRight, ChevronLeft, AlertTriangle,
   CheckCircle2, HelpCircle, ArrowRight, ShieldCheck,
   Monitor, Settings, FileText, Eye, Wifi,
-  Clock, MessageCircle, Loader2, Send, Calculator, RefreshCw
+  Clock, MessageCircle, Loader2, Send, Calculator, RefreshCw, Save
 } from 'lucide-react'
 import { KKT_CATALOG } from '@/config/kkt-catalog'
+import {
+  isCrmConfigured,
+  createDiagnosticOrder,
+  sendOrderToYandexTable,
+} from '@/lib/yandex-tables-service'
 
 // ============================================================================
 // ТИПЫ
@@ -336,6 +341,9 @@ export default function DiagnostikaPage() {
   const [selectedModel, setSelectedModel] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [crmSending, setCrmSending] = useState(false)
+  const [crmResult, setCrmResult] = useState<'idle' | 'success' | 'error'>('idle')
+  const showCrmButton = isCrmConfigured()
 
   const filteredModels = useMemo(() => {
     const mfr = KKT_CATALOG.find(m => m.id === selectedManufacturer)
@@ -461,7 +469,7 @@ export default function DiagnostikaPage() {
     </table>
   </div>
   <div style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;">
-    ООО &quot;Теллур-Интех&quot; | +7 (812) 465-94-57 | push@tellur.spb.ru | kassa-cto.ru
+    ООО &quot;Теллур-Интех&quot; | +7 (921) 940-38-70 | push@tellur.spb.ru | kassa-cto.ru
   </div>
 </div></body></html>`
   }
@@ -504,31 +512,30 @@ export default function DiagnostikaPage() {
         return `${label} ${r.title}`
       }).join(' | ')
 
-      await fetch('/api/log-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderNum,
-          clientName: clientName.trim(),
-          phone: clientPhone.trim(),
-          kkmType: kkmDisplay || '',
-          kkmCondition: '',
-          services: ['Диагностика маркировки'],
-          total: 0,
-          comment: `Результат: ${summary}${kkmDisplay ? ` | Касса: ${kkmDisplay}` : ''}`,
-          orderHtml: reportHtml,
-        }),
-      })
-
       // Отправляем в Telegram
-      await fetch('/api/send-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: `🔍 Диагностика: ${clientName.trim()} | ${clientPhone.trim()}`,
-          html: telegramReport,
-        }),
-      })
+      window.open(`https://t.me/+79219403870?text=${encodeURIComponent(telegramReport)}`, '_blank')
+
+      // Отправляем в CRM (если настроено)
+      if (showCrmButton) {
+        setCrmSending(true)
+        setCrmResult('idle')
+        try {
+          const kktMfr2 = KKT_CATALOG.find(m => m.id === selectedManufacturer)
+          const order = createDiagnosticOrder({
+            clientName: clientName.trim(),
+            clientPhone: clientPhone.trim(),
+            kktModel: kktMfr2 ? (selectedModel ? `${kktMfr2.name} ${selectedModel}` : kktMfr2.name) : (selectedManufacturer === '_none' ? 'Нет кассы' : undefined),
+            kktBrand: kktMfr2?.name,
+            scores: results.map(r => ({ title: r.title, score: r.score, maxScore: r.maxScore, status: r.status })),
+          })
+          const crmRes = await sendOrderToYandexTable(order)
+          setCrmResult(crmRes.success ? 'success' : 'error')
+        } catch {
+          setCrmResult('error')
+        } finally {
+          setCrmSending(false)
+        }
+      }
 
       setStep(10)
     } catch {
@@ -885,18 +892,39 @@ export default function DiagnostikaPage() {
               <h2 className="text-base sm:text-lg font-bold text-white leading-snug mb-2">
                 Обнаружены проблемы?
               </h2>
-              <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-5">
+              <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-4">
                 Наши специалисты исправят ошибки маркировки за 1 рабочий день. Без остановки вашей работы.
               </p>
-              <button
-                type="button"
-                onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
-                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: '#e8a817', color: '#fff' }}
-              >
-                <MessageCircle className="w-5 h-5" />
-                Получить настройку под ключ
-              </button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.open('https://t.me/+79219403870', '_blank')}
+                  className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: '#e8a817', color: '#fff' }}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Получить настройку под ключ
+                </button>
+                {showCrmButton && (
+                  <button
+                    type="button"
+                    disabled={crmSending}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold transition-all border-2 border-white/30 hover:border-white/60 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {crmSending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : crmResult === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    {crmSending ? 'Сохраняем...' : crmResult === 'success' ? 'Сохранено в CRM ✓' : 'Сохранить в CRM'}
+                  </button>
+                )}
+              </div>
+              {crmResult === 'error' && (
+                <p className="text-xs text-red-300 mt-2">Не удалось сохранить в CRM.</p>
+              )}
               <div className="mt-3 text-center">
                 <Link
                   href="/kalkulyatory/markirovka"

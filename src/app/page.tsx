@@ -7,6 +7,7 @@ import {
   Monitor, Tag, ChevronRight, FileText, HelpCircle,
   CheckCircle, Star, Building2, Users, Wrench, Footprints, Package, QrCode, Shirt, Store, Settings
 } from 'lucide-react'
+import { ContactDropdown } from '@/components/ContactDropdown'
 
 // ============================================================================
 // ГЛАВНАЯ — Центр поддержки пользователей ККТ
@@ -158,16 +159,12 @@ export default function HomePage() {
               <Calculator className="w-5 h-5" />
               Рассчитать стоимость маркировки
             </Link>
-            <button
-              type="button"
-              onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 bg-white/15 hover:bg-white/25 text-white text-base sm:text-lg font-medium rounded-xl transition-all border border-white/20 hover:border-white/30"
-            >
+            <ContactDropdown variant="hero">
               <MessageCircle className="w-5 h-5" />
               Задать вопрос
-            </button>
+            </ContactDropdown>
             <a
-              href="tel:+78124659457"
+              href="tel:+79219403870"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:py-4 bg-white/10 hover:bg-white/20 text-white text-base sm:text-lg font-medium rounded-xl transition-all border border-white/15 hover:border-white/25"
             >
               <Phone className="w-5 h-5" />
@@ -521,11 +518,11 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6">
               <a
-                href="tel:+78124659457"
+                href="tel:+79219403870"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#e8a817]/25"
               >
                 <Phone className="w-5 h-5" />
-                +7 (812) 465-94-57
+                +7 (921) 940-38-70
               </a>
               <a
                 href="tel:+78123210606"
@@ -537,14 +534,10 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-[#1e3a5f] font-bold rounded-xl transition-colors shadow-md"
-              >
+              <ContactDropdown variant="cta">
                 <MessageCircle className="w-5 h-5" />
                 Открыть чат
-              </button>
+              </ContactDropdown>
               <a
                 href="mailto:push@tellur.spb.ru"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-white/80 hover:text-white text-sm font-medium transition-colors"

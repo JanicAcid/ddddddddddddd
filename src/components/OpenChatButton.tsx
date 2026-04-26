@@ -9,7 +9,7 @@ export function OpenChatButton({
 }) {
   return (
     <a
-      href="https://t.me/spbmarkirovka_bot"
+      href="https://t.me/+79219403870"
       target="_blank"
       rel="noopener noreferrer"
       className={className}

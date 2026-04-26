@@ -410,11 +410,11 @@ export default function ChestnyznakPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
-              href="tel:+78124659457"
+              href="tel:+79219403870"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-colors shadow-md"
             >
               <Phone className="w-5 h-5" />
-              +7 (812) 465-94-57
+              +7 (921) 940-38-70
             </a>
             <Link
               href="/"

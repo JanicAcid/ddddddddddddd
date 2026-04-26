@@ -21,8 +21,8 @@ const NAV_ITEMS = [
   { label: 'Контакты', href: '/contacts' },
 ]
 
-const MAIN_PHONE = '+7 (812) 465-94-57'
-const MAIN_PHONE_HREF = 'tel:+78124659457'
+const MAIN_PHONE = '+7 (921) 940-38-70'
+const MAIN_PHONE_HREF = 'tel:+79219403870'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -117,7 +117,7 @@ export function Navbar() {
               {/* Мобильный: иконка чата */}
               <button
                 type="button"
-                onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
+                onClick={() => window.open('https://t.me/+79219403870', '_blank')}
                 className="sm:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#e8a817] hover:bg-[#d49a12] text-white transition-colors shadow-md"
                 aria-label="Открыть чат"
               >

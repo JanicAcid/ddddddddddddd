@@ -47,7 +47,7 @@ export default async function ComingSoonPage({ params }: PageProps) {
           Все калькуляторы
         </Link>
         <a
-          href="tel:+78124659457"
+          href="tel:+79219403870"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-colors"
         >
           <Clock className="w-4 h-4" />

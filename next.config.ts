@@ -1,17 +1,18 @@
 import type { NextConfig } from "next";
 
 // Инкрементировать при необходимости принудительной пересборки
-const BUILD_VERSION = 10;
+const BUILD_VERSION = 12;
 
 const nextConfig: NextConfig = {
   output: 'export',
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  reactStrictMode: false,
+  reactStrictMode: true,
   async redirects() {
     return [
       {
@@ -37,8 +38,8 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mc.yandex.ru https://www.googletagmanager.com https://cdn.jsdelivr.net",
-              "connect-src 'self' https://mc.yandex.ru https://www.googletagmanager.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mc.yandex.ru https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net",
+              "connect-src 'self' https://mc.yandex.ru https://www.googletagmanager.com https://www.google-analytics.com",
               "img-src 'self' data: https: blob:",
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self' https://fonts.gstatic.com",

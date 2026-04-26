@@ -3,7 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
 import { YandexMetrika } from "@/components/YandexMetrika";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { TelegramButton } from "@/components/TelegramButton";
+import { CookieConsent } from "@/components/CookieConsent";
 import { FaqWidget } from "@/components/FaqWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { Navbar } from "@/components/Navbar";
@@ -90,6 +92,7 @@ export default function RootLayout({
       >
         <JsonLd />
         <YandexMetrika />
+        <GoogleAnalytics />
         <Navbar />
         <div className="flex-1 flex flex-col">{children}</div>
         <SiteFooter />
@@ -106,6 +109,7 @@ export default function RootLayout({
         <ScrollToTopButton />
         <FaqWidget />
         <TelegramButton />
+        <CookieConsent />
       </body>
     </html>
   );

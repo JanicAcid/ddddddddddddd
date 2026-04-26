@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useCallback, useState, useEffect } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,10 +10,15 @@ import { Label } from '@/components/ui/label'
 import {
   CheckCheck, CreditCard, AlertCircle, Printer,
   Phone, MessageSquare, Download, X, ArrowLeft, CheckCircle2, Info,
-  Clock, Zap, ShieldCheck, Headphones, ChevronRight
+  Clock, Zap, ShieldCheck, Headphones, ChevronRight, Database, Loader2, Save
 } from 'lucide-react'
 import { PHONES } from '@/config/contacts'
 import type { DoneScreenProps, GenerateOrderHtmlParams } from './types'
+import {
+  isCrmConfigured,
+  createCalculatorOrder,
+  sendOrderToYandexTable,
+} from '@/lib/yandex-tables-service'
 
 // ============================================================================
 // ГЕНЕРАЦИЯ HTML ЗАКАЗ-НАРЯДА
@@ -204,62 +209,35 @@ export function DoneScreen({
     URL.revokeObjectURL(url)
   }, [orderHtml, safeOrderNum])
 
-  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  // Формируем текст заявки для Telegram
+  const telegramMessage = useMemo(() => {
+    const correctionLabel = isCorrection && !isConsultation ? ' КОРРЕКТИРОВКА' : ''
+    const consultationLabel = isConsultation ? ' КОНСУЛЬТАЦИЯ' : ''
+    const lines = [
+      `Заказ-наряд №${safeOrderNum} от ${orderDate}${correctionLabel}${consultationLabel}`,
+      '',
+      `Клиент: ${clientData.name || 'Не указано'}`,
+      `Телефон: ${clientData.phone || 'Не указано'}`,
+      `ИНН: ${clientData.inn || 'Не указано'}`,
+      `Email: ${clientData.email || 'Не указано'}`,
+      '',
+      `Касса: ${effectiveKkmInfo.name || kkmType}`,
+      `Состояние: ${condLabel}`,
+      `Модель: ${clientData.kkmModel || 'Не указано'}`,
+      '',
+      `Услуги:`,
+      ...totalCalc.items.map((item, idx) => `${idx + 1}. ${item.name} — ${item.price.toLocaleString('ru-RU')} руб.`),
+      '',
+      `ИТОГО: ${totalCalc.total.toLocaleString('ru-RU')} руб.`,
+    ]
+    if (clientData.comment) lines.push('', `Комментарий: ${clientData.comment}`)
+    return lines.join('\n')
+  }, [safeOrderNum, orderDate, isCorrection, isConsultation, clientData, effectiveKkmInfo, kkmType, condLabel, totalCalc])
 
-  // Автоотправка заказа в Telegram при появлении экрана
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setSendStatus('sending')
-      try {
-        const correctionLabel = isCorrection && !isConsultation ? ' ⚡ КОРРЕКТИРОВКА' : ''
-        const consultationLabel = isConsultation ? ' 📋 КОНСУЛЬТАЦИЯ' : ''
-        const subject = `Заказ-наряд №${safeOrderNum} от ${orderDate}${correctionLabel}${consultationLabel} — ${clientData.name || 'клиент'}`
-        const engineerHtml = generateOrderHtml({
-          effectiveKkmInfo, kkmCondition, kkmType, clientData, totalCalc,
-          step2Selections, step3Selections, scannerChecked, fnChecked, productCardCount, serviceContractChecked, evotorRestore, sigmaHelpChecked, unsureFnsRegistration,
-          includeChecklist: true,
-          isCorrection: isCorrection && !isConsultation,
-          isConsultation,
-          correctionTime,
-          orderNum: safeOrderNum
-        })
-        const res = await fetch('/api/send-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject, html: engineerHtml })
-        })
-        if (cancelled) return
-        if (!res.ok) throw new Error('Send failed')
-
-        // Параллельно логируем в Google Sheets (не блокируем отправку)
-        fetch('/api/log-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderNum: safeOrderNum,
-            clientName: clientData.name || '',
-            phone: clientData.phone || '',
-            email: clientData.email || '',
-            kkmType: effectiveKkmInfo.name || kkmType,
-            kkmCondition: kkmCondition,
-            services: totalCalc.items.map(i => i.name),
-            total: totalCalc.total,
-            isConsultation: isConsultation || undefined,
-            comment: clientData.comment || '',
-            orderHtml: engineerHtml,
-          }),
-        }).catch(err => console.error('Google Sheets log error:', err))
-
-        setSendStatus('sent')
-      } catch (err) {
-        if (cancelled) return
-        console.error('Order send error:', err)
-        setSendStatus('error')
-      }
-    })()
-    return () => { cancelled = true }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const handleSendToTelegram = useCallback(() => {
+    const url = `https://t.me/+79219403870?text=${encodeURIComponent(telegramMessage)}`
+    window.open(url, '_blank')
+  }, [telegramMessage])
 
   const handleWebShare = useCallback(async () => {
     try {
@@ -279,6 +257,38 @@ export function DoneScreen({
       handleSaveFile()
     }
   }, [orderHtml, orderNum, orderDate, totalCalc, handleSaveFile])
+
+  // ---- CRM: состояние и обработчик ----
+  const [crmSending, setCrmSending] = useState(false)
+  const [crmResult, setCrmResult] = useState<'idle' | 'success' | 'error'>('idle')
+  const showCrmButton = isCrmConfigured()
+
+  const handleSaveToCrm = useCallback(async () => {
+    setCrmSending(true)
+    setCrmResult('idle')
+    try {
+      const servicesStr = totalCalc.items.map(i => i.name).join(', ')
+      const order = createCalculatorOrder({
+        clientName: clientData.name || '',
+        clientPhone: clientData.phone || '',
+        clientEmail: clientData.email || '',
+        clientInn: clientData.inn || '',
+        kktModel: clientData.kkmModel || effectiveKkmInfo.name || kkmType,
+        kktBrand: kkmType === 'atol' ? 'Атол' : kkmType === 'mercury' ? 'Меркурий' : kkmType === 'evotor' ? 'Эвотор' : kkmType === 'sigma' ? 'Сигма' : undefined,
+        kktCondition: kkmCondition === 'new' ? 'Новая' : kkmCondition === 'used' ? 'Б/у' : kkmCondition === 'old' ? 'Текущая (рабочая)' : '',
+        services: servicesStr,
+        total: totalCalc.total,
+        comment: clientData.comment || (isCorrection ? 'Корректировка предыдущей заявки' : undefined),
+        isConsultation,
+      })
+      const result = await sendOrderToYandexTable(order)
+      setCrmResult(result.success ? 'success' : 'error')
+    } catch {
+      setCrmResult('error')
+    } finally {
+      setCrmSending(false)
+    }
+  }, [clientData, effectiveKkmInfo, kkmType, kkmCondition, totalCalc, isCorrection, isConsultation])
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
@@ -383,39 +393,47 @@ export function DoneScreen({
         </CardContent>
       </Card>
 
-      {/* Уведомление об автоотправке */}
-      {sendStatus === 'sent' && (
-        <div className="flex items-start gap-2.5 p-3 bg-green-50 border border-green-200 rounded-xl animate-fade-in-up">
-          <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-medium text-green-800">Заявка отправлена менеджеру</p>
-            <p className="text-green-700 mt-0.5">Наш специалист свяжется с Вами для уточнения деталей.</p>
-          </div>
-        </div>
-      )}
-      {sendStatus === 'error' && (
-        <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl animate-fade-in-up">
-          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-medium text-red-800">Не удалось отправить заявку</p>
-            <p className="text-red-700 mt-0.5">Сбой при отправке. Сохраните заказ-наряд и свяжитесь с нами:</p>
-            <div className="flex flex-col sm:flex-row gap-2 mt-2">
-              <a href="tel:+78124659457" className="flex items-center gap-1.5 text-red-700 font-medium hover:text-red-900 hover:underline">
-                <Phone className="w-3.5 h-3.5" />Позвонить
-              </a>
-              <button type="button" onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')} className="flex items-center gap-1.5 text-red-700 font-medium hover:text-red-900 hover:underline">
-                <MessageSquare className="w-3.5 h-3.5" />Написать в чат
+      {/* Отправить заявку в Telegram */}
+      <div className="flex items-start gap-2.5 p-3 bg-blue-50 border border-blue-200 rounded-xl animate-fade-in-up">
+        <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-blue-800">Отправьте заявку менеджеру</p>
+          <p className="text-xs text-blue-700 mt-0.5 mb-2">Нажмите кнопку — откроется чат в Telegram с готовым текстом заявки. Просто отправьте его.</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleSendToTelegram}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0088cc] hover:bg-[#006daa] text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Отправить в Telegram
+            </button>
+            {showCrmButton && (
+              <button
+                type="button"
+                onClick={handleSaveToCrm}
+                disabled={crmSending}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-[#1e3a5f]/20 hover:border-[#1e3a5f] text-[#1e3a5f] text-sm font-bold rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {crmSending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : crmResult === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {crmSending ? 'Сохраняем...' : crmResult === 'success' ? 'Сохранено в CRM' : 'Сохранить в CRM'}
               </button>
-            </div>
+            )}
           </div>
+          {crmResult === 'error' && (
+            <p className="text-xs text-red-600 mt-1.5">Не удалось сохранить в CRM. Заявка отправлена через Telegram.</p>
+          )}
+          {crmResult === 'success' && (
+            <p className="text-xs text-emerald-600 mt-1.5">Заявка сохранена в Яндекс Таблицу CRM.</p>
+          )}
         </div>
-      )}
-      {sendStatus === 'sending' && (
-        <div className="flex items-center gap-2.5 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-          <span className="inline-block w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin shrink-0" />
-          <p className="text-sm text-blue-700">Отправляем заявку менеджеру...</p>
-        </div>
-      )}
+      </div>
 
       {/* Кнопки сохранения */}
       <Card>
@@ -436,13 +454,13 @@ export function DoneScreen({
           </div>
           <Separator />
           <div className="flex flex-col sm:flex-row gap-2 text-sm">
-            <a href="tel:+78124659457" className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
+            <a href="tel:+79219403870" className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
               <Phone className="w-4 h-4" />
               {PHONES[0].label}
             </a>
             <button
               type="button"
-              onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
+              onClick={() => window.open('https://t.me/+79219403870', '_blank')}
               className="flex items-center gap-2 justify-center py-2 text-[#1e3a5f] font-medium hover:underline">
               <MessageSquare className="w-4 h-4" />
               Написать в чат
@@ -474,7 +492,7 @@ export function DoneScreen({
             </div>
             <button
               type="button"
-              onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
+              onClick={() => window.open('https://t.me/+79219403870', '_blank')}
               className="w-full sm:w-auto bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold px-6 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-[#e8a817]/30 flex items-center justify-center gap-2"
             >
               <MessageSquare className="w-4 h-4" />

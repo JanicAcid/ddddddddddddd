@@ -260,11 +260,11 @@ export default function MarkirovkaOdezhdyPage() {
               Оставить заявку
             </OpenChatButton>
             <a
-              href="tel:+78124659457"
+              href="tel:+79219403870"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-medium rounded-xl transition-colors"
             >
               <Phone className="w-5 h-5" />
-              +7 (812) 465-94-57
+              +7 (921) 940-38-70
             </a>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-white/50">

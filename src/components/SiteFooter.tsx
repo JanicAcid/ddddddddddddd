@@ -4,7 +4,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Phone, Mail, MapPin, Lock } from 'lucide-react'
+import { Phone, Mail, MapPin } from 'lucide-react'
 
 const NAV_LINKS = [
   { label: 'Главная', href: '/' },
@@ -72,9 +72,9 @@ export function SiteFooter() {
           <div>
             <h4 className="text-sm font-bold mb-3 text-white/90">Контакты</h4>
             <div className="space-y-2.5">
-              <a href="tel:+78124659457" className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
+              <a href="tel:+79219403870" className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
                 <Phone className="w-4 h-4 shrink-0" />
-                +7 (812) 465-94-57
+                +7 (921) 940-38-70
               </a>
               <a href="tel:+78123210606" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
                 <Phone className="w-4 h-4 shrink-0" />
@@ -94,14 +94,19 @@ export function SiteFooter() {
 
         {/* Нижняя строка */}
         <div className="mt-8 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
-          <p className="order-2 sm:order-1">© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
-          <div className="flex items-center gap-3 order-1 sm:order-2">
-            <p className="text-center sm:text-right">Центр технического обслуживания кассового оборудования</p>
-            <Link href="/admin/login" className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors" title="Кабинет менеджера">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Кабинет</span>
-            </Link>
-          </div>
+          <p>© {new Date().getFullYear()} ООО «Теллур-Интех». Все права защищены.</p>
+          <p className="text-center sm:text-right">Центр технического обслуживания кассового оборудования</p>
+        </div>
+
+        {/* Юридические ссылки */}
+        <div className="mt-3 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-white/30">
+          <Link href="/politika-konfidentsialnosti" className="hover:text-white/60 transition-colors">
+            Политика конфиденциальности
+          </Link>
+          <span className="hidden sm:inline text-white/10">|</span>
+          <Link href="/polzovatelskoe-soglashenie" className="hover:text-white/60 transition-colors">
+            Пользовательское соглашение
+          </Link>
         </div>
       </div>
     </footer>

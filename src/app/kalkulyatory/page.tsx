@@ -118,14 +118,14 @@ export default function KalkulyatoryPage() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <a
-            href="tel:+78124659457"
+            href="tel:+79219403870"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#e8a817] hover:bg-[#d49a12] text-white font-bold rounded-xl transition-colors shadow-md"
           >
-            +7 (812) 465-94-57
+            +7 (921) 940-38-70
           </a>
           <button
             type="button"
-            onClick={() => window.open('https://t.me/spbmarkirovka_bot', '_blank')}
+            onClick={() => window.open('https://t.me/+79219403870', '_blank')}
             className="inline-flex items-center gap-2 px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-medium rounded-xl transition-colors"
           >
             Открыть чат

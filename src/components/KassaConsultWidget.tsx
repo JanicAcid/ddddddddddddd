@@ -2,9 +2,14 @@
 
 import { useState } from 'react'
 import {
-  ChevronDown, ChevronLeft, ArrowRight, Loader2, Send,
-  CheckCircle, Phone, Store, User,
+  ChevronDown, ChevronLeft, ArrowRight,
+  CheckCircle, Phone, Store, User, Send, Loader2, Save, CheckCircle2
 } from 'lucide-react'
+import {
+  isCrmConfigured,
+  createKassaConsultOrder,
+  sendOrderToYandexTable,
+} from '@/lib/yandex-tables-service'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Данные для подбора кассы
@@ -84,47 +89,54 @@ export default function KassaConsultWidget() {
   const [budget, setBudget] = useState('')
   const [clientName, setClientName] = useState('')
   const [clientPhone, setClientPhone] = useState('')
-  const [sending, setSending] = useState(false)
   const [sendOk, setSendOk] = useState(false)
+  const [crmSending, setCrmSending] = useState(false)
+  const [crmResult, setCrmResult] = useState<'idle' | 'success' | 'error'>('idle')
+  const showCrmButton = isCrmConfigured()
 
   const rec = step >= 4 ? (getRecommendations(bizType, kassaFormat, budget) || getGenericRecommendations(kassaFormat, budget)) : null
 
-  const handleSend = async () => {
-    setSending(true)
-    try {
-      const modelsStr = rec ? rec.models.map(m => `${m.name} (${m.price})`).join(', ') : 'Не определены'
-      await fetch('/api/send-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: `Подбор кассы: ${clientName.trim()} | ${clientPhone.trim()}`,
-          html: `ПОДБОР КАССЫ\n${clientName.trim()}\n${clientPhone.trim()}\n\nТип бизнеса: ${bizType}\nФормат: ${kassaFormat}\nБюджет: ${budget}\n\nРекомендации:\n${modelsStr}`,
-        }),
+  const handleSend = () => {
+    const modelsStr = rec ? rec.models.map(m => `${m.name} (${m.price})`).join(', ') : 'Не определены'
+    const text = [
+      `ПОДБОР КАССЫ`,
+      ``,
+      `Имя: ${clientName.trim()}`,
+      `Телефон: ${clientPhone.trim()}`,
+      `Тип бизнеса: ${bizType}`,
+      `Формат: ${kassaFormat}`,
+      `Бюджет: ${budget}`,
+      ``,
+      `Рекомендации: ${modelsStr}`,
+    ].join('\n')
+    window.open(`https://t.me/+79219403870?text=${encodeURIComponent(text)}`, '_blank')
+
+    // Отправляем в CRM (если настроено)
+    if (showCrmButton) {
+      setCrmSending(true)
+      setCrmResult('idle')
+      const order = createKassaConsultOrder({
+        clientName: clientName.trim(),
+        clientPhone: clientPhone.trim(),
+        bizType,
+        kassaFormat,
+        budget,
+        recommendations: modelsStr,
       })
-      await fetch('/api/log-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderNum: `КАССА-${Date.now().toString().slice(-6)}`,
-          clientName: clientName.trim(),
-          phone: clientPhone.trim(),
-          kkmType: rec ? rec.models[0]?.name || '' : '',
-          kkmCondition: '',
-          services: ['Консультация по подбору кассы'],
-          total: 0,
-          comment: `Подбор кассы | Тип: ${bizType} | Формат: ${kassaFormat} | Бюджет: ${budget} | Рекомендация: ${modelsStr}`,
-        }),
+      sendOrderToYandexTable(order).then(res => {
+        setCrmResult(res.success ? 'success' : 'error')
+        setCrmSending(false)
+      }).catch(() => {
+        setCrmResult('error')
+        setCrmSending(false)
       })
-      setSendOk(true)
-      setStep(5)
-    } catch {
-      // silent
-    } finally {
-      setSending(false)
     }
+
+    setSendOk(true)
+    setStep(5)
   }
 
-  const reset = () => { setStep(0); setBizType(''); setKassaFormat(''); setBudget(''); setClientName(''); setClientPhone(''); setSendOk(false) }
+  const reset = () => { setStep(0); setBizType(''); setKassaFormat(''); setBudget(''); setClientName(''); setClientPhone(''); setSendOk(false); setCrmResult('idle') }
 
   return (
     <section className="mb-10 sm:mb-12">
@@ -296,18 +308,18 @@ export default function KassaConsultWidget() {
                 <button
                   type="button"
                   onClick={handleSend}
-                  disabled={!clientName.trim() || !clientPhone.trim() || sending}
+                  disabled={!clientName.trim() || !clientPhone.trim()}
                   className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold rounded-xl transition-all ${
-                    clientName.trim() && clientPhone.trim() && !sending
-                      ? 'bg-[#e8a817] hover:bg-[#d49a12] text-white shadow-lg shadow-[#e8a817]/25'
+                    clientName.trim() && clientPhone.trim()
+                      ? 'bg-[#0088cc] hover:bg-[#006daa] text-white shadow-lg shadow-[#0088cc]/25'
                       : 'bg-slate-100 text-slate-300 cursor-not-allowed'
                   }`}
                 >
-                  {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Отправляем...</> : <><Send className="w-4 h-4" /> Получить консультацию</>}
+                  <Send className="w-4 h-4" /> Отправить в Telegram
                 </button>
               </div>
-              <a href="tel:+78124659457" className="block text-center text-xs text-slate-400 hover:text-[#1e3a5f] transition-colors mt-1">
-                Или позвоните: +7 (812) 465-94-57
+              <a href="tel:+79219403870" className="block text-center text-xs text-slate-400 hover:text-[#1e3a5f] transition-colors mt-1">
+                Или позвоните: +7 (921) 940-38-70
               </a>
             </div>
           </div>
@@ -319,12 +331,21 @@ export default function KassaConsultWidget() {
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 sm:p-6 text-center">
           <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
           <h3 className="text-base font-bold text-emerald-800 mb-1">Заявка отправлена</h3>
-          <p className="text-sm text-emerald-700 leading-relaxed mb-4">
+          <p className="text-sm text-emerald-700 leading-relaxed mb-2">
             Спасибо, {clientName.trim()}! Специалист свяжется с вами по номеру {clientPhone.trim()} для бесплатной консультации по подбору кассы.
           </p>
+          {crmResult === 'success' && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 rounded-full mb-3">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-xs font-semibold text-emerald-700">Заявка сохранена в CRM</span>
+            </div>
+          )}
+          {crmResult === 'error' && (
+            <p className="text-xs text-amber-600 mb-2">CRM недоступна, но заявка отправлена через Telegram.</p>
+          )}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
-              href="tel:+78124659457"
+              href="tel:+79219403870"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#e8a817] hover:bg-[#d49a12] text-white text-sm font-bold rounded-xl transition-colors"
             >
               <Phone className="w-4 h-4" /> Позвонить сейчас

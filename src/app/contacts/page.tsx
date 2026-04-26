@@ -49,8 +49,8 @@ export default function ContactsPage() {
       {/* Main Phone CTA */}
       <div className="bg-gradient-to-r from-[#e8a817] to-[#d49a12] rounded-2xl p-5 sm:p-6 text-center mb-6 sm:mb-8">
         <p className="text-white/80 text-sm mb-1">Бесплатная консультация</p>
-        <a href="tel:+78124659457" className="inline-block text-2xl sm:text-3xl font-extrabold text-white">
-          +7 (812) 465-94-57
+        <a href="tel:+79219403870" className="inline-block text-2xl sm:text-3xl font-extrabold text-white">
+          +7 (921) 940-38-70
         </a>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-white/70">
           <a href="tel:+78123210606" className="hover:text-white transition-colors">+7 (812) 321-06-06</a>

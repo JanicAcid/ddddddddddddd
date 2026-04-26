@@ -1,10 +1,43 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Script from 'next/script'
 
 const YM_ID = 108406091
 
+const CONSENT_KEY = 'cookie-consent-accepted'
+const CONSENT_EVENT = 'cookie-consent-changed'
+
+function hasAnalyticsConsent(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const raw = localStorage.getItem(CONSENT_KEY)
+    if (!raw) return false
+    const data = JSON.parse(raw)
+    return data?.accepted === true && data?.categories?.analytics_yandex === true
+  } catch {
+    return false
+  }
+}
+
 export function YandexMetrika() {
+  const [consentGiven, setConsentGiven] = useState(false)
+
+  useEffect(() => {
+    setConsentGiven(hasAnalyticsConsent())
+
+    const handleConsentChange = () => {
+      setConsentGiven(hasAnalyticsConsent())
+    }
+
+    window.addEventListener(CONSENT_EVENT, handleConsentChange)
+    return () => window.removeEventListener(CONSENT_EVENT, handleConsentChange)
+  }, [])
+
+  if (!consentGiven) {
+    return null
+  }
+
   return (
     <>
       <Script id="yandex-metrika" strategy="afterInteractive">

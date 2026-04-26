@@ -37,7 +37,7 @@ const organization = {
     },
     {
       '@type': 'ContactPoint',
-      telephone: '+7-812-465-94-57',
+      telephone: '+7-921-940-38-70',
       contactType: 'customer service',
       areaServed: { '@type': 'City', name: 'Пушкин' },
       availableLanguage: 'Russian',
@@ -90,7 +90,7 @@ const localBusiness = {
   priceRange: '$$',
   currenciesAccepted: 'RUB',
   paymentAccepted: 'Наличные, Безналичный расчёт',
-  telephone: ['+7-812-321-06-06', '+7-812-465-94-57', '+7-813-714-08-95', '+7-921-932-41-63', '+7-921-903-43-26'],
+  telephone: ['+7-921-940-38-70', '+7-812-321-06-06', '+7-813-714-08-95'],
   email: ['tellur@tellur.spb.ru', 'push@tellur.spb.ru', 'gtn@tellur.spb.ru'],
   address: [
     {

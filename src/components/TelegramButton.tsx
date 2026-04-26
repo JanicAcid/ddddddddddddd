@@ -5,10 +5,26 @@ import { MessageCircle, X, Phone } from 'lucide-react'
 import { FaTelegram } from 'react-icons/fa'
 import { SiMax } from 'react-icons/si'
 
-const TELEGRAM_URL = 'https://t.me/spbmarkirovka_bot'
+const TELEGRAM_URL = 'https://t.me/+79219403870'
 const MAX_URL = 'https://max.ru/u/f9LHodD0cOKAQIkb0s8W9FEngaXuCgU--hLEErjZL5jCKC4-Wr8lbwVsZO4'
-const PHONE_URL = 'tel:+78124659457'
-const PHONE_DISPLAY = '+7 (812) 465-94-57'
+const PHONE_URL = 'tel:+79219403870'
+const PHONE_DISPLAY = '+7 (921) 940-38-70'
+
+// MAX иконка — градиентный квадрат с буквой "а"
+function MaxIcon({ className = 'w-5 h-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none">
+      <defs>
+        <linearGradient id="max-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0080FF" />
+          <stop offset="100%" stopColor="#8000FF" />
+        </linearGradient>
+      </defs>
+      <rect width="24" height="24" rx="5" fill="url(#max-grad)" />
+      <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="700" fontFamily="Arial,sans-serif">a</text>
+    </svg>
+  )
+}
 
 export function TelegramButton() {
   const [isOpen, setIsOpen] = useState(false)
@@ -46,8 +62,8 @@ export function TelegramButton() {
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all text-gray-900 hover:scale-105 active:scale-95 no-underline min-w-[200px]"
         >
-          <div className="w-10 h-10 rounded-full bg-[#6B2FA0] flex items-center justify-center shrink-0">
-            <SiMax className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+            <MaxIcon className="w-10 h-10 rounded-lg" />
           </div>
           <div>
             <p className="text-sm font-semibold leading-tight">МАКС</p>

@@ -83,6 +83,7 @@ export function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const sendingRef = useRef(false)
 
   // Load from sessionStorage on mount (per-tab isolation — new tab = new session)
   useEffect(() => {
@@ -279,8 +280,8 @@ export function ChatWidget() {
   // Send text message
   const sendMessage = async () => {
     const trimmedInput = input.trim()
-    if (!trimmedInput || sending) return
-
+    if (!trimmedInput || sendingRef.current) return
+    sendingRef.current = true
     setSending(true)
     setErrorMessage(null)
 
@@ -323,6 +324,7 @@ export function ChatWidget() {
       setMessages((prev) => prev.slice(0, -1))
       setInput(trimmedInput)
     } finally {
+      sendingRef.current = false
       setSending(false)
       setTimeout(() => setErrorMessage(null), 4000)
     }
@@ -330,7 +332,8 @@ export function ChatWidget() {
 
   // Send file message
   const sendFileMessage = async (file: File, captionText?: string) => {
-    if (sending) return
+    if (sendingRef.current) return
+    sendingRef.current = true
     setSending(true)
     setErrorMessage(null)
 
@@ -382,6 +385,7 @@ export function ChatWidget() {
       setErrorMessage('Ошибка соединения')
       setMessages((prev) => prev.slice(0, -1))
     } finally {
+      sendingRef.current = false
       setSending(false)
       setTimeout(() => setErrorMessage(null), 4000)
     }

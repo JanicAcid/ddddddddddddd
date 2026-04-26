@@ -89,24 +89,50 @@ export const KKM_REGISTRY: KkmModel[] = [
   { id: 'other_vertex',  brand: 'Другие',        name: 'Вертекс',                     short: 'Вертекс',              group: 'other' },
 ]
 
-/** Маппинг модели из реестра → base kkmType (для цен, логики) */
+/** Маппинг модели из реестра → base kkmType (для цен, логики)
+ *
+ * Правила:
+ * - Известные бренды (Атол, Меркурий, Штрих-М, Эвотор, AQSI, Пионер, Сигма) → свой тип
+ * - ФР (фискальные регистраторы) / vending → логика Атол (цены, услуги, прошивки)
+ * - Смарт-терминалы → логика Меркурия (подписки, приложения, облако)
+ * - Остальные → Атол (дефолт)
+ */
 export function getBaseKkm(modelId: string): string {
-  // Сигма → sigma
+  // Известные бренды — по префиксу
   if (modelId.startsWith('sigma')) return 'sigma'
-  // Атол (включая модификации)
   if (modelId.startsWith('atol')) return 'atol'
-  // Меркурий
   if (modelId.startsWith('mercury')) return 'mercury'
-  // Штрих-М
   if (modelId.startsWith('shuttle')) return 'shuttle'
-  // Эвотор
   if (modelId.startsWith('evotor')) return 'evotor'
-  // AQSI
   if (modelId.startsWith('aqsi')) return 'aqsi'
-  // Пионер
   if (modelId.startsWith('pioneer')) return 'pioneer'
-  // Остальные → atol (самый совместимый fallback для цен)
+
+  // Ищем модель в реестре по group
+  const model = KKM_REGISTRY.find(m => m.id === modelId)
+  if (model) {
+    // ФР, вендовые, ККМ → логика Атол
+    if (model.group === 'fiscal' || model.group === 'vending') return 'atol'
+    // Смарт-терминалы → логика Меркурия (подписки, приложения)
+    if (model.group === 'smart') return 'mercury'
+    // Остальное → Атол по умолчанию
+    return 'atol'
+  }
+
   return 'atol'
+}
+
+/** Получить базовый тип по бренду (для BrandQuickSelect подсветки) */
+export function getBaseKkmByBrand(brand: string): string {
+  const map: Record<string, string> = {
+    'Атол': 'atol',
+    'Сигма': 'sigma',
+    'Меркурий': 'mercury',
+    'Штрих-М': 'shuttle',
+    'Эвотор': 'evotor',
+    'AQSI': 'aqsi',
+    'Пионер': 'pioneer',
+  }
+  return map[brand] || ''
 }
 
 /** Список брендов для фильтрации */

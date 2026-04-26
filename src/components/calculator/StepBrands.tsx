@@ -16,7 +16,7 @@ import {
   Search, ChevronDown, ChevronUp, Monitor, X, Phone
 } from 'lucide-react'
 import { KKM_BRANDS } from '@/config/brands'
-import { KKM_REGISTRY, KKM_BRANDS_LIST, getBaseKkm } from '@/config/kkm-registry'
+import { KKM_REGISTRY, KKM_BRANDS_LIST, getBaseKkm, getBaseKkmByBrand } from '@/config/kkm-registry'
 import { sigmaTariffLink } from '@/config/services'
 import type { KkmType, KkmCondition, HintButtonProps } from './types'
 import { HintButton } from './HintButton'
@@ -472,12 +472,15 @@ export function StepBrands({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const POPULAR_BRANDS = ['mercury', 'atol', 'shuttle', 'evotor', 'aqsi', 'pioneer'] as const
+const BRAND_NAMES: Record<string, string> = { mercury: 'Меркурий', atol: 'Атол', shuttle: 'Штрих-М', evotor: 'Эвотор', aqsi: 'AQSI', pioneer: 'Пионер' }
 
 function BrandQuickSelect({ selectedId, onSelect }: { selectedId: string; onSelect: (id: string) => void }) {
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3">
       {POPULAR_BRANDS.map(key => {
         const brand = KKM_BRANDS[key] || { color: '#64748b' }
+        // Подсвечиваем если kkmType совпадает с этим брендом
+        // (включая случаи когда kkmType = base для «других» моделей)
         const isSelected = selectedId === key
         const isLargeLogo = key === 'shuttle' || key === 'mercury'
         return (
@@ -500,7 +503,7 @@ function BrandQuickSelect({ selectedId, onSelect }: { selectedId: string; onSele
               />
             </div>
             <span className={`text-base sm:text-xl font-bold leading-none whitespace-nowrap ${isSelected ? 'text-[#1e3a5f] opacity-100 mt-1' : 'text-[#1e3a5f] opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center'} transition-all duration-200 pointer-events-none`}>
-              {key === 'shuttle' ? 'Штрих-М' : key === 'aqsi' ? 'AQSI' : key.charAt(0).toUpperCase() + key.slice(1)}
+              {BRAND_NAMES[key] || key}
             </span>
           </button>
         )

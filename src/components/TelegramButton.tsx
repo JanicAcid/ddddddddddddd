@@ -2,11 +2,10 @@
 
 import { useState } from 'react'
 import { MessageCircle, X, Phone } from 'lucide-react'
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa'
+import { FaTelegram } from 'react-icons/fa'
 import { SiMax } from 'react-icons/si'
 
 const TELEGRAM_URL = 'https://t.me/spbmarkirovka_bot'
-const WHATSAPP_URL = 'https://wa.me/78124659457'
 const MAX_URL = 'https://max.ru/u/f9LHodD0cOKAQIkb0s8W9FEngaXuCgU--hLEErjZL5jCKC4-Wr8lbwVsZO4'
 const PHONE_URL = 'tel:+78124659457'
 const PHONE_DISPLAY = '+7 (812) 465-94-57'
@@ -37,22 +36,6 @@ export function TelegramButton() {
           <div>
             <p className="text-sm font-semibold leading-tight">Telegram</p>
             <p className="text-xs text-gray-500">Написать в чат</p>
-          </div>
-        </a>
-
-        {/* WhatsApp */}
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all text-gray-900 hover:scale-105 active:scale-95 no-underline min-w-[200px]"
-        >
-          <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shrink-0">
-            <FaWhatsapp className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold leading-tight">WhatsApp</p>
-            <p className="text-xs text-gray-500">{PHONE_DISPLAY}</p>
           </div>
         </a>
 

@@ -44,6 +44,9 @@ interface StepBrandsProps {
   effectiveKkmInfo: { name: string }
   alreadyMarking: boolean
   setAlreadyMarking: (v: boolean) => void
+  // Registry model (для «Другие» бренды — реальный ID)
+  selectedRegistryModel: string
+  setSelectedRegistryModel: (v: string) => void
   // Setters
   setKkmType: (v: KkmType) => void
   setKkmCondition: (v: KkmCondition) => void
@@ -64,6 +67,7 @@ interface StepBrandsProps {
 
 export function StepBrands({
   kkmType, kkmCondition, sigmaSelected,
+  selectedRegistryModel, setSelectedRegistryModel,
   evotorTradeType, evotorAppsSelected, evotorHasSubscription,
   conditionFlash, conditionRef, currentKkmInfo, visibleKkmTypes,
   effectiveKkm, showSigmaSubs, sigmaSubsLocked, needsFirmwareOrLicense, fwPrices,
@@ -153,14 +157,17 @@ export function StepBrands({
 
             {/* Популярные кассы — иконки (быстрый выбор) */}
             <BrandQuickSelect
-              selectedId={kkmType}
-              onSelect={(modelId) => setKkmType(getBaseKkm(modelId) as KkmType)}
+              selectedId={selectedRegistryModel ? '' : kkmType}
+              onSelect={(modelId) => { setKkmType(modelId as KkmType); setSelectedRegistryModel('') }}
             />
 
             {/* Выбор конкретной модели из реестра */}
             <KkmModelSelector
-              selectedId={kkmType}
-              onSelect={(modelId) => setKkmType(getBaseKkm(modelId) as KkmType)}
+              selectedId={selectedRegistryModel || kkmType}
+              onSelect={(modelId) => {
+                setKkmType(getBaseKkm(modelId) as KkmType)
+                setSelectedRegistryModel(modelId)
+              }}
             />
 
             {/* Плавающая кнопка «Оставить заявку» — FAB */}
@@ -552,9 +559,8 @@ function KkmModelSelector({ selectedId, onSelect }: { selectedId: string; onSele
     return matchSearch && matchBrand
   })
 
-  // Найти выбранную модель
-  const selectedModel = KKM_REGISTRY.find(m => m.id === selectedId) ||
-    KKM_REGISTRY.find(m => getBaseKkm(m.id) === selectedId)
+  // Найти выбранную модель (сначала точное совпадение по id)
+  const selectedModel = KKM_REGISTRY.find(m => m.id === selectedId)
 
   return (
     <div ref={ref} className="space-y-2">

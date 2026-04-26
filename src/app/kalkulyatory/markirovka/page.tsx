@@ -50,6 +50,7 @@ export default function TellurServiceCalculator() {
     return mfr ? mfr.models : []
   }, [consultManufacturer])
   const [kkmType, setKkmType] = useState<KkmType>('' as KkmType)
+  const [selectedRegistryModel, setSelectedRegistryModel] = useState('')  // реальный ID модели из реестра (для «Другие» бренды)
   const [kkmCondition, setKkmCondition] = useState<KkmCondition>('' as KkmCondition)
   const [sigmaSelected, setSigmaSelected] = useState(false)
   const [evotorTradeType, setEvotorTradeType] = useState<'none' | 'marking' | 'alcohol' | 'both'>('none')
@@ -372,7 +373,7 @@ export default function TellurServiceCalculator() {
   // ---- Полный сброс ----
   const handleReset = () => {
     // Шаг 1 — касса
-    setKkmType('' as KkmType); setKkmCondition('' as KkmCondition); setSigmaSelected(false);
+    setKkmType('' as KkmType); setSelectedRegistryModel(''); setKkmCondition('' as KkmCondition); setSigmaSelected(false);
     setEvotorTradeType('none'); setEvotorAppsSelected(new Set()); setEvotorHasSubscription(false);
     setAlreadyMarking(false); setUnsureFnsRegistration(false);
     // Шаг 2 — услуги
@@ -569,8 +570,10 @@ export default function TellurServiceCalculator() {
                     setTimeout(() => setConditionFlash(false), 2000)
                     return
                   }
-                  setKkmType(v); if (v !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) }
+                  setKkmType(v); setSelectedRegistryModel(''); if (v !== 'atol') { setSigmaSelected(false); setSigmaHelpChecked(false) }
                 }}
+                selectedRegistryModel={selectedRegistryModel}
+                setSelectedRegistryModel={setSelectedRegistryModel}
                 setKkmCondition={setKkmCondition}
                 setSigmaSelected={setSigmaSelected}
                 setSigmaHelpChecked={setSigmaHelpChecked}

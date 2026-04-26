@@ -4,15 +4,22 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Phone, Mail, MapPin } from 'lucide-react'
+import { Phone, Mail, MapPin, UserCircle } from 'lucide-react'
 
-const NAV_LINKS = [
+interface NavLink {
+  label: string
+  href: string
+  icon?: boolean
+}
+
+const NAV_LINKS: NavLink[] = [
   { label: 'Главная', href: '/' },
   { label: 'Диагностика', href: '/diagnostika' },
   { label: 'Калькуляторы', href: '/kalkulyatory' },
   { label: 'База знаний', href: '/instructions' },
   { label: 'Услуги', href: '/services' },
   { label: 'Контакты', href: '/contacts' },
+  { label: 'Кабинет', href: '/admin/login', icon: true },
 ]
 
 const SERVICE_LINKS = [
@@ -46,7 +53,8 @@ export function SiteFooter() {
             <ul className="space-y-2">
               {NAV_LINKS.map(link => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/50 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-sm text-white/50 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                    {link.icon ? <UserCircle className="w-3.5 h-3.5" /> : null}
                     {link.label}
                   </Link>
                 </li>

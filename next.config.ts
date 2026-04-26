@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 // Инкрементировать при необходимости принудительной пересборки
-const BUILD_VERSION = 12;
+const BUILD_VERSION = 13;
 
 const nextConfig: NextConfig = {
   output: 'export',

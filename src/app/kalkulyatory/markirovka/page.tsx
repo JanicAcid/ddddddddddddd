@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Info, Check, Phone, Send, MessageSquare, X, ShieldCheck, ChevronRight } from 'lucide-react'
+import { Info, Check, Phone, Send, MessageSquare, X, ShieldCheck, ChevronRight, Calculator } from 'lucide-react'
 import {
   kkmTypes, scannerPrices, firmwareLicensePrices, sigmaTariffLink,
   type KkmType
@@ -403,8 +403,10 @@ export default function TellurServiceCalculator() {
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; }
 @keyframes greenPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 70% { box-shadow: 0 0 0 12px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
 @keyframes greenSlideIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 .animate-green-pulse { animation: greenPulse 1.5s ease-out 2; }
 .animate-green-slide { animation: greenSlideIn 0.4s ease-out forwards; opacity: 0; }
+.calc-shimmer { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 2s ease-in-out infinite; }
 [data-slot=checkbox]{width:34px;height:34px;min-width:34px;min-height:34px;border:2.5px solid #334155;border-radius:8px;cursor:pointer;transition:all .15s ease;margin-top:0;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 [data-slot=checkbox]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
 [data-slot=checkbox][data-state=checked]{background-color:#1e3a5f;border-color:#1e3a5f}
@@ -413,6 +415,47 @@ export default function TellurServiceCalculator() {
 [data-slot=radio-group-item]:hover{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15)}
 [data-slot=radio-group-item][data-state=checked]{border-color:#1e3a5f;background:#fff}
 .space-y-3 .flex.items-start.gap-3,.space-y-4 .flex.items-start.gap-3,.space-y-5 .flex.items-start.gap-3{flex-wrap:wrap}`}</style>
+
+        {/* ===== КАЛЬКУЛЯТОР — ШАПКА ===== */}
+        <div className="bg-gradient-to-br from-[#1e3a5f] via-[#2a5080] to-[#1e3a5f] relative overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-[#e8a817]/10 blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-white/5 blur-3xl" />
+          </div>
+          <div className="relative max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-10 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-white/90 text-xs font-medium mb-3">
+              <Calculator className="w-3.5 h-3.5 text-[#e8a817]" />
+              Онлайн-калькулятор
+            </div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight mb-2">
+              Расчёт стоимости маркировки
+            </h2>
+            <p className="text-sm sm:text-base text-white/60 max-w-xl mx-auto leading-relaxed">
+              Выберите кассу, нужные услуги — получите точную сумму за 2&nbsp;минуты. Без обязательств.
+            </p>
+            <div className="flex items-center justify-center gap-4 sm:gap-6 mt-4 text-xs text-white/40">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#e8a817]" />
+                Бесплатно
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#e8a817]" />
+                Без регистрации
+              </span>
+              <span className="hidden sm:flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#e8a817]" />
+                За 2 минуты
+              </span>
+            </div>
+          </div>
+          {/* Волна */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block">
+              <path d="M0 40V20C240 0 480 0 720 20C960 40 1200 40 1440 20V40H0Z" fill="#f0f4f8" />
+            </svg>
+          </div>
+        </div>
+
         <main ref={mainRef} className="flex-1 max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 w-full">
           <Breadcrumbs items={[{ label: 'Калькуляторы', href: '/kalkulyatory' }, { label: 'Маркировка' }]} />
 
@@ -435,19 +478,18 @@ export default function TellurServiceCalculator() {
 
             {/* STEP INDICATOR */}
             {!isConsultation && (
-            <div className="max-w-lg mx-auto mb-3 sm:mb-5">
-              <div className="flex items-center">
+            <div className="max-w-xl mx-auto mb-4 sm:mb-6">
+              <div className="flex items-center gap-0">
                 {[
-                  { num: 1, label: 'Касса' },
-                  { num: 2, label: 'Услуги' },
-                  { num: 3, label: 'Дополнительно' },
-                  { num: 4, label: 'Готово' }
+                  { num: 1, label: 'Касса', icon: '1' },
+                  { num: 2, label: 'Услуги', icon: '2' },
+                  { num: 3, label: 'Дополнительно', icon: '3' },
+                  { num: 4, label: 'Готово', icon: '4' }
                 ].map((step, idx) => {
                   const isActive = currentStep === step.num || (isDone && step.num === 4)
                   const isVisited = isDone || currentStep > step.num
                   const isForward = step.num > currentStep
                   const isNextStep = step.num === currentStep + 1
-                  // Назад — всегда можно. Вперёд — только на следующий (+1) и только если текущий шаг заполнен
                   const canGoNext =
                     (currentStep === 1 && canGoStep2) ||
                     (currentStep === 2 && canGoStep3) ||
@@ -455,22 +497,36 @@ export default function TellurServiceCalculator() {
                   const isDisabled = isDone || (isForward && !(isNextStep && canGoNext))
                   return (
                     <React.Fragment key={step.num}>
-                      <div className="flex flex-col items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isDisabled) return
-                            goToStep(step.num as Step)
-                          }}
-                          disabled={isDisabled}
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0 ${isVisited && !isActive ? 'bg-[#1e3a5f] text-white shadow-md cursor-pointer hover:bg-[#1e3a5f]/90' : isActive ? 'bg-[#e8a817] text-white ring-4 ring-[#e8a817]/20 shadow-md' : isDisabled ? 'bg-white border-2 border-slate-200 text-slate-300 cursor-not-allowed opacity-50' : 'bg-white border-2 border-slate-300 text-slate-500 cursor-pointer hover:border-[#1e3a5f] hover:text-[#1e3a5f]'}`}
-                        >
-                          {isVisited && !isActive ? <Check className="w-4 h-4" /> : step.num}
-                        </button>
-                        <span className={`text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${isActive ? 'text-[#1e3a5f] font-bold' : isVisited ? 'text-[#1e3a5f]/70' : isDisabled ? 'text-slate-300' : 'text-slate-500'}`}>{step.label}</span>
-                      </div>
+                      {/* Step circle */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isDisabled) return
+                          goToStep(step.num as Step)
+                        }}
+                        disabled={isDisabled}
+                        className={`relative flex flex-col items-center gap-1.5 group shrink-0 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
+                        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-sm sm:text-base font-bold transition-all duration-300 shadow-sm ${
+                          isVisited && !isActive
+                            ? 'bg-[#1e3a5f] text-white shadow-md group-hover:bg-[#162d4a]'
+                            : isActive
+                            ? 'bg-[#e8a817] text-white shadow-lg shadow-[#e8a817]/30 ring-4 ring-[#e8a817]/15'
+                            : isDisabled
+                            ? 'bg-white border-2 border-slate-200 text-slate-300 opacity-40'
+                            : 'bg-white border-2 border-slate-200 text-slate-400 group-hover:border-[#1e3a5f] group-hover:text-[#1e3a5f] group-hover:shadow-md'
+                        }`}>
+                          {isVisited && !isActive ? <Check className="w-4 h-4 sm:w-5 sm:h-5" /> : step.num}
+                        </div>
+                        <span className={`text-[10px] sm:text-xs font-semibold transition-colors whitespace-nowrap ${
+                          isActive ? 'text-[#e8a817]' : isVisited ? 'text-[#1e3a5f]' : isDisabled ? 'text-slate-300' : 'text-slate-400'
+                        }`}>{step.label}</span>
+                      </button>
+                      {/* Connector line */}
                       {idx < 3 && (
-                        <div className={`flex-1 h-1 rounded-full transition-colors duration-300 mx-1 ${isVisited || (step.num === currentStep) ? 'bg-[#1e3a5f]' : 'bg-slate-200'}`} />
+                        <div className={`flex-1 h-1 rounded-full transition-colors duration-500 mx-1 sm:mx-2 mt-[-18px] ${
+                          isVisited || (step.num === currentStep) ? 'bg-[#1e3a5f]' : 'bg-slate-200'
+                        }`} />
                       )}
                     </React.Fragment>
                   )

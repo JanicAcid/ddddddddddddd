@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, ChevronUp } from 'lucide-react'
+import { MessageCircle, ChevronUp, Phone } from 'lucide-react'
 import { FaTelegram } from 'react-icons/fa'
 
 const TELEGRAM_URL = 'https://t.me/+79219403870'
@@ -9,17 +9,19 @@ const MAX_URL = 'https://max.ru/u/f9LHodD0cOKAQIkb0s8W9FEngaXuCgU--hLEErjZL5jCKC
 const PHONE_URL = 'tel:+79219403870'
 const PHONE_DISPLAY = '+7 (921) 940-38-70'
 
+// MAX иконка — градиентный скруглённый квадрат с большой буквой «А»
 function MaxIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none">
+    <svg viewBox="0 0 32 32" className={className} fill="none">
       <defs>
         <linearGradient id="contact-max-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0080FF" />
-          <stop offset="100%" stopColor="#8000FF" />
+          <stop offset="0%" stopColor="#0077FF" />
+          <stop offset="50%" stopColor="#5500FF" />
+          <stop offset="100%" stopColor="#AA00FF" />
         </linearGradient>
       </defs>
-      <rect width="24" height="24" rx="5" fill="url(#contact-max-grad)" />
-      <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="700" fontFamily="Arial,sans-serif">a</text>
+      <rect width="32" height="32" rx="7" fill="url(#contact-max-grad)" />
+      <text x="16" y="23" textAnchor="middle" fill="white" fontSize="19" fontWeight="800" fontFamily="Arial,Helvetica,sans-serif">А</text>
     </svg>
   )
 }
@@ -83,8 +85,8 @@ export function ContactDropdown({ variant = 'default', children }: ContactDropdo
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors no-underline text-slate-700"
             >
-              <div className="w-8 h-8 rounded-full bg-[#0088cc] flex items-center justify-center shrink-0">
-                <FaTelegram className="w-4 h-4 text-white" />
+              <div className="w-9 h-9 rounded-full bg-[#0088cc] flex items-center justify-center shrink-0">
+                <FaTelegram className="w-4.5 h-4.5 text-white" />
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-900">Telegram</p>
@@ -99,8 +101,8 @@ export function ContactDropdown({ variant = 'default', children }: ContactDropdo
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors no-underline text-slate-700"
             >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
-                <MaxIcon className="w-8 h-8 rounded-lg" />
+              <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                <MaxIcon className="w-9 h-9" />
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-900">МАКС</p>
@@ -113,8 +115,8 @@ export function ContactDropdown({ variant = 'default', children }: ContactDropdo
               href={PHONE_URL}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors no-underline text-slate-700"
             >
-              <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center shrink-0">
-                <MessageCircle className="w-4 h-4 text-white" />
+              <div className="w-9 h-9 rounded-full bg-[#1e3a5f] flex items-center justify-center shrink-0">
+                <Phone className="w-4 h-4 text-white" />
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-900">Позвонить</p>

@@ -128,7 +128,7 @@ export default function HomePage() {
       {/* ================================================================== */}
       {/* HERO SECTION */}
       {/* ================================================================== */}
-      <section className="relative bg-gradient-to-br from-[#1e3a5f] via-[#2a5080] to-[#1e3a5f] overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[#1e3a5f] via-[#2a5080] to-[#1e3a5f]">
         {/* Decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[#e8a817]/10 blur-3xl" />
